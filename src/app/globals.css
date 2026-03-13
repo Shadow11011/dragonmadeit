@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a2e;
+  --accent-fire: #ff4500;
+  --accent-ember: #ff8c00;
+  --accent-gold: #ffd700;
+  --text-primary: #e4e4e7;
+  --text-secondary: #71717a;
+  --border: #27272a;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Ember particle background for dashboard */
+@keyframes ember-float {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  20% { opacity: 0.6; }
+  100% { transform: translateY(-100vh) scale(0.3); opacity: 0; }
+}
+
+.ember-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.ember-bg::before,
+.ember-bg::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-fire);
+  bottom: -10px;
+  animation: ember-float 8s ease-in infinite;
+}
+
+.ember-bg::before {
+  left: 20%;
+  animation-delay: 0s;
+  animation-duration: 10s;
+}
+
+.ember-bg::after {
+  left: 70%;
+  animation-delay: 3s;
+  animation-duration: 12s;
+}
+
+/* Fire gradient utilities */
+.fire-gradient {
+  background: linear-gradient(to right, #ff8c00, #ff4500, #ffd700);
+}
+
+.fire-text {
+  background: linear-gradient(to right, #ff8c00, #ff4500, #ffd700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Glow effects */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 69, 0, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(255, 69, 0, 0.6), 0 0 60px rgba(255, 140, 0, 0.3); }
+}
+
+.glow-fire {
+  box-shadow: 0 0 15px rgba(255, 69, 0, 0.3), 0 0 30px rgba(255, 69, 0, 0.1);
+}
+
+.glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Glass card for overlaying on 3D scene */
+.glass-card {
+  background: rgba(18, 18, 26, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(39, 39, 42, 0.5);
+}
+
+/* Navbar blur */
+.nav-blur {
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Tier-specific colors */
+.tier-hatchling { color: #22d3ee; }
+.tier-drake { color: #ff8c00; }
+.tier-elder-dragon { color: #ffd700; }
+
+.tier-border-hatchling { border-color: #22d3ee; }
+.tier-border-drake { border-color: #ff8c00; }
+.tier-border-elder-dragon { border-color: #ffd700; }
