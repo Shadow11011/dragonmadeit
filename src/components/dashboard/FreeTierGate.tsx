@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 
 const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
 
-const EXEMPT_PATHS = ["/dashboard/settings"];
+const EXEMPT_PATHS = ["/dashboard/settings", "/dashboard/accounts"];
 
 export function FreeTierGate({ children }: { children: React.ReactNode }) {
   const { tier, isLoading } = useTypedSession();
