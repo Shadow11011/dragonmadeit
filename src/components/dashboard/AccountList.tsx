@@ -1,79 +1,191 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { TierBadge } from "@/components/dashboard/TierBadge";
-import type { TikTokAccountInfo } from "@/types";
+import { DragonMascot } from "@/components/dashboard/DragonMascot";
+import { TIER_CONFIG, Tier } from "@/types";
 
-interface AccountListProps {
-  accounts: TikTokAccountInfo[];
-  hasActiveSubscription: boolean;
+export interface TikTokAccountItem {
+  id: string;
+  username: string | null;
+  displayName: string | null;
+  tier: Tier;
+  status: "active" | "pending" | "cancelled";
+  scheduleDays: string[];
+  scheduleTime: string;
 }
 
-export function AccountList({ accounts, hasActiveSubscription }: AccountListProps) {
-  return (
-    <div className="space-y-4">
-      {/* Account list */}
-      {accounts.length > 0 ? (
-        <div className="space-y-2">
-          {accounts.map((account) => (
-            <div
-              key={account.id}
-              className="flex items-center gap-3 rounded-xl bg-bg-secondary border border-border p-4 hover:border-accent-fire/30 transition-colors"
-            >
-              <div
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full",
-                  account.isLinked
-                    ? "bg-accent-fire/10 text-accent-fire font-bold text-sm"
-                    : "bg-warning/10 text-warning font-bold text-sm"
-                )}
-              >
-                {account.isLinked
-                  ? (account.displayName ?? account.username).charAt(0).toUpperCase()
-                  : "?"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium truncate">
-                    {account.isLinked ? `@${account.username}` : "Pending Link"}
-                  </p>
-                  <TierBadge tier={account.tier} />
-                </div>
-                <p className="text-sm text-text-secondary">
-                  {account.videosPerWeek} videos/week
-                  {!account.isLinked && (
-                    <span className="ml-2 text-warning">
-                      — Link your TikTok to start posting
-                    </span>
-                  )}
-                </p>
-              </div>
-              {!account.isLinked && (
-                <Link href={`/dashboard/accounts/${account.id}/link`}>
-                  <Button size="sm" variant="secondary">
-                    Link Account
-                  </Button>
-                </Link>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-xl bg-bg-secondary border border-border p-8 text-center">
-          <p className="text-text-secondary mb-4">No TikTok accounts yet.</p>
-        </div>
-      )}
+interface AccountListProps {
+  accounts: TikTokAccountItem[];
+  isLoading: boolean;
+}
 
-      {/* Add account CTA */}
-      <Link href="/dashboard/settings">
-        <Button className="w-full" variant={hasActiveSubscription ? "secondary" : "primary"}>
-          {hasActiveSubscription
-            ? "Add Another Account"
-            : "Get Started — Purchase a Plan"}
-        </Button>
-      </Link>
-    </div>
+const STATUS_STYLES: Record<string, { dot: string; text: string; label: string }> = {
+  active: { dot: "bg-success", text: "text-success", label: "Active" },
+  pending: { dot: "bg-warning", text: "text-warning", label: "Pending" },
+  cancelled: { dot: "bg-error", text: "text-error", label: "Cancelled" },
+};
+
+const DAY_ABBREV: Record<string, string> = {
+  monday: "Mon",
+  tuesday: "Tue",
+  wednesday: "Wed",
+  thursday: "Thu",
+  friday: "Fri",
+  saturday: "Sat",
+  sunday: "Sun",
+};
+
+function formatSchedule(days: string[], time: string): string {
+  if (days.length === 0) return "No schedule set";
+  const abbrevDays = days.map((d) => DAY_ABBREV[d.toLowerCase()] ?? d);
+  if (days.length === 7) return `Daily at ${time}`;
+  return `${abbrevDays.join(", ")} at ${time}`;
+}
+
+function formatScheduleSlots(days: string[], time: string, videosPerWeek: number): string {
+  if (days.length === 0) return "No schedule set";
+  if (videosPerWeek > 7) {
+    const postsPerDay = Math.ceil(videosPerWeek / 7);
+    return `${videosPerWeek}x/week (${postsPerDay}x daily) at ${time}`;
+  }
+  return formatSchedule(days, time);
+}
+
+const containerVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+
+export function AccountList({ accounts, isLoading }: AccountListProps) {
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <div
+            key={i}
+            className="animate-pulse rounded-xl bg-bg-secondary border border-border p-5 h-28"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (accounts.length === 0) {
+    return (
+      <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
+        <div className="flex justify-center mb-4">
+          <DragonMascot size={64} tierColor="#ff4500" />
+        </div>
+        <h3 className="text-lg font-semibold text-text-primary mb-2">
+          No TikTok accounts yet
+        </h3>
+        <p className="text-text-secondary text-sm mb-6 max-w-sm mx-auto">
+          Add your first TikTok account to start automating your content. Pick a
+          tier, set your schedule, and let the dragon handle the rest.
+        </p>
+        <Link href="/dashboard/accounts/add">
+          <Button className="fire-gradient text-white glow-fire" size="lg">
+            Add Your First Account
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      className="space-y-3"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      {accounts.map((account) => {
+        const tierConfig = TIER_CONFIG[account.tier];
+        const statusStyle = STATUS_STYLES[account.status] ?? STATUS_STYLES.pending;
+
+        return (
+          <motion.div
+            key={account.id}
+            variants={itemVariants}
+            className="rounded-xl bg-bg-secondary border border-border p-5 hover:border-accent-fire/30 transition-colors"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Avatar + Info */}
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div
+                  className={cn(
+                    "flex h-11 w-11 items-center justify-center rounded-full shrink-0",
+                    "bg-accent-fire/10 text-accent-fire font-bold text-sm"
+                  )}
+                >
+                  {account.username
+                    ? account.username.charAt(0).toUpperCase()
+                    : "?"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {account.username ? (
+                      <p className="font-medium truncate">
+                        @{account.username}
+                      </p>
+                    ) : (
+                      <p className="font-medium text-warning">
+                        Pending — link your account
+                      </p>
+                    )}
+                    <TierBadge tier={account.tier} />
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    <span className="text-xs text-text-secondary">
+                      {tierConfig.videosPerWeek} videos/week
+                    </span>
+                    <span className="text-xs text-text-secondary">
+                      {formatScheduleSlots(
+                        account.scheduleDays,
+                        account.scheduleTime,
+                        tierConfig.videosPerWeek
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status + Actions */}
+              <div className="flex items-center gap-3 sm:shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={cn("h-2 w-2 rounded-full", statusStyle.dot)}
+                  />
+                  <span className={cn("text-xs font-medium", statusStyle.text)}>
+                    {statusStyle.label}
+                  </span>
+                </div>
+
+                {account.status === "pending" && !account.username && (
+                  <Link href={`/dashboard/accounts/link/${account.id}`}>
+                    <Button size="sm" variant="secondary">
+                      Link Account
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+    </motion.div>
   );
 }
