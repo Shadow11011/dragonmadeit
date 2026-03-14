@@ -1,7 +1,7 @@
 "use client";
 
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { useTierLimits } from "@/hooks/useTierLimits";
+import { useTypedSession } from "@/hooks/useSession";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MOCK_BAR_HEIGHTS = [65, 45, 80, 55, 90, 40, 70]; // percentages
@@ -50,9 +50,11 @@ function StarIcon() {
 }
 
 export default function AnalyticsPage() {
-  const { hasAnalytics, tier } = useTierLimits();
+  const { hasActiveSubscription } = useTypedSession();
 
-  if (!hasAnalytics) {
+  // Analytics requires an active subscription; per-account analytics features
+  // will be refined when account-level tier checks are added to this page.
+  if (!hasActiveSubscription) {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold">Analytics</h1>

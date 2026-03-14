@@ -7,10 +7,16 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   typescript: true,
 });
 
+export const TIER_VIDEOS_PER_WEEK: Record<Exclude<Tier, "FREE">, number> = {
+  HATCHLING: 3,
+  DRAKE: 7,
+  ELDER_DRAGON: 14,
+};
+
 export const PRICE_IDS: Record<Exclude<Tier, "FREE">, string> = {
-  HATCHLING: process.env.STRIPE_PRICE_HATCHLING || "price_hatchling",
-  DRAKE: process.env.STRIPE_PRICE_DRAKE || "price_drake",
-  ELDER_DRAGON: process.env.STRIPE_PRICE_ELDER_DRAGON || "price_elder_dragon",
+  HATCHLING: process.env.STRIPE_HATCHLING_PRICE_ID || "price_hatchling",
+  DRAKE: process.env.STRIPE_DRAKE_PRICE_ID || "price_drake",
+  ELDER_DRAGON: process.env.STRIPE_ELDER_DRAGON_PRICE_ID || "price_elder_dragon",
 };
 
 export function mapStripePriceToTier(priceId: string): Tier {
@@ -20,7 +26,10 @@ export function mapStripePriceToTier(priceId: string): Tier {
   return "FREE";
 }
 
-export async function getOrCreateCustomer(userId: string, email: string): Promise<string> {
+export async function getOrCreateCustomer(
+  userId: string,
+  email: string
+): Promise<string> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { stripeCustomerId: true },
@@ -43,25 +52,39 @@ export async function getOrCreateCustomer(userId: string, email: string): Promis
   return customer.id;
 }
 
+export interface CreateCheckoutParams {
+  customerId: string;
+  tier: Exclude<Tier, "FREE">;
+  userId: string;
+  schedule: Record<string, unknown>;
+}
+
 export async function createCheckoutSession(
-  customerId: string,
-  priceId: string,
-  userId: string
+  params: CreateCheckoutParams
 ): Promise<string> {
+  const { customerId, tier, userId, schedule } = params;
+  const priceId = PRICE_IDS[tier];
+
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXTAUTH_URL}/dashboard?checkout=success`,
-    cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/settings?checkout=cancel`,
-    metadata: { userId },
+    success_url: `${process.env.NEXTAUTH_URL}/dashboard/accounts?checkout=success`,
+    cancel_url: `${process.env.NEXTAUTH_URL}/pricing?checkout=cancel`,
+    metadata: {
+      userId,
+      tier,
+      schedule: JSON.stringify(schedule),
+    },
   });
 
   return session.url!;
 }
 
-export async function createBillingPortalSession(customerId: string): Promise<string> {
+export async function createBillingPortalSession(
+  customerId: string
+): Promise<string> {
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: `${process.env.NEXTAUTH_URL}/dashboard/settings`,

@@ -26,8 +26,16 @@ export async function GET() {
         id: true,
         email: true,
         name: true,
-        tier: true,
         stripeCustomerId: true,
+        onboardingComplete: true,
+        tiktokAccounts: {
+          select: {
+            id: true,
+            username: true,
+            tier: true,
+            videosPerWeek: true,
+          },
+        },
       },
     });
 
@@ -95,8 +103,8 @@ export async function PATCH(request: Request) {
         id: true,
         email: true,
         name: true,
-        tier: true,
         stripeCustomerId: true,
+        onboardingComplete: true,
       },
     });
 

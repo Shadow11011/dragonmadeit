@@ -2,18 +2,6 @@ import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { TIER_CONFIG } from "@/types";
-import { Tier } from "@prisma/client";
-import { z } from "zod";
-
-const createAccountSchema = z.object({
-  username: z
-    .string()
-    .min(1, "Username is required")
-    .max(50, "Username too long")
-    .regex(/^[a-zA-Z0-9._]+$/, "Username can only contain letters, numbers, dots, and underscores"),
-  displayName: z.string().max(100).optional(),
-});
 
 export async function GET() {
   try {
@@ -31,12 +19,21 @@ export async function GET() {
         id: true,
         username: true,
         displayName: true,
+        tier: true,
+        videosPerWeek: true,
+        schedule: true,
+        scheduleLocked: true,
         createdAt: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: accounts });
+    const data = accounts.map((account) => ({
+      ...account,
+      isLinked: !account.username.startsWith("pending-"),
+    }));
+
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error("GET /api/user/accounts error:", error);
     return NextResponse.json(
@@ -46,63 +43,9 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const body: unknown = await request.json();
-    const parsed = createAccountSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" },
-        { status: 400 }
-      );
-    }
-
-    // Check tier account limit
-    const tier = (session.user.tier as Tier) ?? "FREE";
-    const config = TIER_CONFIG[tier];
-    const currentCount = await prisma.tikTokAccount.count({
-      where: { userId: session.user.id },
-    });
-
-    if (config.maxAccounts !== -1 && currentCount >= config.maxAccounts) {
-      return NextResponse.json(
-        { success: false, error: "Account limit reached for your tier" },
-        { status: 403 }
-      );
-    }
-
-    const account = await prisma.tikTokAccount.create({
-      data: {
-        username: parsed.data.username,
-        displayName: parsed.data.displayName ?? null,
-        userId: session.user.id,
-      },
-      select: {
-        id: true,
-        username: true,
-        displayName: true,
-        createdAt: true,
-      },
-    });
-
-    return NextResponse.json({ success: true, data: account }, { status: 201 });
-  } catch (error) {
-    console.error("POST /api/user/accounts error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
+// TikTok accounts are now created via Stripe checkout (payment-gated).
+// Direct account creation is no longer supported.
+// Use POST /api/stripe/checkout to purchase a new account slot.
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -125,13 +68,26 @@ export async function DELETE(request: NextRequest) {
     // Verify account belongs to user
     const account = await prisma.tikTokAccount.findFirst({
       where: { id, userId: session.user.id },
-      select: { id: true },
+      select: { id: true, stripeSubscriptionId: true },
     });
 
     if (!account) {
       return NextResponse.json(
         { success: false, error: "Account not found" },
         { status: 404 }
+      );
+    }
+
+    // Prevent deletion of accounts with active subscriptions
+    // User must cancel the subscription first via the billing portal
+    if (account.stripeSubscriptionId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Cannot delete an account with an active subscription. Cancel the subscription first.",
+        },
+        { status: 409 }
       );
     }
 

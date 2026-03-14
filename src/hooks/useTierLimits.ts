@@ -1,9 +1,13 @@
 "use client";
 
-import { TIER_CONFIG, TierConfig, Tier } from "@/types";
 import { useTypedSession } from "./useSession";
 
-export function useTierLimits(): TierConfig & { tier: Tier } {
-  const { tier } = useTypedSession();
-  return { ...TIER_CONFIG[tier], tier };
+/**
+ * In the new per-account model, tiers are on TikTokAccount, not User.
+ * This hook provides user-level subscription status for UI gating.
+ * For account-specific tier info, fetch from /api/tiktok-accounts.
+ */
+export function useSubscriptionStatus() {
+  const { hasActiveSubscription, isLoading } = useTypedSession();
+  return { hasActiveSubscription, isLoading };
 }

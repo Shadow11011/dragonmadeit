@@ -5,9 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
-import { TierBadge } from "@/components/dashboard/TierBadge";
 import { useTypedSession } from "@/hooks/useSession";
-import { TIER_CONFIG } from "@/types";
 
 function DashboardIcon() {
   return (
@@ -94,10 +92,10 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, tier } = useTypedSession();
+  const { user, hasActiveSubscription } = useTypedSession();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const tierConfig = TIER_CONFIG[tier];
+  const fireColor = hasActiveSubscription ? "#ff4500" : "#71717a";
 
   return (
     <>
@@ -133,7 +131,7 @@ export function Sidebar() {
             className="flex items-center gap-2"
             onClick={() => setMobileOpen(false)}
           >
-            <DragonMascot size={28} tierColor={tierConfig.fireColor} />
+            <DragonMascot size={28} tierColor={fireColor} />
             <span className="text-lg font-bold fire-text">DragonMadeIt</span>
           </Link>
           {/* Mobile close button */}
@@ -181,8 +179,9 @@ export function Sidebar() {
             </p>
           )}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-text-secondary">Tier:</span>
-            <TierBadge tier={tier} />
+            <span className="text-xs text-text-secondary">
+              {hasActiveSubscription ? "Active subscriber" : "Free account"}
+            </span>
           </div>
         </div>
       </aside>

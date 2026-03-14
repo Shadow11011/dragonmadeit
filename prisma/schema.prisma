@@ -24,22 +24,20 @@ enum ContentStatus {
 }
 
 model User {
-  id                   String          @id @default(cuid())
-  email                String          @unique
-  name                 String?
-  image                String?
-  hashedPassword       String?
-  emailVerified        DateTime?
-  tier                 Tier            @default(FREE)
-  stripeCustomerId     String?         @unique
-  stripeSubscriptionId String?         @unique
-  onboardingComplete   Boolean         @default(false)
-  tiktokAccounts       TikTokAccount[]
-  contentItems         ContentItem[]
-  accounts             Account[]
-  sessions             Session[]
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
+  id                 String          @id @default(cuid())
+  email              String          @unique
+  name               String?
+  image              String?
+  hashedPassword     String?
+  emailVerified      DateTime?
+  stripeCustomerId   String?         @unique
+  onboardingComplete Boolean         @default(false)
+  tiktokAccounts     TikTokAccount[]
+  contentItems       ContentItem[]
+  accounts           Account[]
+  sessions           Session[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
 }
 
 model Account {
@@ -77,16 +75,21 @@ model VerificationToken {
 }
 
 model TikTokAccount {
-  id           String        @id @default(cuid())
-  username     String
-  displayName  String?
-  accessToken  String?
-  refreshToken String?
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contentItems ContentItem[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id                   String        @id @default(cuid())
+  username             String
+  displayName          String?
+  accessToken          String?
+  refreshToken         String?
+  tier                 Tier          @default(FREE)
+  stripeSubscriptionId String?       @unique
+  videosPerWeek        Int           @default(0)
+  schedule             Json?
+  scheduleLocked       Boolean       @default(false)
+  userId               String
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentItems         ContentItem[]
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 }
 
 model ContentItem {

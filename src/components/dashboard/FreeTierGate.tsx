@@ -10,7 +10,7 @@ const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
 const EXEMPT_PATHS = ["/dashboard/settings"];
 
 export function FreeTierGate({ children }: { children: React.ReactNode }) {
-  const { tier, isLoading } = useTypedSession();
+  const { hasActiveSubscription, isLoading } = useTypedSession();
   const pathname = usePathname();
 
   if (isLoading) {
@@ -23,19 +23,18 @@ export function FreeTierGate({ children }: { children: React.ReactNode }) {
 
   const isExempt = EXEMPT_PATHS.some((p) => pathname.startsWith(p));
 
-  if (tier !== "FREE" || isExempt) {
+  if (hasActiveSubscription || isExempt) {
     return <>{children}</>;
   }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
       <div className="mb-8">
-        <div className="text-6xl mb-4">&#x1F6A7;</div>
         <h2 className="text-3xl font-bold text-text-primary mb-2">
-          Under Maintenance
+          Get Started
         </h2>
         <p className="text-text-secondary max-w-md mx-auto">
-          The free dashboard is currently under construction. Upgrade to a paid plan to start automating your TikTok content today.
+          Purchase a plan to start automating your TikTok content. Each plan includes one TikTok account with automated posting.
         </p>
       </div>
 
@@ -62,9 +61,9 @@ export function FreeTierGate({ children }: { children: React.ReactNode }) {
                   </li>
                 ))}
               </ul>
-              <a href={`/dashboard/settings`}>
+              <a href="/dashboard/settings">
                 <Button className="w-full mt-4" size="sm">
-                  Upgrade to {config.name}
+                  Get {config.name}
                 </Button>
               </a>
             </div>

@@ -1,29 +1,64 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getOrCreateCustomer, createCheckoutSession, PRICE_IDS } from "@/lib/stripe";
-import { Tier } from "@prisma/client";
+import {
+  getOrCreateCustomer,
+  createCheckoutSession,
+} from "@/lib/stripe";
+import { z } from "zod";
+
+const checkoutSchema = z.object({
+  tier: z.enum(["HATCHLING", "DRAKE", "ELDER_DRAGON"]),
+  schedule: z.object({
+    days: z.array(z.number().min(0).max(6)),
+    times: z.array(z.string().regex(/^\d{2}:\d{2}$/)),
+    timezone: z.string().min(1),
+  }),
+});
 
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.id || !session?.user?.email) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const { tier } = await request.json();
+    const body: unknown = await request.json();
+    const parsed = checkoutSchema.safeParse(body);
 
-    if (!tier || !(tier in PRICE_IDS)) {
-      return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: parsed.error.issues[0]?.message ?? "Invalid input",
+        },
+        { status: 400 }
+      );
     }
 
-    const customerId = await getOrCreateCustomer(session.user.id, session.user.email!);
-    const priceId = PRICE_IDS[tier as Exclude<Tier, "FREE">];
-    const url = await createCheckoutSession(customerId, priceId, session.user.id);
+    const { tier, schedule } = parsed.data;
 
-    return NextResponse.json({ url });
+    const customerId = await getOrCreateCustomer(
+      session.user.id,
+      session.user.email
+    );
+
+    const checkoutUrl = await createCheckoutSession({
+      customerId,
+      tier,
+      userId: session.user.id,
+      schedule,
+    });
+
+    return NextResponse.json({ success: true, data: { url: checkoutUrl } });
   } catch (error) {
-    console.error("Checkout error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("POST /api/stripe/checkout error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to create checkout session" },
+      { status: 500 }
+    );
   }
 }

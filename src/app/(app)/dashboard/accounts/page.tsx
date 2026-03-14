@@ -1,43 +1,67 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AccountList } from "@/components/dashboard/AccountList";
-import { TierBadge } from "@/components/dashboard/TierBadge";
-import { useTierLimits } from "@/hooks/useTierLimits";
-import { TIER_CONFIG } from "@/types";
-
-const MOCK_ACCOUNTS = [
-  { id: "acc1", username: "dragonscale_tips", displayName: "Dragon Scale Tips" },
-];
+import { useTypedSession } from "@/hooks/useSession";
+import type { TikTokAccountInfo } from "@/types";
 
 export default function AccountsPage() {
-  const { tier, maxAccounts, videosPerWeek } = useTierLimits();
-  const config = TIER_CONFIG[tier];
-  const isFree = tier === "FREE";
+  const { hasActiveSubscription, isLoading: sessionLoading } = useTypedSession();
+  const [accounts, setAccounts] = useState<TikTokAccountInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (sessionLoading) return;
+
+    async function fetchAccounts() {
+      try {
+        const res = await fetch("/api/tiktok-accounts");
+        const data: unknown = await res.json();
+        const responseData = data as { success: boolean; data?: TikTokAccountInfo[] };
+        if (responseData.success && responseData.data) {
+          setAccounts(responseData.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch accounts:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAccounts();
+  }, [sessionLoading]);
+
+  if (sessionLoading || loading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">TikTok Accounts</h1>
+        <div className="animate-pulse space-y-4">
+          <div className="h-24 bg-bg-secondary rounded-xl" />
+          <div className="h-24 bg-bg-secondary rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-3xl font-bold">TikTok Accounts</h1>
-        <TierBadge tier={tier} />
-      </div>
+      <h1 className="text-3xl font-bold">TikTok Accounts</h1>
 
       <div className="rounded-xl bg-bg-secondary border border-border p-4">
         <p className="text-sm text-text-secondary">
-          {isFree ? (
-            <>Upgrade to a paid plan to connect your TikTok account and start automating.</>
+          {accounts.length === 0 ? (
+            <>Purchase a plan to get your first TikTok account slot, then link your TikTok username.</>
           ) : (
             <>
-              Your <span className="font-medium text-text-primary">{config.name}</span> plan
-              allows{" "}
-              <span className="font-medium text-text-primary">{maxAccounts}</span>{" "}
-              TikTok account with{" "}
-              <span className="font-medium text-text-primary">{videosPerWeek} videos per week</span>.
+              You have{" "}
+              <span className="font-medium text-text-primary">{accounts.length}</span>{" "}
+              account{accounts.length !== 1 ? "s" : ""}. Each account has its own tier and posting schedule.
             </>
           )}
         </p>
       </div>
 
-      <AccountList accounts={isFree ? [] : MOCK_ACCOUNTS} maxAccounts={maxAccounts} tier={tier} />
+      <AccountList accounts={accounts} hasActiveSubscription={hasActiveSubscription} />
     </div>
   );
 }

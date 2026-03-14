@@ -3,50 +3,17 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Tier } from "@/types";
-
-interface AccountItem {
-  id: string;
-  username: string;
-  displayName: string | null;
-}
+import { TierBadge } from "@/components/dashboard/TierBadge";
+import type { TikTokAccountInfo } from "@/types";
 
 interface AccountListProps {
-  accounts: AccountItem[];
-  maxAccounts: number;
-  tier: Tier;
+  accounts: TikTokAccountInfo[];
+  hasActiveSubscription: boolean;
 }
 
-export function AccountList({ accounts, maxAccounts, tier }: AccountListProps) {
-  const isFree = tier === "FREE";
-  const atLimit = !isFree && accounts.length >= maxAccounts;
-  const hasAccount = accounts.length > 0;
-  const usagePercent = maxAccounts > 0
-    ? Math.min((accounts.length / maxAccounts) * 100, 100)
-    : 0;
-
+export function AccountList({ accounts, hasActiveSubscription }: AccountListProps) {
   return (
     <div className="space-y-4">
-      {/* Usage bar */}
-      {!isFree && (
-        <div className="rounded-xl bg-bg-secondary border border-border p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-text-secondary">Account Used</span>
-            <span className="text-sm font-medium">
-              {accounts.length} / {maxAccounts}
-            </span>
-          </div>
-          {maxAccounts > 0 && (
-            <div className="h-2 rounded-full bg-bg-tertiary overflow-hidden">
-              <div
-                className="h-full rounded-full fire-gradient transition-all duration-500"
-                style={{ width: `${usagePercent}%` }}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Account list */}
       {accounts.length > 0 ? (
         <div className="space-y-2">
@@ -58,50 +25,55 @@ export function AccountList({ accounts, maxAccounts, tier }: AccountListProps) {
               <div
                 className={cn(
                   "flex h-10 w-10 items-center justify-center rounded-full",
-                  "bg-accent-fire/10 text-accent-fire font-bold text-sm"
+                  account.isLinked
+                    ? "bg-accent-fire/10 text-accent-fire font-bold text-sm"
+                    : "bg-warning/10 text-warning font-bold text-sm"
                 )}
               >
-                {(account.displayName ?? account.username).charAt(0).toUpperCase()}
+                {account.isLinked
+                  ? (account.displayName ?? account.username).charAt(0).toUpperCase()
+                  : "?"}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">
-                  @{account.username}
-                </p>
-                {account.displayName && (
-                  <p className="text-sm text-text-secondary truncate">
-                    {account.displayName}
+                <div className="flex items-center gap-2">
+                  <p className="font-medium truncate">
+                    {account.isLinked ? `@${account.username}` : "Pending Link"}
                   </p>
-                )}
+                  <TierBadge tier={account.tier} />
+                </div>
+                <p className="text-sm text-text-secondary">
+                  {account.videosPerWeek} videos/week
+                  {!account.isLinked && (
+                    <span className="ml-2 text-warning">
+                      — Link your TikTok to start posting
+                    </span>
+                  )}
+                </p>
               </div>
+              {!account.isLinked && (
+                <Link href={`/dashboard/accounts/${account.id}/link`}>
+                  <Button size="sm" variant="secondary">
+                    Link Account
+                  </Button>
+                </Link>
+              )}
             </div>
           ))}
         </div>
-      ) : !isFree ? (
-        <div className="rounded-xl bg-bg-secondary border border-border p-8 text-center">
-          <p className="text-text-secondary mb-4">No accounts connected yet.</p>
-        </div>
-      ) : null}
-
-      {/* Connect button / gate */}
-      {isFree ? (
-        <Link href="/dashboard/settings">
-          <Button className="w-full" variant="secondary">
-            Upgrade to Connect TikTok
-          </Button>
-        </Link>
-      ) : atLimit ? (
-        <Button className="w-full" disabled>
-          Account Connected
-        </Button>
-      ) : hasAccount ? (
-        <Button className="w-full" disabled>
-          Account Connected
-        </Button>
       ) : (
-        <Button className="w-full" disabled title="TikTok integration coming soon">
-          Connect TikTok Account (Coming Soon)
-        </Button>
+        <div className="rounded-xl bg-bg-secondary border border-border p-8 text-center">
+          <p className="text-text-secondary mb-4">No TikTok accounts yet.</p>
+        </div>
       )}
+
+      {/* Add account CTA */}
+      <Link href="/dashboard/settings">
+        <Button className="w-full" variant={hasActiveSubscription ? "secondary" : "primary"}>
+          {hasActiveSubscription
+            ? "Add Another Account"
+            : "Get Started — Purchase a Plan"}
+        </Button>
+      </Link>
     </div>
   );
 }

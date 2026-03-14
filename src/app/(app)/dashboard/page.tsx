@@ -87,7 +87,7 @@ function EyeIcon() {
 
 function CheckoutSuccessHandler() {
   const searchParams = useSearchParams();
-  const { tier, update } = useTypedSession();
+  const { hasActiveSubscription, update } = useTypedSession();
   const [settling, setSettling] = useState(false);
   const isCheckoutSuccess = searchParams.get("checkout") === "success";
 
@@ -97,7 +97,7 @@ function CheckoutSuccessHandler() {
 
   useEffect(() => {
     if (!isCheckoutSuccess) return;
-    if (tier !== "FREE") {
+    if (hasActiveSubscription) {
       setSettling(false);
       return;
     }
@@ -109,7 +109,7 @@ function CheckoutSuccessHandler() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [isCheckoutSuccess, tier, refreshSession]);
+  }, [isCheckoutSuccess, hasActiveSubscription, refreshSession]);
 
   if (!isCheckoutSuccess || !settling) return null;
 
@@ -123,8 +123,8 @@ function CheckoutSuccessHandler() {
 }
 
 export default function DashboardPage() {
-  const { onboardingComplete, tier } = useTypedSession();
-  const isPaid = tier !== "FREE";
+  const { onboardingComplete, hasActiveSubscription } = useTypedSession();
+  const isPaid = hasActiveSubscription;
 
   return (
     <div className="space-y-6">
