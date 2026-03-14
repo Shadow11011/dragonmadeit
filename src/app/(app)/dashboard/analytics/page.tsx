@@ -1,7 +1,6 @@
 "use client";
 
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { useTypedSession } from "@/hooks/useSession";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MOCK_BAR_HEIGHTS = [65, 45, 80, 55, 90, 40, 70]; // percentages
@@ -50,38 +49,6 @@ function StarIcon() {
 }
 
 export default function AnalyticsPage() {
-  const { hasActiveSubscription } = useTypedSession();
-
-  // Analytics requires an active subscription; per-account analytics features
-  // will be refined when account-level tier checks are added to this page.
-  if (!hasActiveSubscription) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Analytics</h1>
-        <div className="rounded-xl bg-bg-secondary border border-border p-12 text-center space-y-4">
-          <div className="text-4xl">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto text-text-secondary">
-              <rect x="6" y="24" width="8" height="18" rx="2" fill="currentColor" opacity="0.3" />
-              <rect x="18" y="14" width="8" height="28" rx="2" fill="currentColor" opacity="0.5" />
-              <rect x="30" y="8" width="8" height="34" rx="2" fill="currentColor" opacity="0.7" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold">Analytics Not Available</h2>
-          <p className="text-text-secondary max-w-md mx-auto">
-            Analytics are available on the Drake plan and above. Upgrade to get detailed
-            performance insights for your TikTok content.
-          </p>
-          <a
-            href="/dashboard/settings"
-            className="inline-flex items-center px-6 py-2.5 rounded-lg bg-accent-fire text-white font-semibold hover:brightness-110 transition-all text-sm"
-          >
-            Upgrade Plan
-          </a>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Analytics</h1>

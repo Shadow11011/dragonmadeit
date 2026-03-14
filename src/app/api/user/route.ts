@@ -7,7 +7,6 @@ import { z } from "zod";
 const updateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   email: z.string().email().optional(),
-  onboardingComplete: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -76,7 +75,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const { name, email, onboardingComplete } = parsed.data;
+    const { name, email } = parsed.data;
 
     // Check if email is taken by another user
     if (email) {
@@ -97,7 +96,6 @@ export async function PATCH(request: Request) {
       data: {
         ...(name !== undefined && { name }),
         ...(email !== undefined && { email }),
-        ...(onboardingComplete !== undefined && { onboardingComplete }),
       },
       select: {
         id: true,

@@ -22,7 +22,6 @@ export interface SessionUser {
   email: string;
   name: string | null;
   stripeCustomerId: string | null;
-  onboardingComplete: boolean;
 }
 
 export type PaidTier = Exclude<Tier, "FREE">;
@@ -83,7 +82,6 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
     monthlyPrice: 15,
     description: "Perfect for getting started with TikTok automation",
     features: [
-      "1 TikTok account",
       "3 videos per week",
       "Smart scheduling",
       "Content templates",
@@ -102,7 +100,6 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
     monthlyPrice: 39,
     description: "Daily content for serious creators",
     features: [
-      "1 TikTok account",
       "7 videos per week (daily)",
       "Smart scheduling",
       "Analytics dashboard",
@@ -121,7 +118,6 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
     monthlyPrice: 129,
     description: "Maximum output with custom content generation",
     features: [
-      "1 TikTok account",
       "14 videos per week (2x daily)",
       "Smart scheduling",
       "Full analytics",

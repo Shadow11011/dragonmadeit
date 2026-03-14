@@ -10,7 +10,6 @@ export function useTypedSession() {
     hasActiveSubscription: session?.user?.hasActiveSubscription ?? false,
     isAuthenticated: status === "authenticated",
     isLoading: status === "loading",
-    onboardingComplete: session?.user?.onboardingComplete ?? false,
     update,
   };
 }

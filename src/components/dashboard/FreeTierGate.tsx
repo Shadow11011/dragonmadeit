@@ -1,19 +1,41 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTypedSession } from "@/hooks/useSession";
-import { TIER_CONFIG, PaidTier } from "@/types";
 import { Button } from "@/components/ui/Button";
 
-const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
+const EXEMPT_PATHS = ["/dashboard/settings", "/dashboard/accounts"];
 
-const EXEMPT_PATHS = ["/dashboard/settings"];
-
+/**
+ * Gates dashboard content behind account ownership.
+ * Users without any TikTok accounts see a prompt to add one.
+ * Settings and Accounts pages are always accessible.
+ */
 export function FreeTierGate({ children }: { children: React.ReactNode }) {
-  const { hasActiveSubscription, isLoading } = useTypedSession();
   const pathname = usePathname();
+  const [accountCount, setAccountCount] = useState<number | null>(null);
 
-  if (isLoading) {
+  useEffect(() => {
+    async function fetchCount() {
+      try {
+        const res = await fetch("/api/user/accounts/count");
+        if (res.ok) {
+          const data: unknown = await res.json();
+          const countData = data as { count: number };
+          setAccountCount(countData.count);
+        } else {
+          setAccountCount(0);
+        }
+      } catch {
+        setAccountCount(0);
+      }
+    }
+    fetchCount();
+  }, []);
+
+  // Show loading state while fetching
+  if (accountCount === null) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-pulse text-text-secondary">Loading...</div>
@@ -21,9 +43,9 @@ export function FreeTierGate({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Always allow access to exempt paths
   const isExempt = EXEMPT_PATHS.some((p) => pathname.startsWith(p));
-
-  if (hasActiveSubscription || isExempt) {
+  if (isExempt || accountCount > 0) {
     return <>{children}</>;
   }
 
@@ -31,45 +53,19 @@ export function FreeTierGate({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-text-primary mb-2">
-          Get Started
+          No TikTok Accounts Yet
         </h2>
         <p className="text-text-secondary max-w-md mx-auto">
-          Purchase a plan to start automating your TikTok content. Each plan includes one TikTok account with automated posting.
+          Add a TikTok account to start automating your content. Choose a plan
+          that fits your needs and get posting.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
-        {PAID_TIERS.map((tierKey) => {
-          const config = TIER_CONFIG[tierKey];
-          return (
-            <div
-              key={tierKey}
-              className="rounded-xl border border-border bg-bg-secondary p-6 text-left hover:border-accent-fire/30 transition-colors"
-            >
-              <h3 className="font-bold text-lg" style={{ color: config.fireColor }}>
-                {config.name}
-              </h3>
-              <p className="text-2xl font-bold mt-1 fire-text">
-                ${config.monthlyPrice}<span className="text-sm text-text-secondary font-normal">/mo</span>
-              </p>
-              <p className="text-xs text-text-secondary mt-1">{config.description}</p>
-              <ul className="mt-4 space-y-1.5">
-                {config.features.slice(0, 4).map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm text-text-secondary">
-                    <span className="text-success mt-0.5">&#x2713;</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <a href="/dashboard/settings">
-                <Button className="w-full mt-4" size="sm">
-                  Get {config.name}
-                </Button>
-              </a>
-            </div>
-          );
-        })}
-      </div>
+      <Link href="/dashboard/accounts">
+        <Button size="lg">
+          Add Your First Account
+        </Button>
+      </Link>
     </div>
   );
 }

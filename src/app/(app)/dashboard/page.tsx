@@ -1,49 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { ContentTable } from "@/components/dashboard/ContentTable";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
-import { useTypedSession } from "@/hooks/useSession";
-
-const MOCK_CONTENT_ITEMS = [
-  {
-    id: "c1",
-    title: "Morning routine productivity hack",
-    status: "POSTED",
-    scheduledAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    tiktokAccountUsername: "dragonscale_tips",
-  },
-  {
-    id: "c2",
-    title: "Quick editing tutorial for beginners",
-    status: "SCHEDULED",
-    scheduledAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
-    tiktokAccountUsername: "dragonscale_tips",
-  },
-  {
-    id: "c3",
-    title: "Behind the scenes: Content creation setup",
-    status: "PROCESSING",
-    scheduledAt: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
-    tiktokAccountUsername: "flamecreator",
-  },
-  {
-    id: "c4",
-    title: "Top 5 trending sounds this week",
-    status: "DRAFT",
-    scheduledAt: null,
-    tiktokAccountUsername: undefined,
-  },
-  {
-    id: "c5",
-    title: "Engagement strategy breakdown",
-    status: "FAILED",
-    scheduledAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    tiktokAccountUsername: "flamecreator",
-  },
-];
+import { Button } from "@/components/ui/Button";
 
 function FlameIcon() {
   return (
@@ -52,17 +13,6 @@ function FlameIcon() {
         d="M10 2C10 2 6 6 6 10C6 12.2 7.8 14 10 14C12.2 14 14 12.2 14 10C14 6 10 2 10 2ZM10 12C8.9 12 8 11.1 8 10C8 8.5 10 5.5 10 5.5C10 5.5 12 8.5 12 10C12 11.1 11.1 12 10 12Z"
         fill="currentColor"
       />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <path d="M3 8H17" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M7 2V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M13 2V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -85,90 +35,181 @@ function EyeIcon() {
   );
 }
 
-function CheckoutSuccessHandler() {
-  const searchParams = useSearchParams();
-  const { hasActiveSubscription, update } = useTypedSession();
-  const [settling, setSettling] = useState(false);
-  const isCheckoutSuccess = searchParams.get("checkout") === "success";
-
-  const refreshSession = useCallback(async () => {
-    await update();
-  }, [update]);
-
-  useEffect(() => {
-    if (!isCheckoutSuccess) return;
-    if (hasActiveSubscription) {
-      setSettling(false);
-      return;
-    }
-
-    setSettling(true);
-    // Webhook may still be in-flight — retry after a delay
-    const timer = setTimeout(() => {
-      refreshSession();
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [isCheckoutSuccess, hasActiveSubscription, refreshSession]);
-
-  if (!isCheckoutSuccess || !settling) return null;
-
+function CalendarIcon() {
   return (
-    <div className="rounded-xl bg-accent-fire/10 border border-accent-fire/20 p-4 mb-6 text-center">
-      <p className="text-sm text-text-primary animate-pulse">
-        Setting up your account... This may take a moment.
-      </p>
-    </div>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M3 8H17" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M7 2V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M13 2V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
   );
 }
 
+function PlusIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 4V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+interface AccountSummary {
+  count: number;
+  totalPosts: number;
+  totalViews: number;
+  scheduledPosts: number;
+}
+
 export default function DashboardPage() {
-  const { onboardingComplete, hasActiveSubscription } = useTypedSession();
-  const isPaid = hasActiveSubscription;
+  const [summary, setSummary] = useState<AccountSummary>({
+    count: 0,
+    totalPosts: 0,
+    totalViews: 0,
+    scheduledPosts: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSummary() {
+      try {
+        const res = await fetch("/api/user/accounts/count");
+        if (res.ok) {
+          const data: unknown = await res.json();
+          const countData = data as { count: number };
+          setSummary((prev) => ({ ...prev, count: countData.count }));
+        }
+      } catch {
+        // Use default values
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSummary();
+  }, []);
+
+  const hasAccounts = summary.count > 0;
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="animate-pulse space-y-4">
+          <div className="h-24 bg-bg-secondary rounded-xl" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-28 bg-bg-secondary rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <Link href="/dashboard/accounts">
+          <Button size="sm">
+            <span className="flex items-center gap-1.5">
+              <PlusIcon />
+              Add Account
+            </span>
+          </Button>
+        </Link>
+      </div>
 
-      <CheckoutSuccessHandler />
+      {/* Show onboarding if no accounts */}
+      {!hasAccounts && <OnboardingChecklist />}
 
-      {isPaid && !onboardingComplete && <OnboardingChecklist />}
+      {/* Account summary banner */}
+      <div className="rounded-xl bg-bg-secondary border border-border p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-fire/10 text-accent-fire">
+            <UserIcon />
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-text-primary">
+              {hasAccounts
+                ? `You have ${summary.count} active TikTok account${summary.count === 1 ? "" : "s"}`
+                : "No TikTok accounts yet"}
+            </p>
+            <p className="text-sm text-text-secondary">
+              {hasAccounts
+                ? "Manage your accounts and subscriptions from the TikTok Accounts page."
+                : "Add your first TikTok account to start automating content."}
+            </p>
+          </div>
+          {!hasAccounts && (
+            <Link href="/dashboard/accounts" className="ml-auto shrink-0">
+              <Button size="sm" variant="secondary">
+                Get Started
+              </Button>
+            </Link>
+          )}
+        </div>
+      </div>
 
       {/* Stats grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          label="Total Posts"
-          value={24}
-          icon={<FlameIcon />}
-          trend={{ value: 12, isPositive: true }}
-          accentColor="#ff4500"
-        />
-        <StatsCard
-          label="Scheduled"
-          value={8}
-          icon={<CalendarIcon />}
-          accentColor="#ff8c00"
-        />
-        <StatsCard
-          label="Accounts"
-          value={1}
+          label="TikTok Accounts"
+          value={summary.count}
           icon={<UserIcon />}
           accentColor="#ffd700"
         />
         <StatsCard
-          label="Views"
-          value="1.2K"
+          label="Total Posts"
+          value={summary.totalPosts}
+          icon={<FlameIcon />}
+          accentColor="#ff4500"
+        />
+        <StatsCard
+          label="Scheduled"
+          value={summary.scheduledPosts}
+          icon={<CalendarIcon />}
+          accentColor="#ff8c00"
+        />
+        <StatsCard
+          label="Total Views"
+          value={summary.totalViews}
           icon={<EyeIcon />}
-          trend={{ value: 8, isPositive: true }}
           accentColor="#22c55e"
         />
       </div>
 
-      {/* Recent Content */}
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Recent Content</h2>
-        <ContentTable items={MOCK_CONTENT_ITEMS} />
-      </section>
+      {/* Quick links section */}
+      {hasAccounts && (
+        <section>
+          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link
+              href="/dashboard/accounts"
+              className="rounded-xl bg-bg-secondary border border-border p-5 hover:border-accent-fire/30 transition-colors group"
+            >
+              <h3 className="font-semibold text-text-primary group-hover:text-accent-fire transition-colors">
+                Manage Accounts
+              </h3>
+              <p className="text-sm text-text-secondary mt-1">
+                View and manage your TikTok accounts, subscriptions, and content settings.
+              </p>
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              className="rounded-xl bg-bg-secondary border border-border p-5 hover:border-accent-fire/30 transition-colors group"
+            >
+              <h3 className="font-semibold text-text-primary group-hover:text-accent-fire transition-colors">
+                Account Settings
+              </h3>
+              <p className="text-sm text-text-secondary mt-1">
+                Update your profile, manage billing, and configure preferences.
+              </p>
+            </Link>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
