@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
-import { TierBadge } from "@/components/dashboard/TierBadge";
 import { useTypedSession } from "@/hooks/useSession";
-import { TIER_CONFIG } from "@/types";
 
 function DashboardIcon() {
   return (
@@ -20,33 +18,11 @@ function DashboardIcon() {
   );
 }
 
-function UserCircleIcon() {
+function TikTokIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="9" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M4 15.5C4 12.5 6.2 10.5 9 10.5C11.8 10.5 14 12.5 14 15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="3.5" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M2 7.5H16" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M6 1.5V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M12 1.5V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ChartBarIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="9" width="3" height="7" rx="1" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="7.5" y="5" width="3" height="11" rx="1" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="13" y="2" width="3" height="14" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M12.5 1.5V10.5C12.5 13 10.5 15 8 15C5.5 15 3.5 13 3.5 10.5C3.5 8 5.5 6 8 6V8.5C6.9 8.5 6 9.4 6 10.5C6 11.6 6.9 12.5 8 12.5C9.1 12.5 10 11.6 10 10.5V1.5H12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12.5 4C13.5 4.5 14.5 5 15.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -84,20 +60,40 @@ function CloseIcon() {
   );
 }
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
-  { href: "/dashboard/accounts", label: "Accounts", icon: <UserCircleIcon /> },
-  { href: "/dashboard/schedule", label: "Schedule", icon: <CalendarIcon /> },
-  { href: "/dashboard/analytics", label: "Analytics", icon: <ChartBarIcon /> },
-  { href: "/dashboard/settings", label: "Settings", icon: <GearIcon /> },
-];
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  badge?: number;
+}
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, tier } = useTypedSession();
+  const { user } = useTypedSession();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountCount, setAccountCount] = useState<number>(0);
 
-  const tierConfig = TIER_CONFIG[tier];
+  useEffect(() => {
+    async function fetchAccountCount() {
+      try {
+        const res = await fetch("/api/user/accounts/count");
+        if (res.ok) {
+          const data: unknown = await res.json();
+          const countData = data as { count: number };
+          setAccountCount(countData.count);
+        }
+      } catch {
+        // Silently fail — badge will show 0
+      }
+    }
+    fetchAccountCount();
+  }, []);
+
+  const navItems: NavItem[] = [
+    { href: "/dashboard", label: "Overview", icon: <DashboardIcon /> },
+    { href: "/dashboard/accounts", label: "TikTok Accounts", icon: <TikTokIcon />, badge: accountCount },
+    { href: "/dashboard/settings", label: "Settings", icon: <GearIcon /> },
+  ];
 
   return (
     <>
@@ -133,7 +129,7 @@ export function Sidebar() {
             className="flex items-center gap-2"
             onClick={() => setMobileOpen(false)}
           >
-            <DragonMascot size={28} tierColor={tierConfig.fireColor} />
+            <DragonMascot size={28} />
             <span className="text-lg font-bold fire-text">DragonMadeIt</span>
           </Link>
           {/* Mobile close button */}
@@ -167,23 +163,29 @@ export function Sidebar() {
                 )}
               >
                 <span className="shrink-0">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
+                {item.badge !== undefined && item.badge > 0 && (
+                  <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-accent-fire/15 px-1.5 text-xs font-medium text-accent-fire">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border space-y-2">
+        <div className="p-4 border-t border-border">
           {user?.name && (
             <p className="text-sm font-medium text-text-primary truncate">
               {user.name}
             </p>
           )}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-text-secondary">Tier:</span>
-            <TierBadge tier={tier} />
-          </div>
+          {user?.email && (
+            <p className="text-xs text-text-secondary truncate mt-0.5">
+              {user.email}
+            </p>
+          )}
         </div>
       </aside>
     </>

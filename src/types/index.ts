@@ -21,16 +21,13 @@ export interface SessionUser {
   id: string;
   email: string;
   name: string | null;
-  tier: Tier;
   stripeCustomerId: string | null;
-  onboardingComplete: boolean;
 }
 
 export type PaidTier = Exclude<Tier, "FREE">;
 
 export interface TierConfig {
   name: string;
-  maxAccounts: number;
   videosPerWeek: number;
   monthlyPrice: number;
   description: string;
@@ -46,7 +43,6 @@ export interface TierConfig {
 export const TIER_CONFIG: Record<Tier, TierConfig> = {
   FREE: {
     name: "Free",
-    maxAccounts: 0,
     videosPerWeek: 0,
     monthlyPrice: 0,
     description: "Sign up and explore the platform",
@@ -60,12 +56,10 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
   },
   HATCHLING: {
     name: "Hatchling",
-    maxAccounts: 1,
     videosPerWeek: 3,
     monthlyPrice: 15,
     description: "Perfect for getting started with TikTok automation",
     features: [
-      "1 TikTok account",
       "3 videos per week",
       "Smart scheduling",
       "Content templates",
@@ -80,12 +74,10 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
   },
   DRAKE: {
     name: "Drake",
-    maxAccounts: 1,
     videosPerWeek: 7,
     monthlyPrice: 39,
     description: "Daily content for serious creators",
     features: [
-      "1 TikTok account",
       "7 videos per week (daily)",
       "Smart scheduling",
       "Analytics dashboard",
@@ -100,12 +92,10 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
   },
   ELDER_DRAGON: {
     name: "Elder Dragon",
-    maxAccounts: 1,
     videosPerWeek: 14,
     monthlyPrice: 129,
     description: "Maximum output with custom content generation",
     features: [
-      "1 TikTok account",
       "14 videos per week (2x daily)",
       "Smart scheduling",
       "Full analytics",

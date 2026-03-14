@@ -2,8 +2,6 @@ import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { TIER_CONFIG } from "@/types";
-import { Tier } from "@prisma/client";
 import { z } from "zod";
 
 const createAccountSchema = z.object({
@@ -66,20 +64,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check tier account limit
-    const tier = (session.user.tier as Tier) ?? "FREE";
-    const config = TIER_CONFIG[tier];
-    const currentCount = await prisma.tikTokAccount.count({
-      where: { userId: session.user.id },
-    });
-
-    if (config.maxAccounts !== -1 && currentCount >= config.maxAccounts) {
-      return NextResponse.json(
-        { success: false, error: "Account limit reached for your tier" },
-        { status: 403 }
-      );
-    }
-
+    // In the multi-account model, each account gets its own subscription.
+    // No global account limit — users can add as many as they want.
     const account = await prisma.tikTokAccount.create({
       data: {
         username: parsed.data.username,

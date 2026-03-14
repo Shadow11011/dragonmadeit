@@ -4,8 +4,6 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-const TIER_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
-
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
@@ -47,9 +45,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          tier: user.tier,
           stripeCustomerId: user.stripeCustomerId,
-          onboardingComplete: user.onboardingComplete,
         };
       },
     }),
@@ -58,24 +54,18 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
-        token.tier = user.tier;
         token.stripeCustomerId = user.stripeCustomerId;
-        token.onboardingComplete = user.onboardingComplete;
-        token.tierRefreshedAt = Date.now();
       }
 
-      // Re-fetch tier from DB periodically to address staleness bug
-      if (trigger === "update" || Date.now() - (token.tierRefreshedAt ?? 0) > TIER_REFRESH_INTERVAL) {
+      // Re-fetch stripeCustomerId from DB on manual update trigger
+      if (trigger === "update") {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id },
-            select: { tier: true, stripeCustomerId: true, onboardingComplete: true },
+            select: { stripeCustomerId: true },
           });
           if (dbUser) {
-            token.tier = dbUser.tier;
             token.stripeCustomerId = dbUser.stripeCustomerId;
-            token.onboardingComplete = dbUser.onboardingComplete;
-            token.tierRefreshedAt = Date.now();
           }
         } catch {
           // If DB is unavailable, keep existing token data
@@ -86,9 +76,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       session.user.id = token.id;
-      session.user.tier = token.tier;
       session.user.stripeCustomerId = token.stripeCustomerId;
-      session.user.onboardingComplete = token.onboardingComplete;
       return session;
     },
   },
