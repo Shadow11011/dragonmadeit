@@ -5,10 +5,13 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { TierBadge } from "@/components/dashboard/TierBadge";
+import { ContentConfigStep } from "@/components/dashboard/ContentConfigStep";
 import { cn } from "@/lib/utils";
 import { TIER_CONFIG, PaidTier } from "@/types";
+import type { ContentConfig } from "@/types";
+import { STORY_TYPE_CATALOGUE } from "@/lib/content-config";
 
-type Step = "tier" | "schedule" | "payment";
+type Step = "tier" | "content" | "schedule" | "payment";
 
 interface ScheduleConfig {
   days: string[];
@@ -68,8 +71,9 @@ function CheckIcon({ className }: { className?: string }) {
 function StepIndicator({ currentStep }: { currentStep: Step }) {
   const steps: { key: Step; label: string; number: number }[] = [
     { key: "tier", label: "Choose Tier", number: 1 },
-    { key: "schedule", label: "Set Schedule", number: 2 },
-    { key: "payment", label: "Payment", number: 3 },
+    { key: "content", label: "Content Config", number: 2 },
+    { key: "schedule", label: "Set Schedule", number: 3 },
+    { key: "payment", label: "Payment", number: 4 },
   ];
 
   const currentIndex = steps.findIndex((s) => s.key === currentStep);
@@ -210,7 +214,7 @@ function TierSelectionStep({
           className="fire-gradient text-white"
           size="lg"
         >
-          Continue to Schedule
+          Continue to Content
         </Button>
       </div>
     </div>
@@ -426,10 +430,12 @@ function ScheduleStep({
 function PaymentStep({
   tier,
   schedule,
+  contentConfig,
   onBack,
 }: {
   tier: PaidTier;
   schedule: ScheduleConfig;
+  contentConfig: ContentConfig;
   onBack: () => void;
 }) {
   const config = TIER_CONFIG[tier];
@@ -451,6 +457,7 @@ function PaymentStep({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tier,
+          contentConfig,
           schedule: {
             days: effectiveDays,
             time: schedule.time,
@@ -502,6 +509,36 @@ function PaymentStep({
               Videos per week
             </p>
             <p className="text-sm font-medium">{config.videosPerWeek}</p>
+          </div>
+
+          <div>
+            <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">
+              Content config
+            </p>
+            <div className="space-y-1 mt-1">
+              <p className="text-sm font-medium">
+                {contentConfig.videoType === "GAMEPLAY"
+                  ? "Gameplay Overlay"
+                  : "AI Image Slideshow"}
+              </p>
+              <p className="text-xs text-text-secondary">
+                Voice:{" "}
+                {contentConfig.voiceType === "MALE"
+                  ? "Male"
+                  : contentConfig.voiceType === "FEMALE"
+                    ? "Female"
+                    : "Random"}
+              </p>
+              <p className="text-xs text-text-secondary">
+                Stories:{" "}
+                {contentConfig.storyTypes
+                  .map(
+                    (id) =>
+                      STORY_TYPE_CATALOGUE.find((s) => s.id === id)?.name ?? id
+                  )
+                  .join(", ")}
+              </p>
+            </div>
           </div>
 
           <div>
@@ -613,6 +650,12 @@ export default function AddAccountPage() {
     days: [],
     time: "",
   });
+  const [contentConfig, setContentConfig] = useState<ContentConfig>({
+    videoType: "GAMEPLAY",
+    voiceType: "RANDOM",
+    storyTypes: [],
+    randomizeStories: true,
+  });
 
   const handleTierSelect = (tier: PaidTier) => {
     setSelectedTier(tier);
@@ -651,6 +694,15 @@ export default function AddAccountPage() {
             <TierSelectionStep
               selectedTier={selectedTier}
               onSelect={handleTierSelect}
+              onContinue={() => setStep("content")}
+            />
+          )}
+
+          {step === "content" && (
+            <ContentConfigStep
+              config={contentConfig}
+              onConfigChange={setContentConfig}
+              onBack={() => setStep("tier")}
               onContinue={() => setStep("schedule")}
             />
           )}
@@ -660,7 +712,7 @@ export default function AddAccountPage() {
               tier={selectedTier}
               schedule={schedule}
               onScheduleChange={setSchedule}
-              onBack={() => setStep("tier")}
+              onBack={() => setStep("content")}
               onContinue={() => setStep("payment")}
             />
           )}
@@ -669,6 +721,7 @@ export default function AddAccountPage() {
             <PaymentStep
               tier={selectedTier}
               schedule={schedule}
+              contentConfig={contentConfig}
               onBack={() => setStep("schedule")}
             />
           )}

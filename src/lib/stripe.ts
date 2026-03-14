@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { Tier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import type { ContentConfig } from "@/types";
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16" as Stripe.LatestApiVersion,
@@ -57,13 +58,24 @@ export interface CreateCheckoutParams {
   tier: Exclude<Tier, "FREE">;
   userId: string;
   schedule: Record<string, unknown>;
+  contentConfig?: ContentConfig;
 }
 
 export async function createCheckoutSession(
   params: CreateCheckoutParams
 ): Promise<string> {
-  const { customerId, tier, userId, schedule } = params;
+  const { customerId, tier, userId, schedule, contentConfig } = params;
   const priceId = PRICE_IDS[tier];
+
+  const metadata: Record<string, string> = {
+    userId,
+    tier,
+    schedule: JSON.stringify(schedule),
+  };
+
+  if (contentConfig) {
+    metadata.contentConfig = JSON.stringify(contentConfig);
+  }
 
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
@@ -72,11 +84,7 @@ export async function createCheckoutSession(
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${process.env.NEXTAUTH_URL}/dashboard/accounts?checkout=success`,
     cancel_url: `${process.env.NEXTAUTH_URL}/pricing?checkout=cancel`,
-    metadata: {
-      userId,
-      tier,
-      schedule: JSON.stringify(schedule),
-    },
+    metadata,
   });
 
   return session.url!;

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { stripe, mapStripePriceToTier, TIER_VIDEOS_PER_WEEK } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { Tier } from "@prisma/client";
+import { Tier, VideoType, VoiceType } from "@prisma/client";
 import Stripe from "stripe";
+import type { ContentConfig } from "@/types";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
         const userId = session.metadata?.userId;
         const tierStr = session.metadata?.tier;
         const scheduleStr = session.metadata?.schedule;
+        const contentConfigStr = session.metadata?.contentConfig;
 
         if (!session.subscription || !userId || !tierStr) {
           console.error(
@@ -57,6 +59,44 @@ export async function POST(request: Request) {
             schedule = JSON.parse(scheduleStr);
           } catch {
             console.error("Failed to parse schedule metadata:", scheduleStr);
+          }
+        }
+
+        // Parse content config from metadata with safe defaults
+        let contentVideoType: VideoType = "GAMEPLAY";
+        let contentVoiceType: VoiceType = "RANDOM";
+        let contentStoryTypes: string[] = [];
+        let contentRandomizeStories = true;
+
+        if (contentConfigStr) {
+          try {
+            const parsed: unknown = JSON.parse(contentConfigStr);
+            if (parsed && typeof parsed === "object") {
+              const cfg = parsed as Record<string, unknown>;
+              if (cfg.videoType === "GAMEPLAY" || cfg.videoType === "AI_IMAGES") {
+                contentVideoType = cfg.videoType;
+              }
+              if (
+                cfg.voiceType === "MALE" ||
+                cfg.voiceType === "FEMALE" ||
+                cfg.voiceType === "RANDOM"
+              ) {
+                contentVoiceType = cfg.voiceType;
+              }
+              if (Array.isArray(cfg.storyTypes)) {
+                contentStoryTypes = cfg.storyTypes.filter(
+                  (s): s is string => typeof s === "string"
+                );
+              }
+              if (typeof cfg.randomizeStories === "boolean") {
+                contentRandomizeStories = cfg.randomizeStories;
+              }
+            }
+          } catch {
+            console.error(
+              "Failed to parse contentConfig metadata:",
+              contentConfigStr
+            );
           }
         }
 
@@ -88,6 +128,10 @@ export async function POST(request: Request) {
             videosPerWeek,
             schedule: schedule ?? undefined,
             scheduleLocked: true,
+            videoType: contentVideoType,
+            voiceType: contentVoiceType,
+            storyTypes: contentStoryTypes,
+            randomizeStories: contentRandomizeStories,
             userId,
           },
         });

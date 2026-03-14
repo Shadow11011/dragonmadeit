@@ -16,6 +16,10 @@ export interface TikTokAccountItem {
   status: "active" | "pending" | "cancelled";
   scheduleDays: string[];
   scheduleTime: string;
+  videoType?: string;
+  voiceType?: string;
+  storyTypes?: string[];
+  randomizeStories?: boolean;
 }
 
 interface AccountListProps {
@@ -40,19 +44,31 @@ const DAY_ABBREV: Record<string, string> = {
 };
 
 function formatSchedule(days: string[], time: string): string {
-  if (days.length === 0) return "No schedule set";
+  if (!days || days.length === 0) return "No schedule set";
   const abbrevDays = days.map((d) => DAY_ABBREV[d.toLowerCase()] ?? d);
   if (days.length === 7) return `Daily at ${time}`;
   return `${abbrevDays.join(", ")} at ${time}`;
 }
 
 function formatScheduleSlots(days: string[], time: string, videosPerWeek: number): string {
-  if (days.length === 0) return "No schedule set";
+  if (!days || days.length === 0) return "No schedule set";
   if (videosPerWeek > 7) {
     const postsPerDay = Math.ceil(videosPerWeek / 7);
     return `${videosPerWeek}x/week (${postsPerDay}x daily) at ${time}`;
   }
   return formatSchedule(days, time);
+}
+
+function formatContentConfig(
+  videoType?: string,
+  voiceType?: string,
+  storyTypes?: string[]
+): string {
+  if (!storyTypes || storyTypes.length === 0) return "No content configured";
+  const videoLabel = videoType === "GAMEPLAY" ? "Gameplay" : videoType === "AI_IMAGES" ? "AI Images" : videoType ?? "Unknown";
+  const voiceLabel = voiceType ? voiceType.charAt(0) + voiceType.slice(1).toLowerCase() : "Unknown";
+  const storyCount = storyTypes.length;
+  return `${videoLabel} \u00B7 ${voiceLabel} \u00B7 ${storyCount} story type${storyCount !== 1 ? "s" : ""}`;
 }
 
 const containerVariants = {
@@ -160,6 +176,15 @@ export function AccountList({ accounts, isLoading }: AccountListProps) {
                       )}
                     </span>
                   </div>
+                  <div className="mt-1">
+                    <span className="text-xs text-text-secondary">
+                      {formatContentConfig(
+                        account.videoType,
+                        account.voiceType,
+                        account.storyTypes
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -173,6 +198,14 @@ export function AccountList({ accounts, isLoading }: AccountListProps) {
                     {statusStyle.label}
                   </span>
                 </div>
+
+                {account.status !== "cancelled" && (
+                  <Link href={`/dashboard/accounts/${account.id}`}>
+                    <Button size="sm" variant="secondary">
+                      Edit Content
+                    </Button>
+                  </Link>
+                )}
 
                 {account.status === "pending" && !account.username && (
                   <Link href={`/dashboard/accounts/link/${account.id}`}>

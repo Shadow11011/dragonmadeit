@@ -23,6 +23,17 @@ enum ContentStatus {
   FAILED
 }
 
+enum VideoType {
+  GAMEPLAY
+  AI_IMAGES
+}
+
+enum VoiceType {
+  MALE
+  FEMALE
+  RANDOM
+}
+
 model User {
   id                 String          @id @default(cuid())
   email              String          @unique
@@ -85,6 +96,10 @@ model TikTokAccount {
   videosPerWeek        Int           @default(0)
   schedule             Json?
   scheduleLocked       Boolean       @default(false)
+  videoType            VideoType     @default(GAMEPLAY)
+  voiceType            VoiceType     @default(RANDOM)
+  storyTypes           Json          @default("[]")
+  randomizeStories     Boolean       @default(true)
   userId               String
   user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   contentItems         ContentItem[]

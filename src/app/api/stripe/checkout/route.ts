@@ -14,6 +14,14 @@ const checkoutSchema = z.object({
     times: z.array(z.string().regex(/^\d{2}:\d{2}$/)),
     timezone: z.string().min(1),
   }),
+  contentConfig: z
+    .object({
+      videoType: z.enum(["GAMEPLAY", "AI_IMAGES"]),
+      voiceType: z.enum(["MALE", "FEMALE", "RANDOM"]),
+      storyTypes: z.array(z.string()).max(5),
+      randomizeStories: z.boolean(),
+    })
+    .optional(),
 });
 
 export async function POST(request: Request) {
@@ -39,7 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { tier, schedule } = parsed.data;
+    const { tier, schedule, contentConfig } = parsed.data;
 
     const customerId = await getOrCreateCustomer(
       session.user.id,
@@ -51,6 +59,7 @@ export async function POST(request: Request) {
       tier,
       userId: session.user.id,
       schedule,
+      contentConfig,
     });
 
     return NextResponse.json({ success: true, data: { url: checkoutUrl } });

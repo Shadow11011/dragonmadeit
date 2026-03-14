@@ -1,4 +1,4 @@
-import { Tier, ContentStatus } from "@prisma/client";
+import { Tier, ContentStatus, VideoType, VoiceType } from "@prisma/client";
 
 export type ApiResponse<T> = {
   success: true;
@@ -44,6 +44,10 @@ export interface TikTokAccountInfo {
   videosPerWeek: number;
   schedule: PostingSchedule | null;
   scheduleLocked: boolean;
+  videoType: "GAMEPLAY" | "AI_IMAGES";
+  voiceType: "MALE" | "FEMALE" | "RANDOM";
+  storyTypes: string[];
+  randomizeStories: boolean;
   isLinked: boolean;
   createdAt: string;
 }
@@ -139,4 +143,21 @@ export const BILLING_DISCOUNTS = {
   annual: 0.30,
 } as const;
 
-export { Tier, ContentStatus };
+export type GenderRestriction = "any" | "male_only" | "female_only";
+
+export interface StoryTypeConfig {
+  id: string;
+  name: string;
+  emoji: string;
+  genderRestriction: GenderRestriction;
+  description: string;
+}
+
+export interface ContentConfig {
+  videoType: "GAMEPLAY" | "AI_IMAGES";
+  voiceType: "MALE" | "FEMALE" | "RANDOM";
+  storyTypes: string[];
+  randomizeStories: boolean;
+}
+
+export { Tier, ContentStatus, VideoType, VoiceType };

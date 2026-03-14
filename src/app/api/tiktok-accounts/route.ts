@@ -25,6 +25,10 @@ export async function GET() {
         videosPerWeek: true,
         schedule: true,
         scheduleLocked: true,
+        videoType: true,
+        voiceType: true,
+        storyTypes: true,
+        randomizeStories: true,
         createdAt: true,
       },
     });
@@ -37,7 +41,11 @@ export async function GET() {
       videosPerWeek: account.videosPerWeek,
       schedule: account.schedule as PostingSchedule | null,
       scheduleLocked: account.scheduleLocked,
-      isLinked: !account.username.startsWith("pending-"),
+      videoType: account.videoType ?? "GAMEPLAY",
+      voiceType: account.voiceType ?? "RANDOM",
+      storyTypes: (Array.isArray(account.storyTypes) ? account.storyTypes : []) as string[],
+      randomizeStories: account.randomizeStories ?? true,
+      isLinked: account.username ? !account.username.startsWith("pending-") : false,
       createdAt: account.createdAt.toISOString(),
     }));
 

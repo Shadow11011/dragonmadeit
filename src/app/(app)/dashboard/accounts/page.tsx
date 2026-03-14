@@ -6,6 +6,36 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { AccountList, TikTokAccountItem } from "@/components/dashboard/AccountList";
 import { Button } from "@/components/ui/Button";
+import type { TikTokAccountInfo, PostingSchedule } from "@/types";
+
+const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
+
+interface AccountApiResponse {
+  success: boolean;
+  data: (TikTokAccountInfo & {
+    videoType?: string;
+    voiceType?: string;
+    storyTypes?: string[];
+    randomizeStories?: boolean;
+  })[];
+  error?: string;
+}
+
+function mapScheduleDays(schedule: PostingSchedule | null): string[] {
+  if (!schedule || !schedule.days) return [];
+  return schedule.days.map((d) => DAY_NAMES[d] ?? "");
+}
+
+function mapScheduleTime(schedule: PostingSchedule | null): string {
+  if (!schedule || !schedule.times || schedule.times.length === 0) return "";
+  return schedule.times[0];
+}
+
+function deriveStatus(account: TikTokAccountInfo): "active" | "pending" | "cancelled" {
+  if (!account.isLinked) return "pending";
+  if (account.tier === "FREE") return "cancelled";
+  return "active";
+}
 
 export default function AccountsPage() {
   const searchParams = useSearchParams();
@@ -26,8 +56,22 @@ export default function AccountsPage() {
         throw new Error(errData.error ?? "Failed to fetch accounts");
       }
 
-      const result = data as { accounts: TikTokAccountItem[] };
-      setAccounts(result.accounts);
+      const result = data as AccountApiResponse;
+      const accountsData = Array.isArray(result.data) ? result.data : [];
+      const mapped: TikTokAccountItem[] = accountsData.map((acct) => ({
+        id: acct.id,
+        username: acct.username,
+        displayName: acct.displayName,
+        tier: acct.tier,
+        status: deriveStatus(acct),
+        scheduleDays: mapScheduleDays(acct.schedule),
+        scheduleTime: mapScheduleTime(acct.schedule),
+        videoType: acct.videoType ?? "GAMEPLAY",
+        voiceType: acct.voiceType ?? "RANDOM",
+        storyTypes: Array.isArray(acct.storyTypes) ? acct.storyTypes : [],
+        randomizeStories: acct.randomizeStories ?? true,
+      }));
+      setAccounts(mapped);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch accounts";
