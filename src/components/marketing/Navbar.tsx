@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 
@@ -50,7 +50,7 @@ export function Navbar() {
             >
               Sign In
             </Link>
-            <Link href="/login">
+            <Link href="/signup">
               <Button size="sm">Get Started</Button>
             </Link>
           </div>
@@ -83,44 +83,39 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            className="md:hidden nav-blur border-t border-border/50"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="px-4 py-4 space-y-4">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block text-text-secondary hover:text-text-primary transition-colors"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <hr className="border-border/50" />
-              <Link
-                href="/login"
-                className="block text-text-secondary hover:text-text-primary transition-colors"
-                onClick={() => setMobileOpen(false)}
-              >
-                Sign In
-              </Link>
-              <Link href="/login" onClick={() => setMobileOpen(false)}>
-                <Button className="w-full" size="sm">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
+      {/* Mobile menu — CSS transition instead of AnimatePresence for lighter bundle */}
+      <div
+        className={cn(
+          "md:hidden nav-blur border-t border-border/50 overflow-hidden transition-all duration-200 ease-in-out",
+          mobileOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
         )}
-      </AnimatePresence>
+      >
+        <div className="px-4 py-4 space-y-4">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="block text-text-secondary hover:text-text-primary transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <hr className="border-border/50" />
+          <Link
+            href="/login"
+            className="block text-text-secondary hover:text-text-primary transition-colors"
+            onClick={() => setMobileOpen(false)}
+          >
+            Sign In
+          </Link>
+          <Link href="/signup" onClick={() => setMobileOpen(false)}>
+            <Button className="w-full" size="sm">
+              Get Started
+            </Button>
+          </Link>
+        </div>
+      </div>
     </motion.header>
   );
 }

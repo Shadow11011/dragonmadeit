@@ -40,10 +40,12 @@ function SceneContent({
 }
 
 export function DragonScene({ complexity = "high" }: DragonSceneProps) {
-  const [degraded, setDegraded] = useState(false);
+  // Start with postprocessing OFF; enable only after PerformanceMonitor
+  // confirms stable FPS above threshold (incline callback).
+  const [degraded, setDegraded] = useState(true);
 
   return (
-    <div className="fixed inset-0 z-0">
+    <div className="fixed inset-0 z-0 pointer-events-none">
       <Canvas
         camera={{ position: [0, 0, 8], fov: 50 }}
         gl={{ antialias: true, alpha: true }}
@@ -53,8 +55,9 @@ export function DragonScene({ complexity = "high" }: DragonSceneProps) {
           <ScrollControls pages={4} damping={0.3}>
             <SceneContent complexity={complexity} degraded={degraded} />
             <PerformanceMonitor
-              onDecline={() => setDegraded(true)}
+              threshold={0.75}
               onIncline={() => setDegraded(false)}
+              onDecline={() => setDegraded(true)}
             />
           </ScrollControls>
           {!degraded && (

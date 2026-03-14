@@ -3,7 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { Tier } from "@prisma/client";
 
 const TIER_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
@@ -50,6 +49,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           tier: user.tier,
           stripeCustomerId: user.stripeCustomerId,
+          onboardingComplete: user.onboardingComplete,
         };
       },
     }),
@@ -60,6 +60,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.tier = user.tier;
         token.stripeCustomerId = user.stripeCustomerId;
+        token.onboardingComplete = user.onboardingComplete;
         token.tierRefreshedAt = Date.now();
       }
 
@@ -68,11 +69,12 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id },
-            select: { tier: true, stripeCustomerId: true },
+            select: { tier: true, stripeCustomerId: true, onboardingComplete: true },
           });
           if (dbUser) {
             token.tier = dbUser.tier;
             token.stripeCustomerId = dbUser.stripeCustomerId;
+            token.onboardingComplete = dbUser.onboardingComplete;
             token.tierRefreshedAt = Date.now();
           }
         } catch {
@@ -86,6 +88,7 @@ export const authOptions: NextAuthOptions = {
       session.user.id = token.id;
       session.user.tier = token.tier;
       session.user.stripeCustomerId = token.stripeCustomerId;
+      session.user.onboardingComplete = token.onboardingComplete;
       return session;
     },
   },

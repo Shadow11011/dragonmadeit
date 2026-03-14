@@ -2,53 +2,20 @@
 
 import { motion } from "framer-motion";
 import { PricingTierCard } from "@/components/marketing/PricingTierCard";
+import { TIER_CONFIG, PaidTier } from "@/types";
 
-const TIERS = [
-  {
-    name: "Hatchling",
-    price: 19,
-    description: "Perfect for getting started with TikTok automation",
-    tierColor: "#22d3ee",
-    features: [
-      "1 TikTok account",
-      "Basic scheduling",
-      "Content templates",
-      "Email support",
-    ],
-  },
-  {
-    name: "Drake",
-    price: 49,
-    description: "For serious creators scaling their presence",
-    tierColor: "#ff8c00",
-    popular: true,
-    features: [
-      "5 TikTok accounts",
-      "Advanced scheduling",
-      "Analytics dashboard",
-      "Priority support",
-      "Custom templates",
-    ],
-  },
-  {
-    name: "Elder Dragon",
-    price: 99,
-    description: "Unlimited power for agencies and power users",
-    tierColor: "#ffd700",
-    features: [
-      "Unlimited accounts",
-      "Priority everything",
-      "API access",
-      "Dedicated account manager",
-      "Custom integrations",
-    ],
-  },
-];
+const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
+
+const TIER_META: Record<PaidTier, { popular?: boolean }> = {
+  HATCHLING: {},
+  DRAKE: { popular: true },
+  ELDER_DRAGON: {},
+};
 
 export function PricingSection() {
   return (
-    <section className="min-h-screen flex items-center justify-center py-20 pointer-events-none">
-      <div className="mx-auto max-w-5xl px-4 pointer-events-auto">
+    <section className="min-h-screen flex items-center justify-center py-20">
+      <div className="mx-auto max-w-5xl px-4">
         <motion.h2
           className="text-4xl md:text-5xl font-bold fire-text text-center mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -69,9 +36,20 @@ export function PricingSection() {
         </motion.p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
-          {TIERS.map((tier) => (
-            <PricingTierCard key={tier.name} {...tier} />
-          ))}
+          {PAID_TIERS.map((tierKey) => {
+            const config = TIER_CONFIG[tierKey];
+            return (
+              <PricingTierCard
+                key={tierKey}
+                name={config.name}
+                price={config.monthlyPrice}
+                description={config.description}
+                features={config.features}
+                tierColor={config.fireColor}
+                popular={TIER_META[tierKey].popular}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

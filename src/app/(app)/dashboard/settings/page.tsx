@@ -4,54 +4,25 @@ import { useState, FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { TierBadge } from "@/components/dashboard/TierBadge";
 import { useTypedSession } from "@/hooks/useSession";
-import { TIER_CONFIG } from "@/types";
+import { TIER_CONFIG, PaidTier } from "@/types";
 import { cn } from "@/lib/utils";
 
-const UPGRADE_TIERS = [
-  {
-    tier: "HATCHLING" as const,
-    name: "Hatchling",
-    price: "$9/mo",
+const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
+
+const TIER_STYLES: Record<PaidTier, { borderColor: string; hoverBorder: string }> = {
+  HATCHLING: {
     borderColor: "border-cyan-400/30",
     hoverBorder: "hover:border-cyan-400/60",
-    features: [
-      "1 TikTok account",
-      "Basic scheduling",
-      "Up to 30 posts/month",
-      "Email support",
-    ],
   },
-  {
-    tier: "DRAKE" as const,
-    name: "Drake",
-    price: "$29/mo",
+  DRAKE: {
     borderColor: "border-accent-ember/30",
     hoverBorder: "hover:border-accent-ember/60",
-    features: [
-      "5 TikTok accounts",
-      "Advanced scheduling",
-      "Unlimited posts",
-      "Analytics dashboard",
-      "Priority email support",
-    ],
   },
-  {
-    tier: "ELDER_DRAGON" as const,
-    name: "Elder Dragon",
-    price: "$79/mo",
+  ELDER_DRAGON: {
     borderColor: "border-accent-gold/30",
     hoverBorder: "hover:border-accent-gold/60",
-    features: [
-      "Unlimited TikTok accounts",
-      "Advanced scheduling",
-      "Unlimited posts",
-      "Full analytics",
-      "API access",
-      "Priority support",
-      "Custom automation workflows",
-    ],
   },
-];
+};
 
 export default function SettingsPage() {
   const { user, tier, isLoading } = useTypedSession();
@@ -212,7 +183,8 @@ export default function SettingsPage() {
         {isPaid ? (
           <div className="space-y-3">
             <p className="text-sm text-text-secondary">
-              You are on the <span className="font-medium text-text-primary">{TIER_CONFIG[tier].name}</span> plan.
+              You are on the <span className="font-medium text-text-primary">{TIER_CONFIG[tier].name}</span> plan
+              ({TIER_CONFIG[tier].videosPerWeek} videos/week).
               Manage your subscription, update payment method, or cancel through the billing portal.
             </p>
             <Button
@@ -230,48 +202,52 @@ export default function SettingsPage() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {UPGRADE_TIERS.map((plan) => (
-                <div
-                  key={plan.tier}
-                  className={cn(
-                    "rounded-xl border bg-bg-primary p-5 transition-colors",
-                    plan.borderColor,
-                    plan.hoverBorder
-                  )}
-                >
-                  <h3 className="font-bold text-lg">{plan.name}</h3>
-                  <p className="text-2xl font-bold mt-1 fire-text">{plan.price}</p>
-                  <ul className="mt-4 space-y-2">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm text-text-secondary">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          className="mt-0.5 shrink-0 text-success"
-                        >
-                          <path
-                            d="M3 8L6.5 11.5L13 4.5"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className="w-full mt-4"
-                    onClick={() => handleUpgrade(plan.tier)}
-                    disabled={checkoutLoading !== null}
+              {PAID_TIERS.map((tierKey) => {
+                const config = TIER_CONFIG[tierKey];
+                const styles = TIER_STYLES[tierKey];
+                return (
+                  <div
+                    key={tierKey}
+                    className={cn(
+                      "rounded-xl border bg-bg-primary p-5 transition-colors",
+                      styles.borderColor,
+                      styles.hoverBorder
+                    )}
                   >
-                    {checkoutLoading === plan.tier ? "Redirecting..." : `Upgrade to ${plan.name}`}
-                  </Button>
-                </div>
-              ))}
+                    <h3 className="font-bold text-lg">{config.name}</h3>
+                    <p className="text-2xl font-bold mt-1 fire-text">${config.monthlyPrice}/mo</p>
+                    <ul className="mt-4 space-y-2">
+                      {config.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2 text-sm text-text-secondary">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            className="mt-0.5 shrink-0 text-success"
+                          >
+                            <path
+                              d="M3 8L6.5 11.5L13 4.5"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      className="w-full mt-4"
+                      onClick={() => handleUpgrade(tierKey)}
+                      disabled={checkoutLoading !== null}
+                    >
+                      {checkoutLoading === tierKey ? "Redirecting..." : `Upgrade to ${config.name}`}
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

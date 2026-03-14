@@ -118,7 +118,7 @@ export function MobileFallback() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <Link href="/login">
+            <Link href="/signup">
               <Button size="lg" className="glow-pulse">
                 Start Automating
               </Button>

@@ -1,5 +1,11 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ContentTable } from "@/components/dashboard/ContentTable";
+import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
+import { useTypedSession } from "@/hooks/useSession";
 
 const MOCK_CONTENT_ITEMS = [
   {
@@ -79,10 +85,54 @@ function EyeIcon() {
   );
 }
 
+function CheckoutSuccessHandler() {
+  const searchParams = useSearchParams();
+  const { tier, update } = useTypedSession();
+  const [settling, setSettling] = useState(false);
+  const isCheckoutSuccess = searchParams.get("checkout") === "success";
+
+  const refreshSession = useCallback(async () => {
+    await update();
+  }, [update]);
+
+  useEffect(() => {
+    if (!isCheckoutSuccess) return;
+    if (tier !== "FREE") {
+      setSettling(false);
+      return;
+    }
+
+    setSettling(true);
+    // Webhook may still be in-flight — retry after a delay
+    const timer = setTimeout(() => {
+      refreshSession();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [isCheckoutSuccess, tier, refreshSession]);
+
+  if (!isCheckoutSuccess || !settling) return null;
+
+  return (
+    <div className="rounded-xl bg-accent-fire/10 border border-accent-fire/20 p-4 mb-6 text-center">
+      <p className="text-sm text-text-primary animate-pulse">
+        Setting up your account... This may take a moment.
+      </p>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
+  const { onboardingComplete, tier } = useTypedSession();
+  const isPaid = tier !== "FREE";
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
+
+      <CheckoutSuccessHandler />
+
+      {isPaid && !onboardingComplete && <OnboardingChecklist />}
 
       {/* Stats grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -101,7 +151,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           label="Accounts"
-          value={2}
+          value={1}
           icon={<UserIcon />}
           accentColor="#ffd700"
         />
@@ -118,30 +168,6 @@ export default function DashboardPage() {
       <section>
         <h2 className="text-xl font-semibold mb-4">Recent Content</h2>
         <ContentTable items={MOCK_CONTENT_ITEMS} />
-      </section>
-
-      {/* Accounts summary */}
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Your Accounts</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {[
-            { name: "dragonscale_tips", display: "Dragon Scale Tips" },
-            { name: "flamecreator", display: "Flame Creator" },
-          ].map((account) => (
-            <div
-              key={account.name}
-              className="flex items-center gap-3 rounded-xl bg-bg-secondary border border-border p-4 hover:border-accent-fire/30 transition-colors"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-fire/10 text-accent-fire font-bold text-sm">
-                {account.display.charAt(0)}
-              </div>
-              <div>
-                <p className="font-medium text-sm">@{account.name}</p>
-                <p className="text-xs text-text-secondary">{account.display}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </section>
     </div>
   );

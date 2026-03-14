@@ -12,31 +12,35 @@ const CAMERA_POSITIONS = [
   new THREE.Vector3(0, 1, 6), // CTA view
 ];
 
+const TOTAL_SECTIONS = CAMERA_POSITIONS.length - 1;
 const LOOK_AT = new THREE.Vector3(0, 0, 0);
+const LERP_FACTOR = 0.05;
 
 export function ScrollCamera() {
   const scroll = useScroll();
   const targetPosition = useRef(new THREE.Vector3());
+  const lastOffset = useRef(-1);
 
   useFrame(({ camera }) => {
-    const offset = scroll.offset; // 0 to 1
+    const offset = scroll.offset;
 
-    // Determine which two positions to interpolate between
-    const totalSections = CAMERA_POSITIONS.length - 1;
-    const rawIndex = offset * totalSections;
-    const sectionIndex = Math.min(
-      Math.floor(rawIndex),
-      totalSections - 1
-    );
-    const sectionProgress = rawIndex - sectionIndex;
+    // Only recalculate target when scroll offset actually changes
+    if (Math.abs(offset - lastOffset.current) > 0.0001) {
+      lastOffset.current = offset;
 
-    const from = CAMERA_POSITIONS[sectionIndex];
-    const to = CAMERA_POSITIONS[sectionIndex + 1];
+      const rawIndex = offset * TOTAL_SECTIONS;
+      const sectionIndex = Math.min(Math.floor(rawIndex), TOTAL_SECTIONS - 1);
+      const sectionProgress = rawIndex - sectionIndex;
 
-    targetPosition.current.lerpVectors(from, to, sectionProgress);
+      targetPosition.current.lerpVectors(
+        CAMERA_POSITIONS[sectionIndex],
+        CAMERA_POSITIONS[sectionIndex + 1],
+        sectionProgress
+      );
+    }
 
-    // Smooth camera movement
-    camera.position.lerp(targetPosition.current, 0.05);
+    // Smooth camera movement — always lerp toward target
+    camera.position.lerp(targetPosition.current, LERP_FACTOR);
     camera.lookAt(LOOK_AT);
   });
 

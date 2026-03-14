@@ -46,6 +46,7 @@ a {
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
+  contain: strict;
 }
 
 .ember-bg::before,
@@ -58,6 +59,7 @@ a {
   background: var(--accent-fire);
   bottom: -10px;
   animation: ember-float 8s ease-in infinite;
+  will-change: transform, opacity;
 }
 
 .ember-bg::before {

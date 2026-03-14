@@ -1,4 +1,24 @@
+"use client";
+
+import { useState, useEffect } from "react";
+
+const LOADING_TIMEOUT_MS = 8000;
+
 export function LoadingScreen() {
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDismissed(true);
+    }, LOADING_TIMEOUT_MS);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (dismissed) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-bg-primary">
       <h1

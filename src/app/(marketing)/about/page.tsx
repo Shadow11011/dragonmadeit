@@ -127,7 +127,7 @@ export default function AboutPage() {
             Join creators who are already automating their TikTok growth.
           </p>
           <a
-            href="/login"
+            href="/signup"
             className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:brightness-110 transition-all glow-pulse"
           >
             Start Automating — It&apos;s Free

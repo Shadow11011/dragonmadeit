@@ -3,49 +3,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { PricingTierCard } from "@/components/marketing/PricingTierCard";
+import { TIER_CONFIG, PaidTier } from "@/types";
 import { cn } from "@/lib/utils";
 
-const TIERS = [
-  {
-    name: "Hatchling",
-    price: 19,
-    description: "Perfect for getting started with TikTok automation",
-    tierColor: "#22d3ee",
-    features: [
-      "1 TikTok account",
-      "Basic scheduling",
-      "Content templates",
-      "Email support",
-    ],
-  },
-  {
-    name: "Drake",
-    price: 49,
-    description: "For serious creators scaling their presence",
-    tierColor: "#ff8c00",
-    popular: true,
-    features: [
-      "5 TikTok accounts",
-      "Advanced scheduling",
-      "Analytics dashboard",
-      "Priority support",
-      "Custom templates",
-    ],
-  },
-  {
-    name: "Elder Dragon",
-    price: 99,
-    description: "Unlimited power for agencies and power users",
-    tierColor: "#ffd700",
-    features: [
-      "Unlimited accounts",
-      "Priority everything",
-      "API access",
-      "Dedicated account manager",
-      "Custom integrations",
-    ],
-  },
-];
+const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
+
+const TIER_META: Record<PaidTier, { popular?: boolean }> = {
+  HATCHLING: {},
+  DRAKE: { popular: true },
+  ELDER_DRAGON: {},
+};
 
 const FAQ = [
   {
@@ -54,9 +21,14 @@ const FAQ = [
       "Yes! You can upgrade or downgrade your plan at any time. When upgrading, you'll be prorated for the remaining billing period. When downgrading, the change takes effect at the end of your current billing cycle.",
   },
   {
-    question: "Is there a free trial?",
+    question: "What's the difference between plans?",
     answer:
-      "We offer a free tier so you can explore the platform before committing. When you're ready to scale, upgrade to unlock more features and accounts.",
+      "Every paid plan includes 1 TikTok account. The main difference is how many videos per week we generate and post for you — from 3/week on Hatchling up to 14/week (2x daily) on Elder Dragon. Elder Dragon also includes a custom content generation system.",
+  },
+  {
+    question: "Do you offer discounts for longer commitments?",
+    answer:
+      "Yes! Save 15% with quarterly billing or 30% with annual billing. Contact us after signup to switch to a longer billing cycle.",
   },
   {
     question: "What payment methods do you accept?",
@@ -149,9 +121,20 @@ export function PricingPageContent() {
 
         {/* Tier Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start mb-24">
-          {TIERS.map((tier) => (
-            <PricingTierCard key={tier.name} {...tier} />
-          ))}
+          {PAID_TIERS.map((tierKey) => {
+            const config = TIER_CONFIG[tierKey];
+            return (
+              <PricingTierCard
+                key={tierKey}
+                name={config.name}
+                price={config.monthlyPrice}
+                description={config.description}
+                features={config.features}
+                tierColor={config.fireColor}
+                popular={TIER_META[tierKey].popular}
+              />
+            );
+          })}
         </div>
 
         {/* FAQ Section */}

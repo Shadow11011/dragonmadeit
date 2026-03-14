@@ -1,5 +1,3 @@
-"use client";
-
 interface DragonMascotProps {
   size?: number;
   tierColor?: string;

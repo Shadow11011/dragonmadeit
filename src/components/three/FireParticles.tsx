@@ -8,9 +8,9 @@ interface FireParticlesProps {
 }
 
 const INTENSITY_COUNT: Record<string, number> = {
-  low: 50,
-  medium: 150,
-  high: 300,
+  low: 25,
+  medium: 75,
+  high: 150,
 };
 
 export function FireParticles({

@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { Tier } from "@/types";
 
 interface AccountItem {
   id: string;
@@ -12,36 +14,38 @@ interface AccountItem {
 interface AccountListProps {
   accounts: AccountItem[];
   maxAccounts: number;
+  tier: Tier;
 }
 
-export function AccountList({ accounts, maxAccounts }: AccountListProps) {
-  const isUnlimited = maxAccounts === -1;
-  const atLimit = !isUnlimited && accounts.length >= maxAccounts;
-  const usagePercent = isUnlimited
-    ? 0
-    : maxAccounts > 0
+export function AccountList({ accounts, maxAccounts, tier }: AccountListProps) {
+  const isFree = tier === "FREE";
+  const atLimit = !isFree && accounts.length >= maxAccounts;
+  const hasAccount = accounts.length > 0;
+  const usagePercent = maxAccounts > 0
     ? Math.min((accounts.length / maxAccounts) * 100, 100)
     : 0;
 
   return (
     <div className="space-y-4">
       {/* Usage bar */}
-      <div className="rounded-xl bg-bg-secondary border border-border p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-text-secondary">Accounts Used</span>
-          <span className="text-sm font-medium">
-            {accounts.length} / {isUnlimited ? "Unlimited" : maxAccounts}
-          </span>
-        </div>
-        {!isUnlimited && maxAccounts > 0 && (
-          <div className="h-2 rounded-full bg-bg-tertiary overflow-hidden">
-            <div
-              className="h-full rounded-full fire-gradient transition-all duration-500"
-              style={{ width: `${usagePercent}%` }}
-            />
+      {!isFree && (
+        <div className="rounded-xl bg-bg-secondary border border-border p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-text-secondary">Account Used</span>
+            <span className="text-sm font-medium">
+              {accounts.length} / {maxAccounts}
+            </span>
           </div>
-        )}
-      </div>
+          {maxAccounts > 0 && (
+            <div className="h-2 rounded-full bg-bg-tertiary overflow-hidden">
+              <div
+                className="h-full rounded-full fire-gradient transition-all duration-500"
+                style={{ width: `${usagePercent}%` }}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Account list */}
       {accounts.length > 0 ? (
@@ -72,20 +76,32 @@ export function AccountList({ accounts, maxAccounts }: AccountListProps) {
             </div>
           ))}
         </div>
-      ) : (
+      ) : !isFree ? (
         <div className="rounded-xl bg-bg-secondary border border-border p-8 text-center">
           <p className="text-text-secondary mb-4">No accounts connected yet.</p>
         </div>
-      )}
+      ) : null}
 
-      {/* Connect button */}
-      <Button
-        className="w-full"
-        disabled={atLimit}
-        title={atLimit ? "Upgrade your plan to connect more accounts" : undefined}
-      >
-        {atLimit ? "Account Limit Reached" : "Connect TikTok Account"}
-      </Button>
+      {/* Connect button / gate */}
+      {isFree ? (
+        <Link href="/dashboard/settings">
+          <Button className="w-full" variant="secondary">
+            Upgrade to Connect TikTok
+          </Button>
+        </Link>
+      ) : atLimit ? (
+        <Button className="w-full" disabled>
+          Account Connected
+        </Button>
+      ) : hasAccount ? (
+        <Button className="w-full" disabled>
+          Account Connected
+        </Button>
+      ) : (
+        <Button className="w-full" disabled title="TikTok integration coming soon">
+          Connect TikTok Account (Coming Soon)
+        </Button>
+      )}
     </div>
   );
 }

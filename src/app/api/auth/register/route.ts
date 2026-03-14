@@ -23,9 +23,11 @@ export async function POST(request: Request) {
 
     const { email, password, name } = result.data;
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    // Hash password while checking for existing user in parallel
+    const [existingUser, hashedPassword] = await Promise.all([
+      prisma.user.findUnique({ where: { email }, select: { id: true } }),
+      bcrypt.hash(password, 10),
+    ]);
 
     if (existingUser) {
       return NextResponse.json(
@@ -33,8 +35,6 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await prisma.user.create({
       data: {

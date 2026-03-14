@@ -53,7 +53,7 @@ export async function createCheckoutSession(
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXTAUTH_URL}/dashboard/settings?checkout=success`,
+    success_url: `${process.env.NEXTAUTH_URL}/dashboard?checkout=success`,
     cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/settings?checkout=cancel`,
     metadata: { userId },
   });

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 
 export function CTASection() {
   return (
-    <section className="min-h-screen flex items-center justify-center pointer-events-none">
+    <section className="min-h-screen flex items-center justify-center">
       <motion.div
         className="text-center px-4 space-y-6"
         initial={{ opacity: 0, y: 30 }}
@@ -20,10 +20,10 @@ export function CTASection() {
         <p className="text-lg text-text-secondary max-w-md mx-auto">
           Join thousands of creators automating their content
         </p>
-        <div className="pt-4 pointer-events-auto">
-          <Link href="/login">
+        <div className="pt-4">
+          <Link href="/signup">
             <Button size="lg" className="glow-pulse text-base px-10 py-4">
-              Start Automating — It&apos;s Free
+              Start Automating Today
             </Button>
           </Link>
         </div>

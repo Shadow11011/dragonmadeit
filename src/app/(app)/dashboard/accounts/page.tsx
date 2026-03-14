@@ -3,14 +3,16 @@
 import { AccountList } from "@/components/dashboard/AccountList";
 import { TierBadge } from "@/components/dashboard/TierBadge";
 import { useTierLimits } from "@/hooks/useTierLimits";
+import { TIER_CONFIG } from "@/types";
 
 const MOCK_ACCOUNTS = [
   { id: "acc1", username: "dragonscale_tips", displayName: "Dragon Scale Tips" },
-  { id: "acc2", username: "flamecreator", displayName: "Flame Creator" },
 ];
 
 export default function AccountsPage() {
-  const { tier, maxAccounts } = useTierLimits();
+  const { tier, maxAccounts, videosPerWeek } = useTierLimits();
+  const config = TIER_CONFIG[tier];
+  const isFree = tier === "FREE";
 
   return (
     <div className="space-y-6">
@@ -21,16 +23,21 @@ export default function AccountsPage() {
 
       <div className="rounded-xl bg-bg-secondary border border-border p-4">
         <p className="text-sm text-text-secondary">
-          Your <span className="font-medium text-text-primary">{tier === "ELDER_DRAGON" ? "Elder Dragon" : tier.charAt(0) + tier.slice(1).toLowerCase()}</span> plan
-          allows{" "}
-          <span className="font-medium text-text-primary">
-            {maxAccounts === -1 ? "unlimited" : maxAccounts}
-          </span>{" "}
-          TikTok {maxAccounts === 1 ? "account" : "accounts"}.
+          {isFree ? (
+            <>Upgrade to a paid plan to connect your TikTok account and start automating.</>
+          ) : (
+            <>
+              Your <span className="font-medium text-text-primary">{config.name}</span> plan
+              allows{" "}
+              <span className="font-medium text-text-primary">{maxAccounts}</span>{" "}
+              TikTok account with{" "}
+              <span className="font-medium text-text-primary">{videosPerWeek} videos per week</span>.
+            </>
+          )}
         </p>
       </div>
 
-      <AccountList accounts={MOCK_ACCOUNTS} maxAccounts={maxAccounts} />
+      <AccountList accounts={isFree ? [] : MOCK_ACCOUNTS} maxAccounts={maxAccounts} tier={tier} />
     </div>
   );
 }

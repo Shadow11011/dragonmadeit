@@ -7,12 +7,14 @@ declare module "next-auth" {
       id: string;
       tier: Tier;
       stripeCustomerId: string | null;
+      onboardingComplete: boolean;
     } & DefaultSession["user"];
   }
 
   interface User {
     tier: Tier;
     stripeCustomerId: string | null;
+    onboardingComplete: boolean;
   }
 }
 
@@ -21,6 +23,7 @@ declare module "next-auth/jwt" {
     id: string;
     tier: Tier;
     stripeCustomerId: string | null;
+    onboardingComplete: boolean;
     tierRefreshedAt: number;
   }
 }

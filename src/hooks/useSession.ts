@@ -11,6 +11,7 @@ export function useTypedSession() {
     tier: (session?.user?.tier as Tier) ?? "FREE",
     isAuthenticated: status === "authenticated",
     isLoading: status === "loading",
+    onboardingComplete: session?.user?.onboardingComplete ?? false,
     update,
   };
 }

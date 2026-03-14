@@ -6,15 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
-interface LoginFormProps {
-  defaultMode?: "login" | "signup";
-}
-
-export default function LoginForm({ defaultMode = "login" }: LoginFormProps) {
+export default function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-  const [isSignUp, setIsSignUp] = useState(defaultMode === "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -27,19 +22,17 @@ export default function LoginForm({ defaultMode = "login" }: LoginFormProps) {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name }),
-        });
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name }),
+      });
 
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.error || "Registration failed");
-          setLoading(false);
-          return;
-        }
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Registration failed");
+        setLoading(false);
+        return;
       }
 
       const result = await signIn("credentials", {
@@ -67,9 +60,7 @@ export default function LoginForm({ defaultMode = "login" }: LoginFormProps) {
         <Link href="/" className="inline-block">
           <h1 className="text-4xl font-bold fire-text">DragonMadeIt</h1>
         </Link>
-        <p className="mt-2 text-text-secondary">
-          {isSignUp ? "Create your account" : "Welcome back"}
-        </p>
+        <p className="mt-2 text-text-secondary">Create your account</p>
       </div>
 
       <form
@@ -82,21 +73,19 @@ export default function LoginForm({ defaultMode = "login" }: LoginFormProps) {
           </div>
         )}
 
-        {isSignUp && (
-          <div>
-            <label htmlFor="name" className="block text-sm text-text-secondary mb-1.5">
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-bg-primary border border-border rounded-lg px-4 py-2.5 text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-accent-fire/50 transition-colors"
-              placeholder="Your name"
-            />
-          </div>
-        )}
+        <div>
+          <label htmlFor="name" className="block text-sm text-text-secondary mb-1.5">
+            Name
+          </label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-bg-primary border border-border rounded-lg px-4 py-2.5 text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-accent-fire/50 transition-colors"
+            placeholder="Your name"
+          />
+        </div>
 
         <div>
           <label htmlFor="email" className="block text-sm text-text-secondary mb-1.5">
@@ -130,20 +119,14 @@ export default function LoginForm({ defaultMode = "login" }: LoginFormProps) {
         </div>
 
         <Button type="submit" className="w-full" size="lg" disabled={loading}>
-          {loading ? "Please wait..." : isSignUp ? "Create Account" : "Sign In"}
+          {loading ? "Please wait..." : "Create Account"}
         </Button>
 
         <p className="text-center text-sm text-text-secondary">
-          {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-          {isSignUp ? (
-            <Link href="/login" className="text-accent-fire hover:underline">
-              Sign in
-            </Link>
-          ) : (
-            <Link href="/signup" className="text-accent-fire hover:underline">
-              Sign up
-            </Link>
-          )}
+          Already have an account?{" "}
+          <Link href="/login" className="text-accent-fire hover:underline">
+            Sign in
+          </Link>
         </p>
       </form>
     </div>

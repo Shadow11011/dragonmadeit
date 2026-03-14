@@ -41,11 +41,13 @@ The site has two distinct zones with different rendering strategies:
 
 ## Subscription Tiers
 
-| Tier | Name | Target | Visual Theme |
-|------|------|--------|--------------|
-| 1 | Hatchling | Entry — 1 TikTok account, basic scheduling | Small egg/baby dragon motif, cool blue-green fire |
-| 2 | Drake | Mid — multi-account, advanced scheduling, analytics | Medium dragon, orange-amber fire |
-| 3 | Elder Dragon | Premium — unlimited accounts, priority, API access | Full dragon, intense red-gold fire, most visual effects |
+| Tier | Name | Price | Target | Visual Theme |
+|------|------|-------|--------|--------------|
+| 1 | Hatchling | $15/mo | Entry — 1 TikTok account, 3 videos/week | Small egg/baby dragon motif, cool blue-green fire |
+| 2 | Drake | $39/mo | Mid — 1 TikTok account, 7 videos/week (daily) | Medium dragon, orange-amber fire |
+| 3 | Elder Dragon | $129/mo | Premium — 1 TikTok account, 14 videos/week, custom content gen | Full dragon, intense red-gold fire, most visual effects |
+
+All paid tiers get exactly 1 TikTok account. The differentiator is `videosPerWeek`. Billing discounts: 15% quarterly, 30% annual.
 
 On the pricing page, each tier is presented as a 3D scene element — the dragon evolves as the tier increases.
 
@@ -230,6 +232,10 @@ dragonmadeit/
 - Branches: `feat/`, `fix/`, `refactor/`
 - Commits: conventional (`feat: add 3D dragon hero scene`)
 - Push to `main` (solo dev for now)
+
+## Agent Delegation Rule
+
+When a task touches 3+ files or requires parallel workstreams, delegate to subagents using the Agent tool. Split by zone (marketing 3D vs dashboard 2D) and layer (schema → API → UI). Each agent should own a coherent slice of work and report back. The main thread coordinates, reviews, and resolves cross-cutting concerns. Never have two agents editing the same file.
 
 ## Available Skills
 
