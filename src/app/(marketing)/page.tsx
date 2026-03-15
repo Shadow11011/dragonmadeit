@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HomepageScene } from "@/components/marketing/HomepageScene";
 
 export const metadata: Metadata = {
   title: "DragonMadeIt — AI-Powered TikTok Automation",
@@ -7,6 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  // Content is handled by MarketingShell detecting homepage route
-  return null;
+  return <HomepageScene />;
 }

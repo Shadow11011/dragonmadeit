@@ -17,13 +17,13 @@ export function PricingSection() {
     <section className="relative py-24 md:py-32">
       <div className="mx-auto max-w-5xl px-4">
         <motion.h2
-          className="text-4xl md:text-5xl font-bold fire-text text-center mb-4"
+          className="text-4xl md:text-5xl font-bold text-text-primary text-center mb-4"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6 }}
         >
-          Choose Your Dragon
+          Simple, transparent pricing
         </motion.h2>
         <motion.p
           className="text-text-secondary text-center mb-14 max-w-md mx-auto"
@@ -32,8 +32,7 @@ export function PricingSection() {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          Scale from hatchling to elder dragon as your audience grows.
-          Cancel anytime.
+          Start with Hatchling. Scale to Elder Dragon as you grow.
         </motion.p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">

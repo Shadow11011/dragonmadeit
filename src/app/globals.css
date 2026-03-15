@@ -20,6 +20,10 @@
   margin: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   max-width: 100vw;
@@ -116,13 +120,6 @@ a {
 
 .glow-pulse {
   animation: glow-pulse 2s ease-in-out infinite;
-}
-
-/* Glass card for overlaying on 3D scene */
-.glass-card {
-  background: rgba(18, 18, 26, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(39, 39, 42, 0.5);
 }
 
 /* Navbar blur */
