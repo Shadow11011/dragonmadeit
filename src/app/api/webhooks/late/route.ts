@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendPostFailedEmail } from "@/lib/email";
 
@@ -9,7 +10,57 @@ interface LateWebhookPayload {
 
 export async function POST(request: Request) {
   try {
-    const body: unknown = await request.json();
+    const rawBody = await request.text();
+
+    // Verify HMAC-SHA256 signature
+    const signature =
+      request.headers.get("x-late-signature") ??
+      request.headers.get("x-signature");
+
+    if (!signature) {
+      return NextResponse.json(
+        { success: false, error: "Missing signature" },
+        { status: 401 }
+      );
+    }
+
+    const secret = process.env.LATE_WEBHOOK_SECRET;
+    if (!secret) {
+      console.error("LATE_WEBHOOK_SECRET is not configured");
+      return NextResponse.json(
+        { success: false, error: "Webhook not configured" },
+        { status: 500 }
+      );
+    }
+
+    const expected = createHmac("sha256", secret)
+      .update(rawBody)
+      .digest("hex");
+
+    const sigBuffer = Buffer.from(signature, "hex");
+    const expectedBuffer = Buffer.from(expected, "hex");
+
+    if (
+      sigBuffer.length !== expectedBuffer.length ||
+      !timingSafeEqual(sigBuffer, expectedBuffer)
+    ) {
+      console.error("Late webhook signature verification failed");
+      return NextResponse.json(
+        { success: false, error: "Invalid signature" },
+        { status: 401 }
+      );
+    }
+
+    // Parse verified payload
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid payload" },
+        { status: 400 }
+      );
+    }
 
     if (!body || typeof body !== "object") {
       return NextResponse.json(
