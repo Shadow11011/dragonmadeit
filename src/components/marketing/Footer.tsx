@@ -6,21 +6,16 @@ const PRODUCT_LINKS = [
   { href: "/about", label: "About" },
 ];
 
-const COMPANY_LINKS = [
-  { href: "#", label: "Blog" },
-  { href: "#", label: "Careers" },
-];
-
 const LEGAL_LINKS = [
-  { href: "#", label: "Terms" },
-  { href: "#", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+  { href: "/privacy", label: "Privacy" },
 ];
 
 export function Footer() {
   return (
     <footer className="relative z-10 bg-bg-secondary border-t border-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 gap-8">
           {/* Product */}
           <div>
             <h3 className="text-sm font-semibold text-text-primary mb-4">
@@ -29,25 +24,6 @@ export function Footer() {
             <ul className="space-y-2">
               {PRODUCT_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-text-secondary hover:text-text-primary transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h3 className="text-sm font-semibold text-text-primary mb-4">
-              Company
-            </h3>
-            <ul className="space-y-2">
-              {COMPANY_LINKS.map((link) => (
-                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-text-secondary hover:text-text-primary transition-colors"
