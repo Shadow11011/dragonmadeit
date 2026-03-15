@@ -1,11 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface FeatureDetail {
   title: string;
   description: string;
   subFeatures: string[];
+  image: string;
 }
 
 const FEATURES: FeatureDetail[] = [
@@ -20,6 +22,7 @@ const FEATURES: FeatureDetail[] = [
       "Automatic video assembly with FFmpeg pipeline",
       "Template library with customizable styles",
     ],
+    image: "/images/features/ai-content-generation.png",
   },
   {
     title: "Smart Scheduling & Automation",
@@ -32,6 +35,7 @@ const FEATURES: FeatureDetail[] = [
       "Batch scheduling for weeks or months ahead",
       "Pause and resume with a single click",
     ],
+    image: "/images/features/smart-scheduling.png",
   },
   {
     title: "Multi-Account Management",
@@ -44,6 +48,7 @@ const FEATURES: FeatureDetail[] = [
       "Account health monitoring and alerts",
       "Team collaboration (Elder Dragon tier)",
     ],
+    image: "/images/features/multi-account-management.png",
   },
   {
     title: "Performance Analytics",
@@ -56,6 +61,7 @@ const FEATURES: FeatureDetail[] = [
       "Best-performing content identification",
       "Export reports for stakeholders",
     ],
+    image: "/images/features/performance-analytics.png",
   },
 ];
 
@@ -116,24 +122,14 @@ function FeatureSection({
 
         {/* Visual element */}
         <div className="flex-1 flex items-center justify-center">
-          <div
-            className="w-full max-w-sm aspect-square rounded-2xl border border-border flex items-center justify-center"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, rgba(255,69,0,0.08) 0%, rgba(18,18,26,0.8) 70%)",
-            }}
-          >
-            <div className="text-center space-y-3">
-              <div className="text-5xl text-accent-fire opacity-50">
-                {index === 0 && <span>&#x2728;</span>}
-                {index === 1 && <span>&#x1F552;</span>}
-                {index === 2 && <span>&#x1F465;</span>}
-                {index === 3 && <span>&#x1F4CA;</span>}
-              </div>
-              <p className="text-sm text-text-secondary font-medium">
-                {feature.title}
-              </p>
-            </div>
+          <div className="w-full max-w-md rounded-2xl border border-border overflow-hidden">
+            <Image
+              src={feature.image}
+              alt={feature.title}
+              width={896}
+              height={512}
+              className="w-full h-auto"
+            />
           </div>
         </div>
       </div>
@@ -189,7 +185,7 @@ export function FeaturesPageContent() {
           </p>
           <a
             href="/pricing"
-            className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:brightness-110 transition-all glow-pulse"
+            className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:bg-accent-fire/90 transition-colors"
           >
             View Pricing
           </a>
