@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { TierBadge } from "@/components/dashboard/TierBadge";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
 import { TIER_CONFIG, Tier } from "@/types";
+import type { PostingSchedule } from "@/types";
+import { getNextPostTime, formatCountdown } from "@/lib/schedule-utils";
 
 export interface TikTokAccountItem {
   id: string;
@@ -16,6 +18,7 @@ export interface TikTokAccountItem {
   status: "active" | "pending" | "cancelled";
   scheduleDays: string[];
   scheduleTime: string;
+  schedule: PostingSchedule | null;
   videoType?: string;
   voiceType?: string;
   storyTypes?: string[];
@@ -190,27 +193,37 @@ export function AccountList({ accounts, isLoading }: AccountListProps) {
 
               {/* Status + Actions */}
               <div className="flex items-center gap-3 sm:shrink-0">
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={cn("h-2 w-2 rounded-full", statusStyle.dot)}
-                  />
-                  <span className={cn("text-xs font-medium", statusStyle.text)}>
-                    {statusStyle.label}
-                  </span>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={cn("h-2 w-2 rounded-full", statusStyle.dot)}
+                    />
+                    <span className={cn("text-xs font-medium", statusStyle.text)}>
+                      {statusStyle.label}
+                    </span>
+                  </div>
+                  {account.status === "active" && (() => {
+                    const nextPost = getNextPostTime(account.schedule);
+                    return nextPost ? (
+                      <span className="text-xs text-text-secondary">
+                        Next: {formatCountdown(nextPost)}
+                      </span>
+                    ) : null;
+                  })()}
                 </div>
 
-                {account.status !== "cancelled" && (
+                {account.status === "pending" && (
                   <Link href={`/dashboard/accounts/${account.id}`}>
-                    <Button size="sm" variant="secondary">
-                      Edit Content
+                    <Button size="sm" className="fire-gradient text-white">
+                      Connect TikTok
                     </Button>
                   </Link>
                 )}
 
-                {account.status === "pending" && !account.username && (
-                  <Link href={`/dashboard/accounts/link/${account.id}`}>
+                {account.status === "active" && (
+                  <Link href={`/dashboard/accounts/${account.id}`}>
                     <Button size="sm" variant="secondary">
-                      Link Account
+                      Manage
                     </Button>
                   </Link>
                 )}

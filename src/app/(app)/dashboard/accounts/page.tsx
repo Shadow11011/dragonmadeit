@@ -66,6 +66,7 @@ export default function AccountsPage() {
         status: deriveStatus(acct),
         scheduleDays: mapScheduleDays(acct.schedule),
         scheduleTime: mapScheduleTime(acct.schedule),
+        schedule: acct.schedule,
         videoType: acct.videoType ?? "GAMEPLAY",
         voiceType: acct.voiceType ?? "RANDOM",
         storyTypes: Array.isArray(acct.storyTypes) ? acct.storyTypes : [],
@@ -88,8 +89,11 @@ export default function AccountsPage() {
   useEffect(() => {
     if (searchParams.get("checkout") === "success" || searchParams.get("linked") === "true") {
       setShowSuccess(true);
-      const timer = setTimeout(() => setShowSuccess(false), 6000);
-      return () => clearTimeout(timer);
+      // Auto-dismiss linked banner after 6s, keep checkout CTA visible
+      if (searchParams.get("linked") === "true") {
+        const timer = setTimeout(() => setShowSuccess(false), 6000);
+        return () => clearTimeout(timer);
+      }
     }
   }, [searchParams]);
 
@@ -111,20 +115,51 @@ export default function AccountsPage() {
         </Link>
       </div>
 
-      {/* Success banner */}
+      {/* Linked success banner */}
       <AnimatePresence>
-        {showSuccess && (
+        {showSuccess && searchParams.get("linked") === "true" && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             className="rounded-lg bg-success/10 border border-success/20 px-4 py-3 text-sm text-success"
           >
-            {searchParams.get("linked") === "true"
-              ? "TikTok account linked successfully! Your automation is ready to go."
-              : "Payment successful! Your new TikTok account subscription is active. Don\u2019t forget to link your TikTok account."}
+            TikTok account connected successfully! Your automation is ready to go.
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Post-payment CTA */}
+      <AnimatePresence>
+        {showSuccess && searchParams.get("checkout") === "success" && (() => {
+          const pendingAccount = accounts.find((a) => a.status === "pending");
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="rounded-xl border-2 border-accent-fire/40 bg-accent-fire/5 p-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-text-primary">
+                    Payment successful!
+                  </h3>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Connect your TikTok account to start automated posting.
+                  </p>
+                </div>
+                {pendingAccount && (
+                  <Link href={`/dashboard/accounts/${pendingAccount.id}`}>
+                    <Button className="fire-gradient text-white glow-fire whitespace-nowrap" size="md">
+                      Connect TikTok
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* Error state */}
