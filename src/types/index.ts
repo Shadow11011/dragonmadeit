@@ -48,6 +48,8 @@ export interface TikTokAccountInfo {
   voiceType: "MALE" | "FEMALE" | "RANDOM";
   storyTypes: string[];
   randomizeStories: boolean;
+  lateProfileId: string | null;
+  lateAccountId: string | null;
   isLinked: boolean;
   createdAt: string;
 }

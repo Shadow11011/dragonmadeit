@@ -100,6 +100,8 @@ model TikTokAccount {
   voiceType            VoiceType     @default(RANDOM)
   storyTypes           Json          @default("[]")
   randomizeStories     Boolean       @default(true)
+  lateProfileId        String?
+  lateAccountId        String?
   userId               String
   user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   contentItems         ContentItem[]

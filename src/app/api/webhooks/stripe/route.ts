@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe, mapStripePriceToTier, TIER_VIDEOS_PER_WEEK } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { disconnectAccount } from "@/lib/late-api";
 import { Tier, VideoType, VoiceType } from "@prisma/client";
 import Stripe from "stripe";
 import type { ContentConfig } from "@/types";
@@ -179,17 +180,43 @@ export async function POST(request: Request) {
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
 
+        // Find the account to disconnect from Late.dev before updating
+        const accountToCancel = await prisma.tikTokAccount.findFirst({
+          where: { stripeSubscriptionId: subscription.id },
+          select: { id: true, lateAccountId: true },
+        });
+
+        // Disconnect from Late.dev if linked
+        if (accountToCancel?.lateAccountId) {
+          try {
+            await disconnectAccount(accountToCancel.lateAccountId);
+            console.log(
+              `Disconnected Late.dev account ${accountToCancel.lateAccountId}`
+            );
+          } catch (lateErr) {
+            console.error(
+              "Failed to disconnect Late.dev account:",
+              lateErr
+            );
+            // Continue with DB cleanup even if Late.dev disconnect fails
+          }
+        }
+
+        // Fully unlink: clear subscription, Late IDs, and reset username
         await prisma.tikTokAccount.updateMany({
           where: { stripeSubscriptionId: subscription.id },
           data: {
             tier: "FREE",
             stripeSubscriptionId: null,
             videosPerWeek: 0,
+            lateAccountId: null,
+            lateProfileId: null,
+            username: `unlinked-${Date.now()}`,
           },
         });
 
         console.log(
-          `Cancelled subscription ${subscription.id}, set TikTokAccount to FREE`
+          `Cancelled subscription ${subscription.id}, fully unlinked TikTok account`
         );
         break;
       }

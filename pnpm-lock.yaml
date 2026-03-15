@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@getlatedev/node':
+        specifier: ^0.1.54
+        version: 0.1.54
       '@next-auth/prisma-adapter':
         specifier: ^1.0.7
         version: 1.0.7(@prisma/client@5.22.0(prisma@5.22.0))(next-auth@4.24.13(next@14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -130,6 +133,10 @@ packages:
   '@eslint/js@8.57.1':
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@getlatedev/node@0.1.54':
+    resolution: {integrity: sha512-4egzReQAJCLqgAAvaSFPf6ejw+k6y/OGMN2H53CTAdr78jZXo1TI6TWMgwonUOFbKowmc1CrdhmXIwhcqCJf6w==}
+    engines: {node: '>=18'}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -2338,6 +2345,8 @@ snapshots:
       - supports-color
 
   '@eslint/js@8.57.1': {}
+
+  '@getlatedev/node@0.1.54': {}
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:

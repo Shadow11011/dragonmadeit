@@ -29,6 +29,8 @@ export async function GET() {
         voiceType: true,
         storyTypes: true,
         randomizeStories: true,
+        lateProfileId: true,
+        lateAccountId: true,
         createdAt: true,
       },
     });
@@ -45,6 +47,8 @@ export async function GET() {
       voiceType: account.voiceType ?? "RANDOM",
       storyTypes: (Array.isArray(account.storyTypes) ? account.storyTypes : []) as string[],
       randomizeStories: account.randomizeStories ?? true,
+      lateProfileId: account.lateProfileId,
+      lateAccountId: account.lateAccountId,
       isLinked: account.username ? !account.username.startsWith("pending-") : false,
       createdAt: account.createdAt.toISOString(),
     }));

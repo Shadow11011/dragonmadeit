@@ -2,19 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
-
-const linkSchema = z.object({
-  username: z
-    .string()
-    .min(1, "Username is required")
-    .max(100, "Username too long")
-    .regex(
-      /^[a-zA-Z0-9._]+$/,
-      "Username can only contain letters, numbers, dots, and underscores"
-    ),
-  lateAccountId: z.string().min(1, "Late account ID cannot be empty").optional(),
-});
+import { createProfile, getTikTokConnectUrl } from "@/lib/late-api";
 
 export async function POST(
   request: Request,
@@ -38,6 +26,7 @@ export async function POST(
         id: true,
         username: true,
         userId: true,
+        lateProfileId: true,
       },
     });
 
@@ -55,7 +44,7 @@ export async function POST(
       );
     }
 
-    // Only allow linking if the account is still pending
+    // Only allow connecting if the account is still pending
     if (!account.username.startsWith("pending-")) {
       return NextResponse.json(
         {
@@ -66,39 +55,29 @@ export async function POST(
       );
     }
 
-    const body: unknown = await request.json();
-    const parsed = linkSchema.safeParse(body);
+    // Create a Late.dev profile if one doesn't exist yet
+    let lateProfileId = account.lateProfileId;
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: parsed.error.issues[0]?.message ?? "Invalid input",
-        },
-        { status: 400 }
-      );
+    if (!lateProfileId) {
+      const profile = await createProfile(`dragonmadeit-${id}`);
+      lateProfileId = profile.id;
+
+      await prisma.tikTokAccount.update({
+        where: { id },
+        data: { lateProfileId },
+      });
     }
 
-    const { username, lateAccountId } = parsed.data;
+    // Get the TikTok OAuth connect URL from Late.dev
+    const redirectUrl = `${process.env.NEXTAUTH_URL}/dashboard/accounts/link/${id}/callback`;
+    const { authUrl } = await getTikTokConnectUrl(lateProfileId, redirectUrl);
 
-    const updatedAccount = await prisma.tikTokAccount.update({
-      where: { id },
-      data: {
-        username,
-        ...(lateAccountId ? { lateAccountId } : {}),
-      },
-      select: {
-        id: true,
-        username: true,
-        tier: true,
-        videosPerWeek: true,
-        scheduleLocked: true,
-      },
-    });
-
-    return NextResponse.json({ success: true, data: updatedAccount });
+    return NextResponse.json({ success: true, data: { authUrl } });
   } catch (error) {
-    console.error(`POST /api/tiktok-accounts/${params?.id}/link error:`, error);
+    console.error(
+      `POST /api/tiktok-accounts/${params?.id}/connect error:`,
+      error
+    );
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

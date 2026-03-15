@@ -86,7 +86,7 @@ export default function AccountsPage() {
   }, [fetchAccounts]);
 
   useEffect(() => {
-    if (searchParams.get("success") === "true") {
+    if (searchParams.get("checkout") === "success" || searchParams.get("linked") === "true") {
       setShowSuccess(true);
       const timer = setTimeout(() => setShowSuccess(false), 6000);
       return () => clearTimeout(timer);
@@ -120,8 +120,9 @@ export default function AccountsPage() {
             exit={{ opacity: 0, y: -8 }}
             className="rounded-lg bg-success/10 border border-success/20 px-4 py-3 text-sm text-success"
           >
-            Payment successful! Your new TikTok account subscription is active.
-            Don&apos;t forget to link your TikTok username.
+            {searchParams.get("linked") === "true"
+              ? "TikTok account linked successfully! Your automation is ready to go."
+              : "Payment successful! Your new TikTok account subscription is active. Don\u2019t forget to link your TikTok account."}
           </motion.div>
         )}
       </AnimatePresence>
