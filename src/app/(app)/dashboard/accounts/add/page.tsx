@@ -466,10 +466,10 @@ function PaymentStep({
       });
 
       const data: unknown = await res.json();
-      const urlData = data as { url?: string; error?: string };
+      const urlData = data as { success?: boolean; data?: { url?: string }; error?: string };
 
-      if (res.ok && urlData.url) {
-        window.location.href = urlData.url;
+      if (res.ok && urlData.data?.url) {
+        window.location.href = urlData.data.url;
       } else {
         setError(urlData.error ?? "Failed to start checkout. Please try again.");
         setIsRedirecting(false);
