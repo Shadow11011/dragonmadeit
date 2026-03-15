@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AccountList, TikTokAccountItem } from "@/components/dashboard/AccountList";
 import { Button } from "@/components/ui/Button";
 import type { TikTokAccountInfo, PostingSchedule } from "@/types";
+import { normalizeSchedule } from "@/lib/schedule-utils";
 
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
 
@@ -22,13 +23,15 @@ interface AccountApiResponse {
 }
 
 function mapScheduleDays(schedule: PostingSchedule | null): string[] {
-  if (!schedule || !schedule.days) return [];
-  return schedule.days.map((d) => DAY_NAMES[d] ?? "");
+  const normalized = normalizeSchedule(schedule);
+  if (!normalized) return [];
+  return normalized.days.map((d) => DAY_NAMES[d] ?? "");
 }
 
 function mapScheduleTime(schedule: PostingSchedule | null): string {
-  if (!schedule || !schedule.times || schedule.times.length === 0) return "";
-  return schedule.times[0];
+  const normalized = normalizeSchedule(schedule);
+  if (!normalized) return "";
+  return normalized.times[0];
 }
 
 function deriveStatus(account: TikTokAccountInfo): "active" | "pending" | "cancelled" {

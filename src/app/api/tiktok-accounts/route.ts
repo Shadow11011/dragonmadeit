@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { TikTokAccountInfo, PostingSchedule } from "@/types";
+import type { TikTokAccountInfo } from "@/types";
+import { normalizeSchedule } from "@/lib/schedule-utils";
 
 export async function GET() {
   try {
@@ -41,7 +42,7 @@ export async function GET() {
       displayName: account.displayName,
       tier: account.tier,
       videosPerWeek: account.videosPerWeek,
-      schedule: account.schedule as PostingSchedule | null,
+      schedule: normalizeSchedule(account.schedule),
       scheduleLocked: account.scheduleLocked,
       videoType: account.videoType ?? "GAMEPLAY",
       voiceType: account.voiceType ?? "RANDOM",

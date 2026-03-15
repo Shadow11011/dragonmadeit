@@ -1,6 +1,37 @@
 import type { PostingSchedule } from "@/types";
 
 /**
+ * Normalizes raw schedule JSON from the database.
+ * The add-account wizard stores `{ days, time, timezone }` (singular `time` string)
+ * but PostingSchedule expects `{ days, times, timezone }` (plural `times` array).
+ */
+export function normalizeSchedule(raw: unknown): PostingSchedule | null {
+  if (!raw || typeof raw !== "object") return null;
+
+  const obj = raw as Record<string, unknown>;
+
+  const days = Array.isArray(obj.days)
+    ? obj.days.filter((d): d is number => typeof d === "number")
+    : [];
+
+  let times: string[];
+  if (Array.isArray(obj.times) && obj.times.length > 0) {
+    times = obj.times.filter((t): t is string => typeof t === "string");
+  } else if (typeof obj.time === "string" && obj.time) {
+    times = [obj.time];
+  } else {
+    times = [];
+  }
+
+  const timezone =
+    typeof obj.timezone === "string" ? obj.timezone : "America/New_York";
+
+  if (days.length === 0 || times.length === 0) return null;
+
+  return { days, times, timezone };
+}
+
+/**
  * Converts a 24h "HH:MM" string to a 12h display like "2:00 PM".
  */
 export function formatTimeDisplay(time: string): string {
@@ -17,17 +48,16 @@ export function formatTimeDisplay(time: string): string {
  * Returns null if the schedule is empty or null.
  */
 export function getNextPostTime(schedule: PostingSchedule | null): Date | null {
-  if (!schedule || schedule.days.length === 0 || schedule.times.length === 0) {
-    return null;
-  }
+  const normalized = normalizeSchedule(schedule);
+  if (!normalized) return null;
 
   const now = new Date();
-  const sortedTimes = [...schedule.times].sort();
-  const scheduledDays = new Set(schedule.days);
+  const sortedTimes = [...normalized.times].sort();
+  const scheduledDays = new Set(normalized.days);
 
   // Build a formatter to get the current time in the schedule's timezone
   const tzFormatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: schedule.timezone,
+    timeZone: normalized.timezone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -53,7 +83,7 @@ export function getNextPostTime(schedule: PostingSchedule | null): Date | null {
 
     // Determine the day of week in the target timezone
     const dayOfWeekFormatter = new Intl.DateTimeFormat("en-US", {
-      timeZone: schedule.timezone,
+      timeZone: normalized.timezone,
       weekday: "short",
     });
     const weekdayStr = dayOfWeekFormatter.format(candidate);
@@ -94,7 +124,7 @@ export function getNextPostTime(schedule: PostingSchedule | null): Date | null {
       const isoString = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(slotHour).padStart(2, "0")}:${String(slotMinute).padStart(2, "0")}:00`;
 
       // Use a round-trip through the timezone to get the correct UTC instant
-      const targetDate = buildDateInTimezone(isoString, schedule.timezone);
+      const targetDate = buildDateInTimezone(isoString, normalized.timezone);
       return targetDate;
     }
   }

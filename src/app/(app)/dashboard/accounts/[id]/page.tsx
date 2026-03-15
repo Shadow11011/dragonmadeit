@@ -425,7 +425,7 @@ export default function AccountDetailPage() {
                   </span>
                 ))}
               </div>
-              {account.schedule.times.length > 0 && (
+              {account.schedule.times?.length > 0 && (
                 <p className="text-xs text-text-secondary mt-1.5">
                   Posting at{" "}
                   {account.schedule.times
@@ -676,7 +676,7 @@ export default function AccountDetailPage() {
                 ))}
               </div>
             </div>
-            {account.schedule.times.length > 0 && (
+            {account.schedule.times?.length > 0 && (
               <div>
                 <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">
                   Posting Time
