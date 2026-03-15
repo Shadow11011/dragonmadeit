@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { stripe, mapStripePriceToTier, TIER_VIDEOS_PER_WEEK } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { disconnectAccount } from "@/lib/late-api";
+import { sendPaymentConfirmedEmail, sendPaymentFailedEmail } from "@/lib/email";
 import { Tier, VideoType, VoiceType } from "@prisma/client";
 import Stripe from "stripe";
 import type { ContentConfig } from "@/types";
@@ -140,6 +141,18 @@ export async function POST(request: Request) {
         console.log(
           `Created TikTokAccount ${account.id} for user ${userId} with tier ${tier}`
         );
+
+        const checkoutUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, name: true },
+        });
+        if (checkoutUser?.email) {
+          sendPaymentConfirmedEmail({
+            to: checkoutUser.email,
+            tier: tier,
+            name: checkoutUser.name,
+          });
+        }
         break;
       }
 
@@ -238,6 +251,17 @@ export async function POST(request: Request) {
                 : invoice.customer?.id
             }`
           );
+
+          const failedAccount = await prisma.tikTokAccount.findFirst({
+            where: { stripeSubscriptionId: subscriptionId },
+            select: { user: { select: { email: true, name: true } } },
+          });
+          if (failedAccount?.user?.email) {
+            sendPaymentFailedEmail({
+              to: failedAccount.user.email,
+              name: failedAccount.user.name,
+            });
+          }
         }
         break;
       }
