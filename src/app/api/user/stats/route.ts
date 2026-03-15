@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAnalytics } from "@/lib/late-api";
 import type { DashboardStats } from "@/types";
 
 export async function GET() {
@@ -19,7 +20,7 @@ export async function GET() {
     let stats: DashboardStats;
 
     try {
-      const [totalPosts, scheduledPosts, failedPosts, accountCount, postsThisWeek] =
+      const [totalPosts, scheduledPosts, failedPosts, accountCount, postsThisWeek, accounts] =
         await Promise.all([
           prisma.contentItem.count({
             where: { userId, status: "POSTED" },
@@ -42,13 +43,38 @@ export async function GET() {
               },
             },
           }),
+          prisma.tikTokAccount.findMany({
+            where: { userId, lateProfileId: { not: null } },
+            select: { lateProfileId: true },
+          }),
         ]);
+
+      // Fetch total views from Late API across all linked accounts
+      let totalViews = 0;
+      try {
+        const analyticsResults = await Promise.all(
+          accounts.map((a) =>
+            getAnalytics({
+              profileId: a.lateProfileId!,
+              limit: 50,
+            }).catch(() => null)
+          )
+        );
+        for (const result of analyticsResults) {
+          if (!result) continue;
+          for (const post of result.posts) {
+            totalViews += post.views;
+          }
+        }
+      } catch {
+        // Late API unavailable — fall back to 0
+      }
 
       stats = {
         totalPosts,
         scheduledPosts,
         accountCount,
-        totalViews: 0, // Views will come from TikTok API integration
+        totalViews,
         postsThisWeek,
         failedPosts,
       };

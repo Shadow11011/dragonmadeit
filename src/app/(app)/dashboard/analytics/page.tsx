@@ -1,9 +1,56 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const MOCK_BAR_HEIGHTS = [65, 45, 80, 55, 90, 40, 70]; // percentages
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
+
+interface DailyMetric {
+  date: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  engagementTotal: number;
+}
+
+interface AnalyticsData {
+  totalViews: number;
+  totalLikes: number;
+  totalComments: number;
+  totalShares: number;
+  avgEngagementRate: number;
+  dailyMetrics: DailyMetric[];
+  topPosts: Array<{
+    id: string;
+    content: string | null;
+    views: number;
+    likes: number;
+    engagementRate: number;
+  }>;
+}
+
+type DateRange = 7 | 30 | 90;
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                           */
+/* ------------------------------------------------------------------ */
+
+function formatNumber(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
+  return n.toString();
+}
+
+function getDayLabel(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Icons                                                             */
+/* ------------------------------------------------------------------ */
 
 function BarChartIcon() {
   return (
@@ -25,111 +72,267 @@ function PercentIcon() {
   );
 }
 
-function ClockIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <path d="M10 6V10L13 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    </svg>
-  );
-}
-
-function StarIcon() {
+function HeartIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
-        d="M10 2L12.09 7.26L18 7.64L13.45 11.38L14.82 17L10 14.27L5.18 17L6.55 11.38L2 7.64L7.91 7.26L10 2Z"
+        d="M10 17L8.55 15.7C4.4 11.9 2 9.7 2 7C2 4.8 3.8 3 6 3C7.3 3 8.5 3.6 9.3 4.5L10 5.3L10.7 4.5C11.5 3.6 12.7 3 14 3C16.2 3 18 4.8 18 7C18 9.7 15.6 11.9 11.45 15.7L10 17Z"
         stroke="currentColor"
         strokeWidth="1.5"
-        strokeLinejoin="round"
         fill="none"
       />
     </svg>
   );
 }
 
-export default function AnalyticsPage() {
+function ShareIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="14" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <circle cx="6" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <circle cx="14" cy="15" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M8.3 8.8L11.7 6.2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8.3 11.2L11.7 13.8" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Loading skeleton                                                  */
+/* ------------------------------------------------------------------ */
+
+function AnalyticsSkeleton() {
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Analytics</h1>
-
-      {/* Stats row */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Analytics</h1>
+        <div className="h-9 w-52 bg-bg-secondary rounded-lg animate-pulse" />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          label="Views"
-          value="4.8K"
-          icon={<BarChartIcon />}
-          trend={{ value: 15, isPositive: true }}
-          accentColor="#ff4500"
-        />
-        <StatsCard
-          label="Engagement Rate"
-          value="6.2%"
-          icon={<PercentIcon />}
-          trend={{ value: 2.1, isPositive: true }}
-          accentColor="#ff8c00"
-        />
-        <StatsCard
-          label="Best Time"
-          value="6 PM"
-          icon={<ClockIcon />}
-          accentColor="#ffd700"
-        />
-        <StatsCard
-          label="Top Post"
-          value="1.2K"
-          icon={<StarIcon />}
-          trend={{ value: 34, isPositive: true }}
-          accentColor="#22c55e"
-        />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-28 bg-bg-secondary rounded-xl animate-pulse" />
+        ))}
+      </div>
+      <div className="h-64 bg-bg-secondary rounded-xl animate-pulse" />
+      <div className="h-48 bg-bg-secondary rounded-xl animate-pulse" />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Empty state                                                       */
+/* ------------------------------------------------------------------ */
+
+function EmptyState() {
+  return (
+    <div className="rounded-xl bg-bg-secondary border border-border p-12 text-center">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent-fire/10 text-accent-fire">
+        <BarChartIcon />
+      </div>
+      <p className="text-text-primary font-medium text-lg">No analytics data yet</p>
+      <p className="text-text-secondary text-sm mt-2">
+        Start posting to see your metrics here.
+      </p>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main component                                                    */
+/* ------------------------------------------------------------------ */
+
+export default function AnalyticsPage() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>(7);
+
+  const fetchAnalytics = useCallback(async (days: DateRange) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/user/analytics?days=${days}`);
+      if (!res.ok) {
+        throw new Error("Failed to load analytics");
+      }
+      const json: unknown = await res.json();
+      setData(json as AnalyticsData);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchAnalytics(dateRange);
+  }, [dateRange, fetchAnalytics]);
+
+  if (loading) {
+    return <AnalyticsSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">Analytics</h1>
+        <div className="rounded-xl bg-bg-secondary border border-error/30 p-8 text-center">
+          <p className="text-error font-medium">{error}</p>
+          <button
+            onClick={() => void fetchAnalytics(dateRange)}
+            className="mt-3 text-sm text-accent-fire hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isEmpty =
+    !data ||
+    (data.totalViews === 0 &&
+      data.totalLikes === 0 &&
+      data.totalShares === 0 &&
+      data.dailyMetrics.length === 0);
+
+  /* ---- Derived chart values ---- */
+  const maxViews = data
+    ? Math.max(...data.dailyMetrics.map((d) => d.views), 1)
+    : 1;
+  const maxEngagement = data
+    ? Math.max(...data.dailyMetrics.map((d) => d.engagementTotal), 1)
+    : 1;
+
+  const DATE_RANGE_OPTIONS: { label: string; value: DateRange }[] = [
+    { label: "7 days", value: 7 },
+    { label: "30 days", value: 30 },
+    { label: "90 days", value: 90 },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header with date range selector */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="text-3xl font-bold">Analytics</h1>
+
+        <div className="flex rounded-lg bg-bg-secondary border border-border overflow-hidden">
+          {DATE_RANGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setDateRange(opt.value)}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                dateRange === opt.value
+                  ? "bg-accent-fire text-white"
+                  : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Bar chart — pure CSS */}
-      <section>
-        <h2 className="text-lg font-semibold mb-3">Views This Week</h2>
-        <div className="rounded-xl bg-bg-secondary border border-border p-6">
-          <div className="flex items-end justify-between gap-3 h-48">
-            {DAY_LABELS.map((day, i) => (
-              <div key={day} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full flex justify-center">
-                  <div
-                    className="w-full max-w-[40px] rounded-t-md fire-gradient transition-all duration-700"
-                    style={{ height: `${MOCK_BAR_HEIGHTS[i]}%` }}
-                  />
+      {isEmpty ? (
+        <EmptyState />
+      ) : (
+        <>
+          {/* Stats row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatsCard
+              label="Total Views"
+              value={formatNumber(data!.totalViews)}
+              icon={<BarChartIcon />}
+              accentColor="#ff4500"
+            />
+            <StatsCard
+              label="Engagement Rate"
+              value={`${data!.avgEngagementRate.toFixed(1)}%`}
+              icon={<PercentIcon />}
+              accentColor="#ff8c00"
+            />
+            <StatsCard
+              label="Total Likes"
+              value={formatNumber(data!.totalLikes)}
+              icon={<HeartIcon />}
+              accentColor="#ffd700"
+            />
+            <StatsCard
+              label="Total Shares"
+              value={formatNumber(data!.totalShares)}
+              icon={<ShareIcon />}
+              accentColor="#22c55e"
+            />
+          </div>
+
+          {/* Bar chart — Views */}
+          {data!.dailyMetrics.length > 0 && (
+            <section>
+              <h2 className="text-lg font-semibold mb-3">
+                Views ({dateRange === 7 ? "This Week" : `Last ${dateRange} Days`})
+              </h2>
+              <div className="rounded-xl bg-bg-secondary border border-border p-6">
+                <div className="flex items-end justify-between gap-3 h-48">
+                  {data!.dailyMetrics.map((metric) => {
+                    const heightPercent = (metric.views / maxViews) * 100;
+                    return (
+                      <div
+                        key={metric.date}
+                        className="flex-1 flex flex-col items-center gap-2"
+                      >
+                        <div className="w-full flex justify-center">
+                          <div
+                            className="w-full max-w-[40px] rounded-t-md fire-gradient transition-all duration-700"
+                            style={{ height: `${heightPercent}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-text-secondary">
+                          {getDayLabel(metric.date)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-                <span className="text-xs text-text-secondary">{day}</span>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </section>
+          )}
 
-      {/* Engagement chart */}
-      <section>
-        <h2 className="text-lg font-semibold mb-3">Engagement by Day</h2>
-        <div className="rounded-xl bg-bg-secondary border border-border p-6">
-          <div className="space-y-3">
-            {DAY_LABELS.map((day, i) => {
-              const value = [4.2, 5.8, 6.1, 3.9, 7.2, 5.5, 6.8][i];
-              const maxValue = 10;
-              const widthPercent = (value / maxValue) * 100;
-
-              return (
-                <div key={day} className="flex items-center gap-3">
-                  <span className="text-xs text-text-secondary w-8">{day}</span>
-                  <div className="flex-1 h-3 rounded-full bg-bg-tertiary overflow-hidden">
-                    <div
-                      className="h-full rounded-full fire-gradient transition-all duration-700"
-                      style={{ width: `${widthPercent}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-medium w-10 text-right">{value}%</span>
+          {/* Engagement by Day */}
+          {data!.dailyMetrics.length > 0 && (
+            <section>
+              <h2 className="text-lg font-semibold mb-3">Engagement by Day</h2>
+              <div className="rounded-xl bg-bg-secondary border border-border p-6">
+                <div className="space-y-3">
+                  {data!.dailyMetrics.map((metric) => {
+                    const widthPercent =
+                      (metric.engagementTotal / maxEngagement) * 100;
+                    return (
+                      <div
+                        key={metric.date}
+                        className="flex items-center gap-3"
+                      >
+                        <span className="text-xs text-text-secondary w-8">
+                          {getDayLabel(metric.date)}
+                        </span>
+                        <div className="flex-1 h-3 rounded-full bg-bg-tertiary overflow-hidden">
+                          <div
+                            className="h-full rounded-full fire-gradient transition-all duration-700"
+                            style={{ width: `${widthPercent}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium w-10 text-right">
+                          {formatNumber(metric.engagementTotal)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+              </div>
+            </section>
+          )}
+        </>
+      )}
     </div>
   );
 }

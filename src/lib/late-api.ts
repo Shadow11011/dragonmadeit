@@ -337,6 +337,98 @@ export async function presignMedia(
   return { uploadUrl: data.uploadUrl, publicUrl: data.publicUrl };
 }
 
+// ---------------------------------------------------------------------------
+// Analytics SDK response shapes
+// ---------------------------------------------------------------------------
+
+interface SdkAnalyticsPost {
+  _id?: string;
+  content?: string;
+  status?: string;
+  publishedAt?: string;
+  analytics?: {
+    impressions?: number;
+    reach?: number;
+    likes?: number;
+    comments?: number;
+    shares?: number;
+    saves?: number;
+    clicks?: number;
+    views?: number;
+    engagementRate?: number;
+    lastUpdated?: string;
+  };
+}
+
+interface SdkAnalyticsResponse {
+  posts?: SdkAnalyticsPost[];
+  overview?: {
+    totalPosts?: number;
+    publishedPosts?: number;
+    scheduledPosts?: number;
+  };
+  pagination?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
+}
+
+interface SdkDailyMetric {
+  date?: string;
+  impressions?: number;
+  reach?: number;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  saves?: number;
+  clicks?: number;
+  views?: number;
+  postCount?: number;
+}
+
+interface SdkDailyMetricsResponse {
+  metrics?: SdkDailyMetric[];
+}
+
+// ---------------------------------------------------------------------------
+// Analytics exported return-type interfaces
+// ---------------------------------------------------------------------------
+
+export interface AnalyticsPost {
+  id: string;
+  content: string | null;
+  status: string;
+  publishedAt: string | null;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  engagementRate: number;
+}
+
+export interface AnalyticsOverview {
+  posts: AnalyticsPost[];
+  totalPosts: number;
+  publishedPosts: number;
+  scheduledPosts: number;
+}
+
+export interface DailyMetric {
+  date: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  engagementTotal: number;
+}
+
+// ---------------------------------------------------------------------------
+// Post creation
+// ---------------------------------------------------------------------------
+
 /**
  * Create (and optionally schedule or publish) a social media post.
  * This is the main entry point the n8n pipeline will call.
@@ -387,4 +479,80 @@ export async function createPost(params: CreatePostParams): Promise<LatePost> {
     scheduledFor: post.scheduledFor ?? null,
     createdAt: post.createdAt ?? null,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Analytics functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch post-level analytics for a profile within a date range.
+ */
+export async function getAnalytics(params: {
+  profileId?: string;
+  fromDate?: string;
+  toDate?: string;
+  limit?: number;
+  page?: number;
+  sortBy?: "date" | "engagement";
+}): Promise<AnalyticsOverview> {
+  const client = getClient();
+  const response = await client.analytics.getAnalytics({
+    query: {
+      profileId: params.profileId,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+      limit: params.limit ?? 50,
+      page: params.page ?? 1,
+      sortBy: params.sortBy ?? "date",
+      source: "all",
+    },
+  });
+  const data = unwrap<SdkAnalyticsResponse>(response, "getAnalytics");
+  return {
+    posts: (data.posts ?? []).map((p) => ({
+      id: p._id ?? "",
+      content: p.content ?? null,
+      status: p.status ?? "unknown",
+      publishedAt: p.publishedAt ?? null,
+      views: p.analytics?.views ?? 0,
+      likes: p.analytics?.likes ?? 0,
+      comments: p.analytics?.comments ?? 0,
+      shares: p.analytics?.shares ?? 0,
+      saves: p.analytics?.saves ?? 0,
+      engagementRate: p.analytics?.engagementRate ?? 0,
+    })),
+    totalPosts: data.overview?.totalPosts ?? 0,
+    publishedPosts: data.overview?.publishedPosts ?? 0,
+    scheduledPosts: data.overview?.scheduledPosts ?? 0,
+  };
+}
+
+/**
+ * Fetch daily aggregated metrics for a profile within a date range.
+ */
+export async function getDailyMetrics(params: {
+  profileId?: string;
+  fromDate?: string;
+  toDate?: string;
+}): Promise<DailyMetric[]> {
+  const client = getClient();
+  const response = await client.analytics.getDailyMetrics({
+    query: {
+      profileId: params.profileId,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+      source: "all",
+    },
+  });
+  const data = unwrap<SdkDailyMetricsResponse>(response, "getDailyMetrics");
+  return (data.metrics ?? []).map((m) => ({
+    date: m.date ?? "",
+    views: m.views ?? 0,
+    likes: m.likes ?? 0,
+    comments: m.comments ?? 0,
+    shares: m.shares ?? 0,
+    engagementTotal:
+      (m.likes ?? 0) + (m.comments ?? 0) + (m.shares ?? 0) + (m.saves ?? 0),
+  }));
 }

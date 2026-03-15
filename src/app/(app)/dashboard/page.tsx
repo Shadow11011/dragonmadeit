@@ -62,6 +62,16 @@ interface AccountSummary {
   scheduledPosts: number;
 }
 
+interface AnalyticsSummary {
+  totalViews: number;
+}
+
+function formatNumber(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
+  return n.toString();
+}
+
 export default function DashboardPage() {
   const [summary, setSummary] = useState<AccountSummary>({
     count: 0,
@@ -72,13 +82,23 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSummary() {
+    async function fetchData() {
       try {
-        const res = await fetch("/api/user/accounts/count");
-        if (res.ok) {
-          const data: unknown = await res.json();
-          const countData = data as { count: number };
+        const [countRes, analyticsRes] = await Promise.all([
+          fetch("/api/user/accounts/count"),
+          fetch("/api/user/analytics?days=30"),
+        ]);
+
+        if (countRes.ok) {
+          const countJson: unknown = await countRes.json();
+          const countData = countJson as { count: number };
           setSummary((prev) => ({ ...prev, count: countData.count }));
+        }
+
+        if (analyticsRes.ok) {
+          const analyticsJson: unknown = await analyticsRes.json();
+          const analyticsData = analyticsJson as AnalyticsSummary;
+          setSummary((prev) => ({ ...prev, totalViews: analyticsData.totalViews }));
         }
       } catch {
         // Use default values
@@ -86,7 +106,7 @@ export default function DashboardPage() {
         setLoading(false);
       }
     }
-    fetchSummary();
+    void fetchData();
   }, []);
 
   const hasAccounts = summary.count > 0;
@@ -174,7 +194,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           label="Total Views"
-          value={summary.totalViews}
+          value={formatNumber(summary.totalViews)}
           icon={<EyeIcon />}
           accentColor="#22c55e"
         />
