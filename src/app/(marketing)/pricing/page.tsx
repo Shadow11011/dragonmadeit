@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { PricingPageContent } from "./PricingPageContent";
 
 export const metadata: Metadata = {
-  title: "Pricing — DragonMadeIt",
-  description:
-    "Choose your dragon tier. Affordable TikTok automation plans for creators of all sizes.",
+  title: "Pricing — Faceless TikTok Automation from $15/mo | DragonMadeIt",
+  description: "AI-powered faceless TikTok automation starting at $15/mo. 14-day money-back guarantee. Cancel anytime.",
 };
 
 export default function PricingPage() {

@@ -133,6 +133,12 @@ export default function LoginForm({ defaultMode = "login" }: LoginFormProps) {
           {loading ? "Please wait..." : isSignUp ? "Create Account" : "Sign In"}
         </Button>
 
+        {isSignUp && (
+          <p className="text-center text-xs text-text-secondary">
+            14-day money-back guarantee. Cancel anytime.
+          </p>
+        )}
+
         <p className="text-center text-sm text-text-secondary">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           {isSignUp ? (

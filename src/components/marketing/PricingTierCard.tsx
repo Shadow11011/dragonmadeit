@@ -5,6 +5,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
+const CTA_TEXT: Record<string, string> = {
+  HATCHLING: "Start My Hatchling Plan",
+  DRAKE: "Go Daily with Drake",
+  ELDER_DRAGON: "Unleash the Elder Dragon",
+};
+
 interface PricingTierCardProps {
   name: string;
   price: number;
@@ -12,6 +18,9 @@ interface PricingTierCardProps {
   features: string[];
   tierColor: string;
   popular?: boolean;
+  billingPeriod?: "monthly" | "annual";
+  tierKey?: string;
+  videosPerWeek?: number;
 }
 
 export function PricingTierCard({
@@ -21,14 +30,27 @@ export function PricingTierCard({
   features,
   tierColor,
   popular = false,
+  billingPeriod = "monthly",
+  tierKey = "HATCHLING",
+  videosPerWeek = 3,
 }: PricingTierCardProps) {
+  const annualMonthlyPrice = Math.round(price * 0.7 * 100) / 100;
+  const displayPrice = billingPeriod === "annual" ? annualMonthlyPrice : price;
+  const videosPerMonth = videosPerWeek * 4;
+  const perVideo = (displayPrice / videosPerMonth).toFixed(2);
+  const ctaText = CTA_TEXT[tierKey] || "Get Started";
+
   return (
     <motion.div
       className={cn(
         "relative rounded-xl p-6 md:p-8 border-2 flex flex-col",
         popular && "md:scale-105 md:-my-2"
       )}
-      style={{ borderColor: tierColor, backgroundColor: "rgba(18, 18, 26, 0.85)", backdropFilter: "blur(8px)" }}
+      style={{
+        borderColor: tierColor,
+        backgroundColor: "rgba(18, 18, 26, 0.85)",
+        backdropFilter: "blur(8px)",
+      }}
       whileHover={{ scale: 1.03 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
@@ -46,11 +68,20 @@ export function PricingTierCard({
       </h3>
 
       <div className="mt-4 flex items-baseline gap-1">
+        {billingPeriod === "annual" && (
+          <span className="line-through text-text-secondary text-lg mr-2">
+            ${price}
+          </span>
+        )}
         <span className="text-4xl font-bold text-text-primary">
-          ${price}
+          ${displayPrice}
         </span>
         <span className="text-text-secondary text-sm">/mo</span>
       </div>
+
+      <p className="text-xs text-text-secondary mt-1">
+        Just ${perVideo}/video &middot; {videosPerMonth} videos/mo
+      </p>
 
       <p className="mt-2 text-sm text-text-secondary">{description}</p>
 
@@ -84,9 +115,26 @@ export function PricingTierCard({
             color: "#0a0a0f",
           }}
         >
-          Get Started
+          {ctaText}
         </Button>
       </Link>
+
+      <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-text-secondary">
+        <svg
+          className="w-3.5 h-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          />
+        </svg>
+        14-day money-back guarantee
+      </div>
     </motion.div>
   );
 }

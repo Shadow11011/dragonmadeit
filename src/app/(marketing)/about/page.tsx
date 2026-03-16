@@ -1,11 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen pt-24 pb-16 px-4">
       <div className="max-w-4xl mx-auto space-y-16">
+        {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -15,57 +17,56 @@ export default function AboutPage() {
             About DragonMadeIt
           </h1>
           <p className="text-xl text-text-secondary max-w-2xl mx-auto">
-            We&apos;re building the future of TikTok content automation.
+            One dev. One dragon. One mission: automate faceless TikTok.
           </p>
         </motion.div>
 
+        {/* Why I built this */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="bg-bg-secondary border border-border rounded-xl p-8 space-y-4"
         >
-          <h2 className="text-2xl font-bold text-accent-fire">Our Mission</h2>
+          <h2 className="text-2xl font-bold text-accent-fire">Why I built this</h2>
           <p className="text-text-secondary leading-relaxed">
-            DragonMadeIt was born from a simple frustration: creating consistent,
-            engaging TikTok content is incredibly time-consuming. Creators and brands
-            spend hours every week recording, editing, and posting — time that could
-            be spent on strategy, creativity, or growing their business.
+            I got obsessed with faceless TikTok. The idea that you could build an audience
+            and generate income without ever showing your face — that hooked me. But the
+            reality? Hours of scripting, recording voiceovers, editing clips, and manually
+            posting every single day. It was a full-time job pretending to be passive income.
           </p>
           <p className="text-text-secondary leading-relaxed">
-            We built DragonMadeIt to solve this. Our AI-powered platform handles the
-            entire content pipeline — from generation to scheduling to posting — so
-            you can set it and forget it. Think of us as your tireless content dragon,
-            working around the clock to grow your TikTok presence.
+            So I built DragonMadeIt. An AI dragon that handles the entire pipeline — from
+            writing scripts to generating visuals to posting on TikTok — while I sleep. Now
+            I&apos;m making it available to every side hustler who wants the same thing: real
+            TikTok growth without the grind.
           </p>
         </motion.section>
 
+        {/* How it works */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="space-y-6"
         >
-          <h2 className="text-2xl font-bold text-center">How It Works</h2>
+          <h2 className="text-2xl font-bold text-center">How it works</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
                 step: "01",
-                title: "Connect",
-                description:
-                  "Link your TikTok accounts and configure your brand voice and content preferences.",
+                title: "Pick your niche",
+                description: "Choose from 66 content styles — Reddit stories, horror, motivation, true crime, and more. Set your voice and video preferences.",
               },
               {
                 step: "02",
-                title: "Automate",
-                description:
-                  "Our AI generates content, schedules posts at optimal times, and handles publishing automatically.",
+                title: "AI does the work",
+                description: "Flux generates images. KokoroTTS handles voiceover. FFmpeg assembles the video. Late API posts it to TikTok. All automated by n8n.",
               },
               {
                 step: "03",
-                title: "Grow",
-                description:
-                  "Watch your audience grow while you focus on what matters. Review analytics and refine your strategy.",
+                title: "You collect the views",
+                description: "Videos post on your schedule automatically. Watch your analytics grow while you work your day job, sleep, or plan your next niche.",
               },
             ].map((item, i) => (
               <motion.div
@@ -83,28 +84,25 @@ export default function AboutPage() {
           </div>
         </motion.section>
 
+        {/* The Stack */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="bg-bg-secondary border border-border rounded-xl p-8 space-y-4"
         >
-          <h2 className="text-2xl font-bold text-accent-ember">Our Technology</h2>
+          <h2 className="text-2xl font-bold text-accent-ember">The stack</h2>
           <p className="text-text-secondary leading-relaxed">
-            Under the hood, DragonMadeIt combines cutting-edge AI for content
-            generation, intelligent scheduling algorithms that analyze your
-            audience&apos;s activity patterns, and seamless TikTok API integration
-            for automated posting. Every piece of content goes through quality checks
-            before it reaches your audience.
+            No vague &ldquo;cutting-edge AI&rdquo; marketing. Here&apos;s exactly what powers your content:
           </p>
           <div className="grid sm:grid-cols-2 gap-4 pt-4">
             {[
-              "AI-powered content generation",
-              "Intelligent scheduling algorithms",
-              "Real-time analytics tracking",
-              "Automated quality assurance",
-              "Multi-account management",
-              "Brand voice consistency",
+              "Flux — AI image generation",
+              "KokoroTTS / Edge TTS — voiceover synthesis",
+              "FFmpeg — video assembly pipeline",
+              "Late API — official TikTok posting",
+              "n8n — workflow automation engine",
+              "Next.js + Prisma — dashboard & data",
             ].map((feature) => (
               <div key={feature} className="flex items-center gap-2 text-sm">
                 <svg className="w-4 h-4 text-accent-fire flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -116,22 +114,23 @@ export default function AboutPage() {
           </div>
         </motion.section>
 
+        {/* CTA */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className="text-center space-y-6"
         >
-          <h2 className="text-2xl font-bold">Ready to Get Started?</h2>
+          <h2 className="text-2xl font-bold">Ready to let the dragon work for you?</h2>
           <p className="text-text-secondary">
-            Join creators who are already automating their TikTok growth.
+            14-day money-back guarantee. Cancel anytime.
           </p>
-          <a
-            href="/signup"
+          <Link
+            href="/pricing"
             className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:brightness-110 transition-all glow-pulse"
           >
-            Start Automating — It&apos;s Free
-          </a>
+            Start Automating — From $15/mo
+          </Link>
         </motion.section>
       </div>
     </main>

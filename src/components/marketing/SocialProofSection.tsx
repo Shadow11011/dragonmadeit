@@ -3,14 +3,14 @@
 import { motion } from "framer-motion";
 
 const metrics = [
-  { value: "500+", label: "AI videos generated" },
-  { value: "66", label: "Content styles" },
-  { value: "0", label: "Faces required" },
+  { value: "100%", label: "Hands-free automation" },
+  { value: "66", label: "Viral content niches" },
+  { value: "24/7", label: "Autopilot posting" },
 ];
 
 export default function SocialProofSection() {
   return (
-    <section className="py-16 border-t border-border/30">
+    <section className="py-16 bg-bg-secondary/50">
       <div className="mx-auto max-w-4xl px-4">
         <motion.p
           className="text-sm text-text-secondary mb-8 text-center"
@@ -19,7 +19,7 @@ export default function SocialProofSection() {
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
         >
-          Built for faceless TikTok creators who want results, not busywork
+          You pick the niche. AI makes the videos. TikTok gets the posts. You never touch an editor.
         </motion.p>
         <div className="flex flex-wrap items-center justify-center gap-12">
           {metrics.map((metric) => (
@@ -31,10 +31,10 @@ export default function SocialProofSection() {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <div className="text-2xl font-bold text-text-primary">
+              <div className="text-3xl md:text-4xl font-bold text-text-primary">
                 {metric.value}
               </div>
-              <div className="text-xs text-text-secondary mt-1">
+              <div className="text-sm text-text-secondary mt-1">
                 {metric.label}
               </div>
             </motion.div>

@@ -14,52 +14,52 @@ const FEATURES: FeatureDetail[] = [
   {
     title: "AI Content Generation",
     description:
-      "Let our AI create scroll-stopping TikTok content for you. From scripts to visuals, our pipeline uses cutting-edge generative AI to produce content that resonates with your audience.",
+      "Our AI handles the entire creative process — scripts, visuals, voiceover, and final assembly. Every video is unique and optimized for TikTok's algorithm.",
     subFeatures: [
       "AI-generated scripts tailored to trending topics",
       "Flux-powered image generation for eye-catching visuals",
       "Edge TTS and KokoroTTS voice synthesis for narration",
       "Automatic video assembly with FFmpeg pipeline",
-      "Template library with customizable styles",
+      "66 content styles across every trending niche",
     ],
     image: "/images/features/ai-content-generation.png",
   },
   {
     title: "Smart Scheduling & Automation",
     description:
-      "Our intelligent scheduling algorithm analyzes your audience's behavior to post at the perfect time, every time. Set your strategy once and let automation handle the rest.",
+      "Set your posting schedule once and your dragon handles the rest. Videos are generated, queued, and posted without you touching a thing.",
     subFeatures: [
-      "Optimal posting time detection per account",
+      "Automated posting on your chosen schedule",
       "Queue-based content pipeline — never miss a day",
-      "Timezone-aware scheduling across regions",
-      "Batch scheduling for weeks or months ahead",
+      "Timezone-aware scheduling",
       "Pause and resume with a single click",
+      "Batch scheduling for weeks ahead",
     ],
     image: "/images/features/smart-scheduling.png",
   },
   {
-    title: "Multi-Account Management",
+    title: "66 Viral Content Styles",
     description:
-      "Whether you manage one account or dozens, our unified dashboard keeps everything organized. Switch between accounts instantly and maintain unique strategies for each.",
+      "From Reddit stories to true crime, horror to motivation — pick the niches that resonate with your audience. Our AI knows what hooks viewers in the first 3 seconds.",
     subFeatures: [
-      "Centralized dashboard for all accounts",
-      "Per-account content queues and strategies",
-      "Bulk actions across multiple accounts",
-      "Account health monitoring and alerts",
-      "Team collaboration (Elder Dragon tier)",
+      "Reddit stories, true crime, horror, motivation, and more",
+      "Each niche optimized for engagement and virality",
+      "Mix and match styles for variety",
+      "AI selects trending topics within your niche",
+      "New styles added regularly based on TikTok trends",
     ],
     image: "/images/features/multi-account-management.png",
   },
   {
     title: "Performance Analytics",
     description:
-      "Understand what works and what doesn't. Our analytics dashboard tracks every metric that matters, giving you actionable insights to grow faster.",
+      "Know exactly what's working. Track every metric that matters and double down on your best-performing content styles.",
     subFeatures: [
       "Real-time view and engagement tracking",
-      "Content performance comparison",
+      "Content performance comparison across styles",
       "Growth trend visualization",
       "Best-performing content identification",
-      "Export reports for stakeholders",
+      "Data-driven niche optimization",
     ],
     image: "/images/features/performance-analytics.png",
   },
@@ -149,12 +149,10 @@ export function FeaturesPageContent() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-5xl md:text-6xl font-bold fire-text mb-4">
-            Features
+            One tool. Full pipeline.
           </h1>
           <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-            Everything you need to dominate TikTok. From AI-powered content
-            generation to intelligent scheduling, we handle the hard work so you
-            can focus on growing.
+            Script to screen to TikTok — fully automated. Here&apos;s every step we handle.
           </p>
         </motion.div>
 
@@ -178,16 +176,16 @@ export function FeaturesPageContent() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl font-bold text-text-primary mb-4">
-            Ready to get started?
+            Seen enough? Pick a plan.
           </h2>
           <p className="text-text-secondary mb-8">
-            Choose a plan and start automating your TikTok content today.
+            Start automating your TikTok tonight.
           </p>
           <a
             href="/pricing"
             className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:bg-accent-fire/90 transition-colors"
           >
-            View Pricing
+            See Plans from $15/mo
           </a>
         </motion.div>
       </div>

@@ -45,6 +45,31 @@ const FAQ = [
     answer:
       "We offer a 14-day money-back guarantee. If you're not satisfied within the first 14 days, contact our support team for a full refund.",
   },
+  {
+    question: "Will my TikTok account get banned?",
+    answer:
+      "No. We post through the official TikTok API via Late.dev — not bots or scrapers. Your account is safe and fully compliant with TikTok's terms of service.",
+  },
+  {
+    question: "What does the AI content look like?",
+    answer:
+      "Our AI generates unique scripts, pairs them with AI-generated images or gameplay footage, and adds professional voiceover. Each video is unique and optimized for TikTok's format.",
+  },
+  {
+    question: "How is this different from AutoShorts?",
+    answer:
+      "We start at $15/mo (vs $19), offer 66 content styles (vs limited templates), and handle the full pipeline from script to post. Most tools just schedule — we create AND post.",
+  },
+  {
+    question: "Can I review videos before they post?",
+    answer:
+      "Videos are generated and queued automatically. You can preview any video in your dashboard before its scheduled posting time and skip or reschedule if needed.",
+  },
+  {
+    question: "What niches work best?",
+    answer:
+      "Reddit stories, true crime, horror, motivation, and dating drama are our top performers. But with 66 content styles, there's something for every niche. Our AI optimizes for what's trending.",
+  },
 ];
 
 function FAQItem({
@@ -101,6 +126,8 @@ function FAQItem({
 }
 
 export function PricingPageContent() {
+  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+
   return (
     <div className="min-h-screen py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -115,9 +142,38 @@ export function PricingPageContent() {
             Pricing
           </h1>
           <p className="text-lg text-text-secondary">
-            Choose your dragon tier
+            Choose your dragon tier. Cancel anytime. 14-day money-back guarantee.
           </p>
         </motion.div>
+
+        {/* Billing Toggle */}
+        <div className="flex items-center justify-center gap-2 mb-14">
+          <button
+            onClick={() => setBilling("monthly")}
+            className={cn(
+              "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+              billing === "monthly"
+                ? "bg-bg-tertiary text-text-primary"
+                : "text-text-secondary hover:text-text-primary"
+            )}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBilling("annual")}
+            className={cn(
+              "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+              billing === "annual"
+                ? "bg-bg-tertiary text-text-primary"
+                : "text-text-secondary hover:text-text-primary"
+            )}
+          >
+            Annual
+            <span className="ml-2 text-xs bg-accent-fire/10 text-accent-fire px-2 py-0.5 rounded-full">
+              Save 30%
+            </span>
+          </button>
+        </div>
 
         {/* Tier Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start mb-24">
@@ -132,10 +188,75 @@ export function PricingPageContent() {
                 features={config.features}
                 tierColor={config.fireColor}
                 popular={TIER_META[tierKey].popular}
+                billingPeriod={billing}
+                tierKey={tierKey}
+                videosPerWeek={config.videosPerWeek}
               />
             );
           })}
         </div>
+
+        {/* Comparison Table */}
+        <motion.div
+          className="max-w-3xl mx-auto mb-24"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-2xl font-bold text-text-primary text-center mb-8">
+            DragonMadeIt vs. the alternatives
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 text-text-secondary font-medium">
+                    Feature
+                  </th>
+                  <th className="text-center py-3 px-4 text-accent-fire font-semibold">
+                    DragonMadeIt
+                  </th>
+                  <th className="text-center py-3 px-4 text-text-secondary font-medium">
+                    AutoShorts
+                  </th>
+                  <th className="text-center py-3 px-4 text-text-secondary font-medium">
+                    Faceless.so
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { feature: "Starting price", dragon: "$15/mo", auto: "$19/mo", faceless: "$29/mo" },
+                  { feature: "Creates videos", dragon: "\u2713", auto: "\u2713", faceless: "\u2713" },
+                  { feature: "Posts to TikTok", dragon: "\u2713", auto: "\u2713", faceless: "\u2014" },
+                  { feature: "Content styles", dragon: "66", auto: "Limited", faceless: "Limited" },
+                  { feature: "Full automation", dragon: "\u2713", auto: "Partial", faceless: "\u2014" },
+                  { feature: "Custom voices", dragon: "\u2713", auto: "\u2713", faceless: "\u2014" },
+                  { feature: "14-day guarantee", dragon: "\u2713", auto: "\u2014", faceless: "\u2014" },
+                ].map((row, i) => (
+                  <tr
+                    key={row.feature}
+                    className={cn(
+                      "border-b border-border/50",
+                      i % 2 === 0 && "bg-bg-secondary/30"
+                    )}
+                  >
+                    <td className="py-3 px-4 text-text-primary">{row.feature}</td>
+                    <td className="py-3 px-4 text-center font-medium text-accent-fire">
+                      {row.dragon}
+                    </td>
+                    <td className="py-3 px-4 text-center text-text-secondary">
+                      {row.auto}
+                    </td>
+                    <td className="py-3 px-4 text-center text-text-secondary">
+                      {row.faceless}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
 
         {/* FAQ Section */}
         <motion.div
@@ -157,6 +278,30 @@ export function PricingPageContent() {
               />
             ))}
           </div>
+        </motion.div>
+
+        {/* Final CTA */}
+        <motion.div
+          className="text-center py-16 mt-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-2xl font-bold text-text-primary mb-3">
+            Seen enough?
+          </h2>
+          <p className="text-text-secondary mb-6">
+            Pick a plan and start automating tonight.
+          </p>
+          <a
+            href="/signup"
+            className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:bg-accent-fire/90 transition-colors glow-pulse"
+          >
+            See Plans from $15/mo
+          </a>
+          <p className="text-xs text-text-secondary mt-3">
+            14-day money-back guarantee. Cancel anytime.
+          </p>
         </motion.div>
       </div>
     </div>

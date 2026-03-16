@@ -122,6 +122,10 @@ export default function SignupForm() {
           {loading ? "Please wait..." : "Create Account"}
         </Button>
 
+        <p className="text-center text-xs text-text-secondary">
+          14-day money-back guarantee. Cancel anytime.
+        </p>
+
         <p className="text-center text-sm text-text-secondary">
           Already have an account?{" "}
           <Link href="/login" className="text-accent-fire hover:underline">

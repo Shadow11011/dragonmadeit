@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { HomepageScene } from "@/components/marketing/HomepageScene";
 
 export const metadata: Metadata = {
-  title: "DragonMadeIt — AI-Powered TikTok Automation",
-  description:
-    "Set it and forget it. AI-powered TikTok content automation that grows your audience on autopilot.",
+  title: "DragonMadeIt — Faceless TikTok Automation | AI Videos on Autopilot",
+  description: "AI writes scripts, generates videos, and posts to TikTok on autopilot. 66 content styles. No filming. No face. Starting at $15/mo.",
 };
 
 export default function HomePage() {
