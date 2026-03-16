@@ -255,6 +255,26 @@ export default function SchedulePage() {
             </div>
           </div>
         </div>
+      ) : hasAccounts ? (
+        <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
+          <div className="flex justify-center mb-4">
+            <DragonMascot size={64} />
+          </div>
+          <h2 className="text-xl font-semibold text-text-primary mb-2">
+            No upcoming posts yet
+          </h2>
+          <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
+            Your account is connected — posts will appear here once your automation starts running.
+          </p>
+          <Link href="/dashboard/accounts">
+            <Button
+              size="md"
+              className="bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110"
+            >
+              View Your Accounts
+            </Button>
+          </Link>
+        </div>
       ) : (
         <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
           <div className="flex justify-center mb-4">
@@ -264,7 +284,7 @@ export default function SchedulePage() {
             Nothing scheduled yet
           </h2>
           <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
-            Once your accounts are set up, your posting schedule will appear here automatically.
+            Add your first TikTok account to start posting on autopilot.
           </p>
           <Link href="/dashboard/accounts/add">
             <Button

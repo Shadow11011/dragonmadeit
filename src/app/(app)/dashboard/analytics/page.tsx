@@ -169,23 +169,41 @@ function AnalyticsSkeleton() {
 /*  Empty state                                                       */
 /* ------------------------------------------------------------------ */
 
-function EmptyState() {
+function EmptyState({ hasAccounts }: { hasAccounts: boolean }) {
   return (
     <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
       <div className="flex justify-center mb-4">
         <DragonMascot size={64} />
       </div>
-      <h2 className="text-xl font-semibold text-text-primary mb-2">
-        No data yet — your first post will change that
-      </h2>
-      <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
-        Once your TikTok account starts posting, views, likes, and engagement metrics will appear here in real time.
-      </p>
-      <Link href="/dashboard/accounts/add">
-        <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110 transition-all">
-          Add Your First Account
-        </button>
-      </Link>
+      {hasAccounts ? (
+        <>
+          <h2 className="text-xl font-semibold text-text-primary mb-2">
+            No analytics data yet
+          </h2>
+          <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
+            Your account is connected — metrics will appear here once your first post goes live.
+          </p>
+          <Link href="/dashboard/accounts">
+            <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110 transition-all">
+              View Your Accounts
+            </button>
+          </Link>
+        </>
+      ) : (
+        <>
+          <h2 className="text-xl font-semibold text-text-primary mb-2">
+            No data yet — your first post will change that
+          </h2>
+          <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
+            Add a TikTok account to start posting. Views, likes, and engagement metrics will appear here automatically.
+          </p>
+          <Link href="/dashboard/accounts/add">
+            <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110 transition-all">
+              Add Your First Account
+            </button>
+          </Link>
+        </>
+      )}
     </div>
   );
 }
@@ -196,6 +214,7 @@ function EmptyState() {
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
+  const [hasAccounts, setHasAccounts] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>(7);
@@ -204,12 +223,19 @@ export default function AnalyticsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/user/analytics?days=${days}`);
-      if (!res.ok) {
+      const [analyticsRes, countRes] = await Promise.all([
+        fetch(`/api/user/analytics?days=${days}`),
+        fetch("/api/user/accounts/count"),
+      ]);
+      if (!analyticsRes.ok) {
         throw new Error("Failed to load analytics");
       }
-      const json: unknown = await res.json();
+      const json: unknown = await analyticsRes.json();
       setData(json as AnalyticsData);
+      if (countRes.ok) {
+        const countJson = (await countRes.json()) as { count?: number };
+        setHasAccounts((countJson.count ?? 0) > 0);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);
@@ -294,7 +320,7 @@ export default function AnalyticsPage() {
       </div>
 
       {isEmpty ? (
-        <EmptyState />
+        <EmptyState hasAccounts={hasAccounts} />
       ) : (
         <>
           {/* Stats row */}
