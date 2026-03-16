@@ -27,6 +27,26 @@ function TikTokIcon() {
   );
 }
 
+function ScheduleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="3" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M2 7H16" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 1.5V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M12 1.5V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function AnalyticsIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 14L6 9L10 11L16 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 4H16V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function GearIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -92,6 +112,8 @@ export function Sidebar() {
   const navItems: NavItem[] = [
     { href: "/dashboard", label: "Overview", icon: <DashboardIcon /> },
     { href: "/dashboard/accounts", label: "TikTok Accounts", icon: <TikTokIcon />, badge: accountCount },
+    { href: "/dashboard/schedule", label: "Schedule", icon: <ScheduleIcon /> },
+    { href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> },
     { href: "/dashboard/settings", label: "Settings", icon: <GearIcon /> },
   ];
 
@@ -125,7 +147,7 @@ export function Sidebar() {
         {/* Header */}
         <div className="p-5 border-b border-border flex items-center justify-between">
           <Link
-            href="/"
+            href="/dashboard"
             className="flex items-center gap-2"
             onClick={() => setMobileOpen(false)}
           >
