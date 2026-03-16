@@ -109,11 +109,10 @@ export function AccountList({ accounts, isLoading }: AccountListProps) {
           <DragonMascot size={64} color="#ff4500" />
         </div>
         <h3 className="text-lg font-semibold text-text-primary mb-2">
-          No TikTok accounts yet
+          No accounts yet
         </h3>
         <p className="text-text-secondary text-sm mb-6 max-w-sm mx-auto">
-          Add your first TikTok account to start automating your content. Pick a
-          tier, set your schedule, and let the dragon handle the rest.
+          Add your first account to start posting on autopilot.
         </p>
         <Link href="/dashboard/accounts/add">
           <Button className="fire-gradient text-white glow-fire" size="lg">
@@ -139,7 +138,7 @@ export function AccountList({ accounts, isLoading }: AccountListProps) {
           <motion.div
             key={account.id}
             variants={itemVariants}
-            className="rounded-xl bg-bg-secondary border border-border p-5 hover:border-accent-fire/30 transition-colors"
+            className="rounded-xl bg-bg-secondary border border-border p-5 hover:border-accent-fire/30 hover:translate-y-[-1px] transition-all transition-transform"
           >
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               {/* Avatar + Info */}

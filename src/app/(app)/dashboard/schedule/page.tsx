@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { ScheduleCalendar } from "@/components/dashboard/ScheduleCalendar";
 import { ContentTable } from "@/components/dashboard/ContentTable";
+import { DragonMascot } from "@/components/dashboard/DragonMascot";
 import { normalizeSchedule, getNextPostTime, formatCountdown } from "@/lib/schedule-utils";
 import type { TikTokAccountInfo, PostingSchedule } from "@/types";
 import { Button } from "@/components/ui/Button";
@@ -78,7 +79,10 @@ function PlusIcon() {
 function ScheduleSkeleton() {
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Schedule</h1>
+      <div>
+        <h1 className="text-3xl font-bold text-text-primary">Schedule</h1>
+        <p className="text-text-secondary text-sm mt-1">Your upcoming posts across all accounts.</p>
+      </div>
       {/* Countdown skeleton */}
       <div className="h-24 bg-bg-secondary rounded-xl animate-pulse" />
       {/* Calendar skeleton */}
@@ -209,7 +213,10 @@ export default function SchedulePage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Schedule</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Schedule</h1>
+          <p className="text-text-secondary text-sm mt-1">Your upcoming posts across all accounts.</p>
+        </div>
         <div className="rounded-xl bg-bg-secondary border border-error/30 p-8 text-center">
           <p className="text-error font-medium">{error}</p>
           <button
@@ -227,7 +234,10 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Schedule</h1>
+      <div>
+        <h1 className="text-3xl font-bold text-text-primary">Schedule</h1>
+        <p className="text-text-secondary text-sm mt-1">Your upcoming posts across all accounts.</p>
+      </div>
 
       {/* Next Video Countdown */}
       {hasAccounts && nextPost ? (
@@ -246,18 +256,21 @@ export default function SchedulePage() {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl bg-bg-secondary border border-border p-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent-fire/10 text-accent-fire">
-            <ClockIcon />
+        <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
+          <div className="flex justify-center mb-4">
+            <DragonMascot size={64} />
           </div>
-          <p className="text-text-primary font-medium">
-            No active schedules
-          </p>
-          <p className="text-text-secondary text-sm mt-1 mb-4">
-            Add a TikTok account to get started with automated posting.
+          <h2 className="text-xl font-semibold text-text-primary mb-2">
+            Nothing scheduled yet
+          </h2>
+          <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
+            Once your accounts are set up, your posting schedule will appear here automatically.
           </p>
           <Link href="/dashboard/accounts/add">
-            <Button size="sm">
+            <Button
+              size="md"
+              className="bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110"
+            >
               <span className="flex items-center gap-1.5">
                 <PlusIcon />
                 Add Account

@@ -137,3 +137,16 @@ a {
 .tier-border-hatchling { border-color: #22d3ee; }
 .tier-border-drake { border-color: #ff8c00; }
 .tier-border-elder-dragon { border-color: #ffd700; }
+
+/* Focus ring utility for keyboard accessibility */
+.focus-ring {
+  outline: 2px solid #ff4500;
+  outline-offset: 2px;
+}
+
+/* Disabled fire gradient variant */
+.fire-gradient-disabled {
+  background: linear-gradient(to right, #ff8c00, #ff4500, #ffd700);
+  opacity: 0.5;
+  cursor: not-allowed;
+}

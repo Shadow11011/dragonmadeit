@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { DragonMascot } from "@/components/dashboard/DragonMascot";
 
 const EXEMPT_PATHS = ["/dashboard/settings", "/dashboard/accounts"];
 
@@ -51,18 +52,23 @@ export function FreeTierGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+      <div className="flex justify-center mb-4">
+        <DragonMascot size={64} color="#ff4500" />
+      </div>
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-text-primary mb-2">
-          No TikTok Accounts Yet
+          Ready to start posting?
         </h2>
         <p className="text-text-secondary max-w-md mx-auto">
-          Add a TikTok account to start automating your content. Choose a plan
-          that fits your needs and get posting.
+          Pick a plan, choose your content style, and let your dragon handle the rest.
         </p>
       </div>
 
       <Link href="/dashboard/accounts">
-        <Button size="lg">
+        <Button
+          size="lg"
+          className="bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white shadow-[0_0_20px_rgba(255,69,0,0.3)]"
+        >
           Add Your First Account
         </Button>
       </Link>

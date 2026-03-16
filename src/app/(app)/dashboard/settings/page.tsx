@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
+import { signOut } from "next-auth/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { useTypedSession } from "@/hooks/useSession";
 import { cn } from "@/lib/utils";
@@ -12,6 +14,11 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+
+  // Danger Zone state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteEmailInput, setDeleteEmailInput] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -69,6 +76,37 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleDeleteAccount() {
+    if (!user?.email || deleteEmailInput !== user.email) return;
+
+    setDeleting(true);
+    setSaveMessage(null);
+
+    try {
+      const res = await fetch("/api/user", {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        await signOut({ callbackUrl: "/" });
+      } else {
+        const data: unknown = await res.json();
+        const errorData = data as { error?: string };
+        setSaveMessage({
+          type: "error",
+          text: errorData.error ?? "Failed to delete account. The endpoint may not be available yet.",
+        });
+      }
+    } catch {
+      setSaveMessage({
+        type: "error",
+        text: "Failed to delete account. The endpoint may not be available yet.",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -83,7 +121,12 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Settings</h1>
+      <div>
+        <h1 className="text-3xl font-bold">Settings</h1>
+        <p className="text-sm text-text-secondary mt-1">
+          Manage your profile, billing, and account.
+        </p>
+      </div>
 
       {/* Save/error message */}
       {saveMessage && (
@@ -153,6 +196,86 @@ export default function SettingsPage() {
         >
           {portalLoading ? "Opening..." : "Manage Billing"}
         </Button>
+      </section>
+
+      {/* Session section */}
+      <section className="rounded-xl bg-bg-secondary border border-border p-6">
+        <h2 className="text-lg font-semibold mb-2">Session</h2>
+        <p className="text-sm text-text-secondary mb-4">
+          Sign out of your current session on this device.
+        </p>
+        <Button
+          variant="secondary"
+          onClick={() => signOut({ callbackUrl: "/" })}
+        >
+          Sign Out
+        </Button>
+      </section>
+
+      {/* Danger Zone */}
+      <section className="border border-red-500/30 rounded-xl p-6">
+        <h2 className="text-lg font-semibold text-red-400 mb-2">Danger Zone</h2>
+        <p className="text-sm text-text-secondary mb-4">
+          Permanently delete your account and all associated data. This action cannot be undone.
+        </p>
+
+        {!showDeleteConfirm && (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/20 transition-colors"
+          >
+            Delete Account
+          </button>
+        )}
+
+        <AnimatePresence>
+          {showDeleteConfirm && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="space-y-3 rounded-lg border border-red-500/20 bg-red-500/5 p-4">
+                <p className="text-sm text-text-primary">
+                  Type your email to confirm:{" "}
+                  <span className="font-mono text-red-400">{user?.email}</span>
+                </p>
+                <input
+                  type="email"
+                  value={deleteEmailInput}
+                  onChange={(e) => setDeleteEmailInput(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full max-w-md rounded-lg bg-bg-primary border border-red-500/30 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-red-500/60 transition-colors"
+                />
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deleting || deleteEmailInput !== (user?.email ?? "")}
+                    className={cn(
+                      "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                      deleteEmailInput === (user?.email ?? "")
+                        ? "bg-red-600 text-white hover:bg-red-700"
+                        : "bg-red-600/30 text-red-400/50 cursor-not-allowed"
+                    )}
+                  >
+                    {deleting ? "Deleting..." : "Confirm Delete"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(false);
+                      setDeleteEmailInput("");
+                    }}
+                    className="rounded-lg px-4 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
     </div>
   );

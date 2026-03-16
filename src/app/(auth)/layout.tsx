@@ -46,7 +46,11 @@ export default function AuthLayout({
       </div>
 
       {/* Right side — form */}
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex flex-col items-center justify-center p-4">
+        {/* Mobile brand tagline */}
+        <p className="lg:hidden text-center text-sm text-text-secondary mb-6">
+          Your faceless TikTok empire starts here.
+        </p>
         {children}
       </div>
     </div>

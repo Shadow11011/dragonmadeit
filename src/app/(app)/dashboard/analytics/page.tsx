@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { DragonMascot } from "@/components/dashboard/DragonMascot";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -145,8 +147,11 @@ function ExternalLinkIcon() {
 function AnalyticsSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Analytics</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Analytics</h1>
+          <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
+        </div>
         <div className="h-9 w-52 bg-bg-secondary rounded-lg animate-pulse" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -166,14 +171,21 @@ function AnalyticsSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="rounded-xl bg-bg-secondary border border-border p-12 text-center">
-      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent-fire/10 text-accent-fire">
-        <BarChartIcon />
+    <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
+      <div className="flex justify-center mb-4">
+        <DragonMascot size={64} />
       </div>
-      <p className="text-text-primary font-medium text-lg">No analytics data yet</p>
-      <p className="text-text-secondary text-sm mt-2">
-        Start posting to see your metrics here.
+      <h2 className="text-xl font-semibold text-text-primary mb-2">
+        No data yet — your first post will change that
+      </h2>
+      <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
+        Once your TikTok account starts posting, views, likes, and engagement metrics will appear here in real time.
       </p>
+      <Link href="/dashboard/accounts/add">
+        <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110 transition-all">
+          Add Your First Account
+        </button>
+      </Link>
     </div>
   );
 }
@@ -217,7 +229,10 @@ export default function AnalyticsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Analytics</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Analytics</h1>
+          <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
+        </div>
         <div className="rounded-xl bg-bg-secondary border border-error/30 p-8 text-center">
           <p className="text-error font-medium">{error}</p>
           <button
@@ -256,7 +271,10 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       {/* Header with date range selector */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-3xl font-bold">Analytics</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Analytics</h1>
+          <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
+        </div>
 
         <div className="flex rounded-lg bg-bg-secondary border border-border overflow-hidden">
           {DATE_RANGE_OPTIONS.map((opt) => (
@@ -310,7 +328,7 @@ export default function AnalyticsPage() {
           {/* Bar chart — Views */}
           {data!.dailyMetrics.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold mb-3">
+              <h2 className="text-lg font-semibold text-text-primary mb-3">
                 Views ({dateRange === 7 ? "This Week" : `Last ${dateRange} Days`})
               </h2>
               <div className="rounded-xl bg-bg-secondary border border-border p-6">
@@ -342,7 +360,7 @@ export default function AnalyticsPage() {
           {/* Engagement by Day */}
           {data!.dailyMetrics.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold mb-3">Engagement by Day</h2>
+              <h2 className="text-lg font-semibold text-text-primary mb-3">Engagement by Day</h2>
               <div className="rounded-xl bg-bg-secondary border border-border p-6">
                 <div className="space-y-3">
                   {data!.dailyMetrics.map((metric) => {
@@ -376,7 +394,7 @@ export default function AnalyticsPage() {
           {/* Top Performing Posts */}
           {data!.topPosts.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold mb-3">Top Performing Posts</h2>
+              <h2 className="text-lg font-semibold text-text-primary mb-3">Top Performing Posts</h2>
               <div className="space-y-3">
                 {data!.topPosts.map((post, index) => (
                   <div

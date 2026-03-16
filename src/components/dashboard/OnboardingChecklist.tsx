@@ -57,7 +57,7 @@ export function OnboardingChecklist() {
     <div className="rounded-xl bg-bg-secondary border border-border p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-text-primary">
-          Get started with DragonMadeIt
+          You&apos;re almost there
         </h3>
         <div className="flex items-center gap-3">
           <span className="text-xs text-text-secondary">
@@ -73,6 +73,16 @@ export function OnboardingChecklist() {
         </div>
       </div>
 
+      {/* Fire-gradient progress bar */}
+      <div className="mb-4">
+        <div className="h-2 w-full rounded-full bg-bg-tertiary overflow-hidden">
+          <div
+            className="h-full rounded-full fire-gradient transition-all duration-500 ease-out"
+            style={{ width: `${(completedCount / steps.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
       <div className="flex flex-col sm:flex-row gap-3">
         {steps.map((step, i) => {
           const isCurrent = !step.complete && steps.slice(0, i).every((s) => s.complete);
@@ -81,11 +91,11 @@ export function OnboardingChecklist() {
             <Link
               key={step.label}
               href={step.href}
-              className={`flex-1 flex items-center gap-3 rounded-lg px-4 py-3 border transition-colors ${
+              className={`flex-1 flex items-center gap-3 rounded-lg px-4 py-3 border transition-all ${
                 step.complete
                   ? "border-success/20 bg-success/5"
                   : isCurrent
-                  ? "border-accent-fire/40 bg-accent-fire/5"
+                  ? "border-accent-fire/40 bg-accent-fire/5 shadow-[0_0_12px_rgba(255,69,0,0.15)]"
                   : "border-border bg-bg-primary"
               }`}
             >

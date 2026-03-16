@@ -131,6 +131,10 @@ export default function AccountDetailPage() {
   const [showContentEditor, setShowContentEditor] = useState(false);
   const [healthStatus, setHealthStatus] = useState<HealthStatus>("idle");
   const [healthMessage, setHealthMessage] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const isPending = account?.username.startsWith("pending-") ?? false;
 
@@ -224,6 +228,51 @@ export default function AccountDetailPage() {
     } catch {
       setHealthStatus("error");
       setHealthMessage("Network error. Please try again.");
+    }
+  }
+
+  async function handleManageBilling() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+      });
+
+      const data: unknown = await res.json();
+      const urlData = data as { url?: string; error?: string };
+
+      if (res.ok && urlData.url) {
+        window.location.href = urlData.url;
+      }
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
+  async function handleCancelSubscription() {
+    setIsCancelling(true);
+    setCancelError(null);
+
+    try {
+      const res = await fetch(`/api/tiktok-accounts/${accountId}/cancel`, {
+        method: "POST",
+      });
+
+      const data: unknown = await res.json();
+
+      if (res.ok) {
+        setShowCancelConfirm(false);
+        void fetchAccount();
+      } else {
+        const errData = data as { error?: string };
+        setCancelError(errData.error ?? "Failed to cancel subscription.");
+      }
+    } catch {
+      setCancelError("Network error. Please try again.");
+    } finally {
+      setIsCancelling(false);
     }
   }
 
@@ -761,6 +810,104 @@ export default function AccountDetailPage() {
             </motion.div>
           )}
         </AnimatePresence>
+      </motion.div>
+
+      {/* Subscription */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.25 }}
+        className="rounded-xl bg-bg-secondary border border-border p-6 space-y-4"
+      >
+        <h2 className="text-lg font-semibold text-text-primary">
+          Subscription
+        </h2>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-text-primary font-medium">
+              {tierConfig.name} Plan
+            </p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              ${tierConfig.monthlyPrice}/month &middot; {tierConfig.videosPerWeek} videos/week
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={portalLoading}
+            onClick={() => void handleManageBilling()}
+          >
+            {portalLoading ? "Opening..." : "Manage in Stripe"}
+          </Button>
+        </div>
+
+        {/* Cancel subscription */}
+        <div className="pt-2 border-t border-border">
+          <AnimatePresence>
+            {!showCancelConfirm ? (
+              <motion.button
+                key="cancel-link"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                type="button"
+                className="text-sm text-error hover:text-error/80 transition-colors"
+                onClick={() => setShowCancelConfirm(true)}
+              >
+                Cancel Subscription
+              </motion.button>
+            ) : (
+              <motion.div
+                key="cancel-confirm"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="rounded-lg bg-error/5 border border-error/20 p-4 space-y-3">
+                  <p className="text-sm text-text-primary font-medium">
+                    Are you sure?
+                  </p>
+                  <p className="text-xs text-text-secondary">
+                    Your TikTok account will be unlinked and automated posting will stop immediately.
+                  </p>
+                  {cancelError && (
+                    <p className="text-xs text-error">{cancelError}</p>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        setShowCancelConfirm(false);
+                        setCancelError(null);
+                      }}
+                    >
+                      Keep Subscription
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-error hover:bg-error/90 text-white"
+                      disabled={isCancelling}
+                      onClick={() => void handleCancelSubscription()}
+                    >
+                      {isCancelling ? (
+                        <span className="flex items-center gap-2">
+                          <Spinner />
+                          Cancelling...
+                        </span>
+                      ) : (
+                        "Yes, Cancel"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
     </div>
   );

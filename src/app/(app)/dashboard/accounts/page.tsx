@@ -107,7 +107,7 @@ export default function AccountsPage() {
         <div>
           <h1 className="text-3xl font-bold">TikTok Accounts</h1>
           <p className="text-text-secondary text-sm mt-1">
-            Manage your TikTok accounts and automation subscriptions.
+            Manage your TikTok accounts. Each account runs on its own subscription and schedule.
           </p>
         </div>
         <Link href="/dashboard/accounts/add">
@@ -127,7 +127,7 @@ export default function AccountsPage() {
             exit={{ opacity: 0, y: -8 }}
             className="rounded-lg bg-success/10 border border-success/20 px-4 py-3 text-sm text-success"
           >
-            TikTok account connected successfully! Your automation is ready to go.
+            TikTok connected! Your dragon is now posting on autopilot.
           </motion.div>
         )}
       </AnimatePresence>

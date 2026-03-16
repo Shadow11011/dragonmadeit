@@ -109,7 +109,7 @@ export function ContentTable({ items }: ContentTableProps) {
   if (items.length === 0) {
     return (
       <div className="rounded-xl bg-bg-secondary border border-border p-8 text-center">
-        <p className="text-text-secondary">No content yet. Create your first post!</p>
+        <p className="text-text-secondary">No content scheduled. Posts will appear here once your automation starts running.</p>
       </div>
     );
   }
@@ -159,9 +159,6 @@ export function ContentTable({ items }: ContentTableProps) {
                     {item.status === "POSTED" && item.tiktokPostId && (
                       <ViewOnTikTokLink tiktokPostId={item.tiktokPostId} />
                     )}
-                    <button className="text-xs text-text-secondary hover:text-text-primary transition-colors">
-                      Edit
-                    </button>
                   </div>
                 </td>
               </tr>
@@ -187,14 +184,11 @@ export function ContentTable({ items }: ContentTableProps) {
               </span>
               <span>{formatDate(item.scheduledAt)}</span>
             </div>
-            <div className="flex items-center justify-end gap-3">
-              {item.status === "POSTED" && item.tiktokPostId && (
+            {item.status === "POSTED" && item.tiktokPostId && (
+              <div className="flex items-center justify-end gap-3">
                 <ViewOnTikTokLink tiktokPostId={item.tiktokPostId} />
-              )}
-              <button className="text-xs text-text-secondary hover:text-text-primary transition-colors">
-                Edit
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
+import { DragonMascot } from "@/components/dashboard/DragonMascot";
 import { Button } from "@/components/ui/Button";
+import { useTypedSession } from "@/hooks/useSession";
 
 function FlameIcon() {
   return (
@@ -55,6 +57,20 @@ function PlusIcon() {
   );
 }
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+function getFirstName(fullName: string | null | undefined): string | null {
+  if (!fullName) return null;
+  const trimmed = fullName.trim();
+  if (!trimmed) return null;
+  return trimmed.split(" ")[0];
+}
+
 interface AccountSummary {
   count: number;
   totalPosts: number;
@@ -73,6 +89,7 @@ function formatNumber(n: number): string {
 }
 
 export default function DashboardPage() {
+  const { user } = useTypedSession();
   const [summary, setSummary] = useState<AccountSummary>({
     count: 0,
     totalPosts: 0,
@@ -80,6 +97,7 @@ export default function DashboardPage() {
     scheduledPosts: 0,
   });
   const [loading, setLoading] = useState(true);
+  const firstName = getFirstName(user?.name);
 
   useEffect(() => {
     async function fetchData() {
@@ -130,47 +148,72 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Link href="/dashboard/accounts">
-          <Button size="sm">
-            <span className="flex items-center gap-1.5">
-              <PlusIcon />
-              Add Account
-            </span>
-          </Button>
-        </Link>
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">
+            {getGreeting()}{firstName ? `, ${firstName}` : ""}
+          </h1>
+          <p className="text-text-secondary text-sm mt-1">
+            {hasAccounts
+              ? "Here\u2019s how your content is performing."
+              : "Let\u2019s get your first TikTok account set up."}
+          </p>
+        </div>
+        {hasAccounts && (
+          <Link href="/dashboard/accounts">
+            <Button size="sm">
+              <span className="flex items-center gap-1.5">
+                <PlusIcon />
+                Add Account
+              </span>
+            </Button>
+          </Link>
+        )}
       </div>
 
-      {/* Show onboarding if no accounts */}
+      {/* Empty state with DragonMascot when no accounts */}
+      {!hasAccounts && (
+        <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
+          <div className="flex justify-center mb-4">
+            <DragonMascot size={64} />
+          </div>
+          <h2 className="text-xl font-semibold text-text-primary mb-2">
+            Your first video is 5 minutes away
+          </h2>
+          <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
+            Pick a tier, choose your content style, and we handle the rest. Automated TikTok content, posted on schedule.
+          </p>
+          <Link href="/dashboard/accounts/add">
+            <Button
+              size="md"
+              className="bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110"
+            >
+              Add Your First Account
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* Show onboarding checklist if no accounts */}
       {!hasAccounts && <OnboardingChecklist />}
 
-      {/* Account summary banner */}
-      <div className="rounded-xl bg-bg-secondary border border-border p-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-fire/10 text-accent-fire">
-            <UserIcon />
+      {/* Account summary banner — only when user has accounts */}
+      {hasAccounts && (
+        <div className="rounded-xl bg-bg-secondary border border-border p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-fire/10 text-accent-fire">
+              <UserIcon />
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-text-primary">
+                {`You have ${summary.count} active TikTok account${summary.count === 1 ? "" : "s"}`}
+              </p>
+              <p className="text-sm text-text-secondary">
+                Manage your accounts and subscriptions from the TikTok Accounts page.
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-lg font-semibold text-text-primary">
-              {hasAccounts
-                ? `You have ${summary.count} active TikTok account${summary.count === 1 ? "" : "s"}`
-                : "No TikTok accounts yet"}
-            </p>
-            <p className="text-sm text-text-secondary">
-              {hasAccounts
-                ? "Manage your accounts and subscriptions from the TikTok Accounts page."
-                : "Add your first TikTok account to start automating content."}
-            </p>
-          </div>
-          {!hasAccounts && (
-            <Link href="/dashboard/accounts" className="ml-auto shrink-0">
-              <Button size="sm" variant="secondary">
-                Get Started
-              </Button>
-            </Link>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Stats grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
