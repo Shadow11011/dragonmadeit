@@ -97,6 +97,47 @@ function ShareIcon() {
   );
 }
 
+function EyeIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 10C2 10 5 5 10 5C15 5 18 10 18 10C18 10 15 15 10 15C5 15 2 10 2 10Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    </svg>
+  );
+}
+
+function ExternalLinkIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M6 2H3C2.44772 2 2 2.44772 2 3V11C2 11.5523 2.44772 12 3 12H11C11.5523 12 12 11.5523 12 11V8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8 2H12V6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 2L7 7"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Loading skeleton                                                  */
 /* ------------------------------------------------------------------ */
@@ -328,6 +369,64 @@ export default function AnalyticsPage() {
                     );
                   })}
                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* Top Performing Posts */}
+          {data!.topPosts.length > 0 && (
+            <section>
+              <h2 className="text-lg font-semibold mb-3">Top Performing Posts</h2>
+              <div className="space-y-3">
+                {data!.topPosts.map((post, index) => (
+                  <div
+                    key={post.id || index}
+                    className="rounded-xl bg-bg-secondary border border-border p-4 hover:border-accent-fire/30 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-fire/10 text-accent-fire text-xs font-bold">
+                          {index + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-text-primary leading-relaxed">
+                            {post.content
+                              ? post.content.length > 80
+                                ? post.content.slice(0, 80) + "..."
+                                : post.content
+                              : "Untitled post"}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-text-secondary">
+                            <span className="flex items-center gap-1">
+                              <EyeIcon />
+                              {formatNumber(post.views)} views
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <HeartIcon />
+                              {formatNumber(post.likes)} likes
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <PercentIcon />
+                              {post.engagementRate.toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {post.id && (
+                        <a
+                          href={`https://www.tiktok.com/@/video/${post.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex shrink-0 items-center gap-1 text-xs text-accent-fire hover:text-accent-ember transition-colors mt-0.5"
+                          title="View on TikTok"
+                        >
+                          <ExternalLinkIcon />
+                          <span className="hidden sm:inline">View</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
           )}

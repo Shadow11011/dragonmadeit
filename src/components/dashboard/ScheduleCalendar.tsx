@@ -5,11 +5,11 @@ import { useMemo } from "react";
 
 type ContentStatusValue = "DRAFT" | "SCHEDULED" | "PROCESSING" | "POSTED" | "FAILED";
 
-interface ScheduleItem {
+interface CalendarItem {
   id: string;
   title: string;
-  status: ContentStatusValue;
-  time: string;
+  status: string;
+  scheduledAt: string | null;
 }
 
 interface DayColumn {
@@ -17,52 +17,80 @@ interface DayColumn {
   dayName: string;
   dateLabel: string;
   isToday: boolean;
-  items: ScheduleItem[];
+  items: Array<{
+    id: string;
+    title: string;
+    status: ContentStatusValue;
+    time: string;
+  }>;
+}
+
+interface ScheduleCalendarProps {
+  items: CalendarItem[];
 }
 
 const STATUS_COLORS: Record<ContentStatusValue, string> = {
   DRAFT: "bg-text-secondary",
-  SCHEDULED: "bg-accent-ember",
+  SCHEDULED: "bg-blue-500",
   PROCESSING: "bg-warning",
   POSTED: "bg-success",
   FAILED: "bg-error",
 };
 
-function generateMockItems(): { dayOffset: number; item: ScheduleItem }[] {
-  return [
-    { dayOffset: 0, item: { id: "m1", title: "Morning routine tips", status: "POSTED", time: "9:00 AM" } },
-    { dayOffset: 0, item: { id: "m2", title: "Product showcase", status: "SCHEDULED", time: "2:00 PM" } },
-    { dayOffset: 1, item: { id: "m3", title: "Behind the scenes", status: "SCHEDULED", time: "11:00 AM" } },
-    { dayOffset: 2, item: { id: "m4", title: "Tutorial: Quick editing", status: "DRAFT", time: "3:00 PM" } },
-    { dayOffset: 3, item: { id: "m5", title: "Trending sound remix", status: "SCHEDULED", time: "10:00 AM" } },
-    { dayOffset: 3, item: { id: "m6", title: "Q&A response", status: "PROCESSING", time: "5:00 PM" } },
-    { dayOffset: 5, item: { id: "m7", title: "Collab announcement", status: "SCHEDULED", time: "12:00 PM" } },
-    { dayOffset: 6, item: { id: "m8", title: "Weekly recap", status: "DRAFT", time: "4:00 PM" } },
-  ];
+function isContentStatus(value: string): value is ContentStatusValue {
+  return ["DRAFT", "SCHEDULED", "PROCESSING", "POSTED", "FAILED"].includes(value);
+}
+
+function formatTime(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export function ScheduleCalendar() {
+export function ScheduleCalendar({ items }: ScheduleCalendarProps) {
   const days = useMemo<DayColumn[]>(() => {
     const today = new Date();
-    const mockItems = generateMockItems();
 
     return Array.from({ length: 7 }, (_, i) => {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
+
+      const dayItems = items
+        .filter((item) => {
+          if (!item.scheduledAt) return false;
+          const scheduled = new Date(item.scheduledAt);
+          return isSameDay(scheduled, date);
+        })
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          status: isContentStatus(item.status) ? item.status : ("DRAFT" as ContentStatusValue),
+          time: item.scheduledAt ? formatTime(item.scheduledAt) : "",
+        }))
+        .sort((a, b) => a.time.localeCompare(b.time));
 
       return {
         date,
         dayName: DAY_NAMES[date.getDay()],
         dateLabel: `${date.getMonth() + 1}/${date.getDate()}`,
         isToday: i === 0,
-        items: mockItems
-          .filter((m) => m.dayOffset === i)
-          .map((m) => m.item),
+        items: dayItems,
       };
     });
-  }, []);
+  }, [items]);
 
   return (
     <div className="rounded-xl bg-bg-secondary border border-border p-4 overflow-x-auto">
@@ -96,22 +124,29 @@ export function ScheduleCalendar() {
               </div>
             </div>
             <div className="space-y-1.5">
-              {day.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="group relative"
-                  title={`${item.title} — ${item.time}`}
-                >
+              {day.items.length === 0 ? (
+                <p className="text-[10px] text-text-secondary/50 text-center mt-4">
+                  No posts
+                </p>
+              ) : (
+                day.items.map((item) => (
                   <div
-                    className={cn(
-                      "rounded-md px-1.5 py-1 text-[10px] leading-tight font-medium text-white truncate cursor-default",
-                      STATUS_COLORS[item.status]
-                    )}
+                    key={item.id}
+                    className="group relative"
+                    title={`${item.title} — ${item.time}`}
                   >
-                    {item.title}
+                    <div
+                      className={cn(
+                        "rounded-md px-1.5 py-1 text-[10px] leading-tight font-medium text-white truncate cursor-default",
+                        STATUS_COLORS[item.status]
+                      )}
+                    >
+                      <span className="opacity-70 mr-1">{item.time}</span>
+                      {item.title}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         ))}

@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
           status: true,
           scheduledAt: true,
           postedAt: true,
+          tiktokPostId: true,
           createdAt: true,
           tiktokAccount: {
             select: { username: true },
