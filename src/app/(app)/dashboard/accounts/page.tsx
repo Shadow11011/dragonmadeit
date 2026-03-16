@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { AccountList, TikTokAccountItem } from "@/components/dashboard/AccountList";
 import { Button } from "@/components/ui/Button";
+import { useTypedSession } from "@/hooks/useSession";
 import type { TikTokAccountInfo, PostingSchedule } from "@/types";
 import { normalizeSchedule } from "@/lib/schedule-utils";
 
@@ -42,6 +43,7 @@ function deriveStatus(account: TikTokAccountInfo): "active" | "pending" | "cance
 
 export default function AccountsPage() {
   const searchParams = useSearchParams();
+  const { update } = useTypedSession();
   const [accounts, setAccounts] = useState<TikTokAccountItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,13 +94,17 @@ export default function AccountsPage() {
   useEffect(() => {
     if (searchParams.get("checkout") === "success" || searchParams.get("linked") === "true") {
       setShowSuccess(true);
+      // Refresh JWT so session reflects new tier immediately
+      if (searchParams.get("checkout") === "success") {
+        void update();
+      }
       // Auto-dismiss linked banner after 6s, keep checkout CTA visible
       if (searchParams.get("linked") === "true") {
         const timer = setTimeout(() => setShowSuccess(false), 6000);
         return () => clearTimeout(timer);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, update]);
 
   return (
     <div className="space-y-6 max-w-4xl">

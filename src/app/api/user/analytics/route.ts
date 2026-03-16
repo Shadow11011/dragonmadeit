@@ -74,10 +74,13 @@ export async function GET(request: Request) {
       views: number;
       likes: number;
       engagementRate: number;
+      username: string;
     }> = [];
 
-    for (const result of analyticsResults) {
+    for (let i = 0; i < analyticsResults.length; i++) {
+      const result = analyticsResults[i];
       if (!result) continue;
+      const username = accounts[i].username;
       for (const post of result.posts) {
         totalViews += post.views;
         totalLikes += post.likes;
@@ -91,6 +94,7 @@ export async function GET(request: Request) {
           views: post.views,
           likes: post.likes,
           engagementRate: post.engagementRate,
+          username,
         });
       }
     }

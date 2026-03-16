@@ -10,8 +10,9 @@ import { z } from "zod";
 const checkoutSchema = z.object({
   tier: z.enum(["HATCHLING", "DRAKE", "ELDER_DRAGON"]),
   schedule: z.object({
-    days: z.array(z.string()),
-    time: z.string().min(1),
+    days: z.array(z.number()),
+    times: z.array(z.string()).min(1),
+    timezone: z.string(),
   }),
   contentConfig: z
     .object({

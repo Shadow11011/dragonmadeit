@@ -3,9 +3,10 @@ import { stripe, mapStripePriceToTier, TIER_VIDEOS_PER_WEEK } from "@/lib/stripe
 import { prisma } from "@/lib/prisma";
 import { disconnectAccount } from "@/lib/late-api";
 import { sendPaymentConfirmedEmail, sendPaymentFailedEmail } from "@/lib/email";
+import { getNextPostTime } from "@/lib/schedule-utils";
 import { Tier, VideoType, VoiceType } from "@prisma/client";
 import Stripe from "stripe";
-import type { ContentConfig } from "@/types";
+import type { ContentConfig, PostingSchedule } from "@/types";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -137,6 +138,21 @@ export async function POST(request: Request) {
             userId,
           },
         });
+
+        // Calculate and store nextPostAt from the schedule
+        if (schedule) {
+          try {
+            const nextPost = getNextPostTime(schedule as PostingSchedule);
+            if (nextPost) {
+              await prisma.tikTokAccount.update({
+                where: { id: account.id },
+                data: { nextPostAt: nextPost },
+              });
+            }
+          } catch (err) {
+            console.error("Failed to calculate nextPostAt:", err);
+          }
+        }
 
         console.log(
           `Created TikTokAccount ${account.id} for user ${userId} with tier ${tier}`

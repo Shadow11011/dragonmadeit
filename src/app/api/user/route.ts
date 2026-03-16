@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { stripe } from "@/lib/stripe";
+import { disconnectAccount, deleteProfile } from "@/lib/late-api";
 import { z } from "zod";
 
 const updateUserSchema = z.object({
@@ -109,6 +111,88 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: true, data: updatedUser });
   } catch (error) {
     console.error("PATCH /api/user error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        stripeCustomerId: true,
+        tiktokAccounts: {
+          select: {
+            id: true,
+            stripeSubscriptionId: true,
+            lateAccountId: true,
+            lateProfileId: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Clean up each TikTok account: cancel Stripe sub, disconnect Late.dev
+    for (const account of user.tiktokAccounts) {
+      if (account.stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.cancel(account.stripeSubscriptionId);
+        } catch (err) {
+          console.error(`Failed to cancel Stripe subscription ${account.stripeSubscriptionId}:`, err);
+        }
+      }
+
+      if (account.lateAccountId) {
+        try {
+          await disconnectAccount(account.lateAccountId);
+        } catch (err) {
+          console.error(`Failed to disconnect Late.dev account ${account.lateAccountId}:`, err);
+        }
+      }
+
+      if (account.lateProfileId) {
+        try {
+          await deleteProfile(account.lateProfileId);
+        } catch (err) {
+          console.error(`Failed to delete Late.dev profile ${account.lateProfileId}:`, err);
+        }
+      }
+    }
+
+    // Delete the Stripe customer
+    if (user.stripeCustomerId) {
+      try {
+        await stripe.customers.del(user.stripeCustomerId);
+      } catch (err) {
+        console.error(`Failed to delete Stripe customer ${user.stripeCustomerId}:`, err);
+      }
+    }
+
+    // Delete user — cascades to TikTokAccounts, sessions, etc.
+    await prisma.user.delete({ where: { id: user.id } });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/user error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

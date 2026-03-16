@@ -102,6 +102,11 @@ model TikTokAccount {
   randomizeStories     Boolean       @default(true)
   lateProfileId        String?
   lateAccountId        String?
+  // n8n pipeline coordination
+  nextPostAt           DateTime?
+  videoGenStatus       String?   @default("IDLE")
+  pendingVideoUrl      String?
+  lastPostedAt         DateTime?
   userId               String
   user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   contentItems         ContentItem[]

@@ -15,7 +15,7 @@ type Step = "tier" | "content" | "schedule" | "payment";
 
 interface ScheduleConfig {
   days: string[];
-  time: string;
+  times: string[];
 }
 
 const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
@@ -42,11 +42,23 @@ const WEEKDAYS = [
   { key: "sunday", label: "Sun" },
 ] as const;
 
-const TIME_PRESETS = [
-  { value: "9:00 AM", label: "Morning", sublabel: "9:00 AM" },
-  { value: "2:00 PM", label: "Afternoon", sublabel: "2:00 PM" },
-  { value: "7:00 PM", label: "Evening", sublabel: "7:00 PM" },
-] as const;
+const DAY_NAME_TO_NUMBER: Record<string, number> = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
+function formatTimePreview(t: string): string {
+  const [h, m] = t.split(":");
+  const hour = parseInt(h, 10);
+  const period = hour >= 12 ? "PM" : "AM";
+  const display = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return `${display}:${m} ${period}`;
+}
 
 const stepVariants = {
   enter: { opacity: 0, x: 30 },
@@ -242,6 +254,8 @@ function ScheduleStep({
   // For Elder Dragon (14/week), all 7 days are auto-selected (2x daily)
   const requiredDays = needsMultiplePerDay ? 7 : videosPerWeek;
 
+  const requiredTimes = needsMultiplePerDay ? 2 : 1;
+
   const toggleDay = (dayKey: string) => {
     if (needsMultiplePerDay) return; // All days locked for 14/week
 
@@ -260,8 +274,10 @@ function ScheduleStep({
     onScheduleChange({ ...schedule, days: newDays });
   };
 
-  const setTime = (time: string) => {
-    onScheduleChange({ ...schedule, time });
+  const setTimeAtIndex = (index: number, value: string) => {
+    const newTimes = [...schedule.times];
+    newTimes[index] = value;
+    onScheduleChange({ ...schedule, times: newTimes });
   };
 
   // Auto-select all days for Elder Dragon
@@ -269,8 +285,9 @@ function ScheduleStep({
     ? WEEKDAYS.map((d) => d.key)
     : schedule.days;
 
+  const filledTimes = schedule.times.filter((t) => t !== "");
   const isValid =
-    effectiveDays.length === requiredDays && schedule.time !== "";
+    effectiveDays.length === requiredDays && filledTimes.length === requiredTimes;
 
   return (
     <div className="space-y-6">
@@ -355,28 +372,31 @@ function ScheduleStep({
       {/* Time picker */}
       <div>
         <label className="block text-sm font-medium text-text-primary mb-3">
-          Posting time
+          {needsMultiplePerDay ? "Posting times (2 per day)" : "Posting time"}
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {TIME_PRESETS.map((preset) => {
-            const isSelected = schedule.time === preset.value;
-            return (
-              <button
-                key={preset.value}
-                type="button"
-                onClick={() => setTime(preset.value)}
-                className={cn(
-                  "rounded-lg py-4 px-4 text-center transition-all border",
-                  isSelected
-                    ? "bg-accent-fire/15 border-accent-fire text-text-primary"
-                    : "bg-bg-primary border-border text-text-secondary hover:border-accent-fire/30 hover:text-text-primary"
-                )}
-              >
-                <div className="text-sm font-medium">{preset.label}</div>
-                <div className="text-xs mt-1 opacity-70">{preset.sublabel}</div>
-              </button>
-            );
-          })}
+        <div className={cn(needsMultiplePerDay ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "max-w-xs")}>
+          <div>
+            {needsMultiplePerDay && (
+              <p className="text-xs text-text-secondary mb-1.5">First post</p>
+            )}
+            <input
+              type="time"
+              value={schedule.times[0] ?? ""}
+              onChange={(e) => setTimeAtIndex(0, e.target.value)}
+              className="w-full rounded-lg bg-bg-primary border border-border px-4 py-3 text-sm text-text-primary focus:border-accent-fire focus:outline-none focus:ring-1 focus:ring-accent-fire [color-scheme:dark]"
+            />
+          </div>
+          {needsMultiplePerDay && (
+            <div>
+              <p className="text-xs text-text-secondary mb-1.5">Second post</p>
+              <input
+                type="time"
+                value={schedule.times[1] ?? ""}
+                onChange={(e) => setTimeAtIndex(1, e.target.value)}
+                className="w-full rounded-lg bg-bg-primary border border-border px-4 py-3 text-sm text-text-primary focus:border-accent-fire focus:outline-none focus:ring-1 focus:ring-accent-fire [color-scheme:dark]"
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -390,13 +410,13 @@ function ScheduleStep({
           <p className="text-sm text-text-secondary mb-1">Schedule preview:</p>
           <p className="text-sm font-medium text-text-primary">
             {needsMultiplePerDay
-              ? `Every day, 2x daily at ${schedule.time}`
+              ? `Every day at ${filledTimes.map(formatTimePreview).join(" and ")}`
               : `${effectiveDays
                   .map(
                     (d) =>
                       WEEKDAYS.find((w) => w.key === d)?.label ?? d
                   )
-                  .join(", ")} at ${schedule.time}`}
+                  .join(", ")} at ${filledTimes.map(formatTimePreview).join(", ")}`}
           </p>
         </motion.div>
       )}
@@ -459,8 +479,9 @@ function PaymentStep({
           tier,
           contentConfig,
           schedule: {
-            days: effectiveDays,
-            time: schedule.time,
+            days: effectiveDays.map((d) => DAY_NAME_TO_NUMBER[d] ?? 0),
+            times: schedule.times.filter((t) => t !== ""),
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         }),
       });
@@ -547,13 +568,13 @@ function PaymentStep({
             </p>
             <p className="text-sm font-medium">
               {config.videosPerWeek > 7
-                ? `Every day, 2x daily at ${schedule.time}`
+                ? `Every day at ${schedule.times.filter((t) => t !== "").map(formatTimePreview).join(" and ")}`
                 : `${effectiveDays
                     .map(
                       (d) =>
                         WEEKDAYS.find((w) => w.key === d)?.label ?? d
                     )
-                    .join(", ")} at ${schedule.time}`}
+                    .join(", ")} at ${schedule.times.filter((t) => t !== "").map(formatTimePreview).join(", ")}`}
             </p>
           </div>
 
@@ -648,7 +669,7 @@ export default function AddAccountPage() {
   const [selectedTier, setSelectedTier] = useState<PaidTier | null>(null);
   const [schedule, setSchedule] = useState<ScheduleConfig>({
     days: [],
-    time: "",
+    times: [],
   });
   const [contentConfig, setContentConfig] = useState<ContentConfig>({
     videoType: "GAMEPLAY",
@@ -660,7 +681,7 @@ export default function AddAccountPage() {
   const handleTierSelect = (tier: PaidTier) => {
     setSelectedTier(tier);
     // Reset schedule when tier changes since videosPerWeek differs
-    setSchedule({ days: [], time: "" });
+    setSchedule({ days: [], times: [] });
   };
 
   return (

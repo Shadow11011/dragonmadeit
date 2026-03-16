@@ -31,6 +31,7 @@ interface AnalyticsData {
     views: number;
     likes: number;
     engagementRate: number;
+    username: string;
   }>;
 }
 
@@ -456,9 +457,9 @@ export default function AnalyticsPage() {
                           </div>
                         </div>
                       </div>
-                      {post.id && (
+                      {post.id && post.username && (
                         <a
-                          href={`https://www.tiktok.com/@/video/${post.id}`}
+                          href={`https://www.tiktok.com/@${post.username}/video/${post.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex shrink-0 items-center gap-1 text-xs text-accent-fire hover:text-accent-ember transition-colors mt-0.5"
