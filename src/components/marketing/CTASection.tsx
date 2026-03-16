@@ -14,17 +14,17 @@ export function CTASection() {
         transition={{ duration: 0.5 }}
       >
         <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-          Ready to automate your TikTok?
+          Your faceless TikTok starts today
         </h2>
         <p className="text-text-secondary mb-8">
-          Start posting AI-generated content in minutes. No credit card
-          required.
+          Pick a niche. Let the AI create. Watch the views roll in. Starting
+          at $15/mo.
         </p>
         <Link
           href="/signup"
           className="inline-block bg-accent-fire hover:bg-accent-fire/90 text-white font-semibold px-10 py-4 rounded-lg transition-colors"
         >
-          Start Free
+          Start Automating
         </Link>
       </motion.div>
     </section>

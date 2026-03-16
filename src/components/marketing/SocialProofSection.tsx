@@ -3,9 +3,9 @@
 import { motion } from "framer-motion";
 
 const metrics = [
-  { value: "500+", label: "Videos generated" },
-  { value: "50+", label: "Active creators" },
-  { value: "99.9%", label: "Uptime" },
+  { value: "500+", label: "AI videos generated" },
+  { value: "66", label: "Content styles" },
+  { value: "0", label: "Faces required" },
 ];
 
 export default function SocialProofSection() {
@@ -19,7 +19,7 @@ export default function SocialProofSection() {
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
         >
-          Trusted by creators automating their TikTok growth
+          Built for faceless TikTok creators who want results, not busywork
         </motion.p>
         <div className="flex flex-wrap items-center justify-center gap-12">
           {metrics.map((metric) => (

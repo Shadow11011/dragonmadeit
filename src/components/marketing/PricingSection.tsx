@@ -23,7 +23,7 @@ export function PricingSection() {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6 }}
         >
-          Simple, transparent pricing
+          Pick your dragon, pick your pace
         </motion.h2>
         <motion.p
           className="text-text-secondary text-center mb-14 max-w-md mx-auto"
@@ -32,7 +32,7 @@ export function PricingSection() {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          Start with Hatchling. Scale to Elder Dragon as you grow.
+          3, 7, or 14 AI-generated videos per week. All fully automated. All faceless.
         </motion.p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">

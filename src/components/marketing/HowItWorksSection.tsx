@@ -5,21 +5,21 @@ import { motion } from "framer-motion";
 const steps = [
   {
     number: "01",
-    title: "Connect your TikTok",
+    title: "Pick your niche",
     description:
-      "Link your account with one click. Choose your content style and posting schedule.",
+      "Choose from 66 story styles — Reddit stories, horror, motivation, true crime, and more. Pick a voice and video type. Done in 60 seconds.",
   },
   {
     number: "02",
-    title: "We generate content",
+    title: "AI creates your videos",
     description:
-      "Our AI creates videos with custom scripts, images, and voiceovers tailored to your audience.",
+      "Our AI writes scripts, generates visuals, adds voiceover, and assembles full TikTok videos. No filming. No editing. No face needed.",
   },
   {
     number: "03",
-    title: "Watch it grow",
+    title: "Collect the views",
     description:
-      "Content posts automatically on your schedule. Track performance and refine as you grow.",
+      "Videos post on your schedule automatically. Track views, engagement, and growth from your dashboard while you do literally anything else.",
   },
 ];
 
@@ -31,7 +31,7 @@ export default function HowItWorksSection() {
           How it works
         </h2>
         <p className="text-text-secondary text-center mb-16 max-w-lg mx-auto">
-          Get your TikTok on autopilot in three simple steps.
+          From zero to posting in under 2 minutes. No camera. No skills. No excuses.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
           {steps.map((step, index) => (

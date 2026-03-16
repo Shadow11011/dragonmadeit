@@ -12,8 +12,8 @@ export function HeroSection() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-text-secondary">
-          TikTok Automation Platform
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-fire/30 text-xs text-accent-ember bg-accent-fire/5">
+          #1 Faceless TikTok Automation Platform
         </span>
       </motion.div>
 
@@ -23,9 +23,9 @@ export function HeroSection() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut", delay: 0.08 }}
       >
-        Automate your TikTok.
+        Start a Faceless TikTok
         <br />
-        <span className="fire-text">Grow while you sleep.</span>
+        <span className="fire-text">in 60 Seconds.</span>
       </motion.h1>
 
       <motion.p
@@ -34,8 +34,8 @@ export function HeroSection() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut", delay: 0.16 }}
       >
-        AI-powered content generation, smart scheduling, and automatic posting.
-        Set it up once. We handle the rest.
+        AI generates your videos. We post them automatically. You never show
+        your face. Choose from 66 content styles and let your dragon handle the rest.
       </motion.p>
 
       <motion.div
@@ -48,7 +48,7 @@ export function HeroSection() {
           href="/signup"
           className="bg-accent-fire hover:bg-accent-fire/90 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
         >
-          Start Free
+          Start Automating
         </Link>
         <a
           href="#how-it-works"
