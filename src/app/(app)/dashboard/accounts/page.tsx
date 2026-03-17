@@ -91,27 +91,30 @@ export default function AccountsPage() {
     void fetchAccounts();
   }, [fetchAccounts]);
 
-  // Poll for pending account after checkout — webhook may not have fired yet
+  // After checkout, verify the transaction to create the account immediately
+  // instead of waiting for the webhook
   const isCheckoutSuccess = searchParams.get("checkout") === "success";
+  const reference = searchParams.get("reference") ?? searchParams.get("trxref");
   const hasPendingAccount = accounts.some((a) => a.status === "pending");
+  const [verifyAttempted, setVerifyAttempted] = useState(false);
 
   useEffect(() => {
-    if (!isCheckoutSuccess || isLoading || hasPendingAccount) return;
+    if (!isCheckoutSuccess || !reference || hasPendingAccount || verifyAttempted) return;
+    setVerifyAttempted(true);
 
-    // No pending account found yet — poll until webhook creates it
-    let attempts = 0;
-    const maxAttempts = 15; // ~30 seconds total
-    const interval = setInterval(() => {
-      attempts++;
-      if (attempts >= maxAttempts) {
-        clearInterval(interval);
-        return;
-      }
+    async function verifyAndRefresh() {
+      try {
+        await fetch("/api/paystack/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference }),
+        });
+      } catch { /* best-effort */ }
       void fetchAccounts();
-    }, 2000);
+    }
 
-    return () => clearInterval(interval);
-  }, [isCheckoutSuccess, isLoading, hasPendingAccount, fetchAccounts]);
+    void verifyAndRefresh();
+  }, [isCheckoutSuccess, reference, hasPendingAccount, verifyAttempted, fetchAccounts]);
 
   useEffect(() => {
     if (searchParams.get("checkout") === "success" || searchParams.get("linked") === "true") {

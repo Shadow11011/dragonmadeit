@@ -194,6 +194,22 @@ export async function fetchSubscription(
   );
 }
 
+export interface PaystackTransactionData {
+  status: string;
+  reference: string;
+  metadata: Record<string, unknown>;
+  plan_object?: { plan_code: string; subscriptions?: Array<{ subscription_code: string }> };
+  authorization?: { subscription_code?: string };
+  customer?: { customer_code: string; email?: string };
+}
+
+export async function verifyTransaction(reference: string): Promise<PaystackTransactionData> {
+  return paystackRequest<PaystackTransactionData>(
+    "GET",
+    `/transaction/verify/${encodeURIComponent(reference)}`
+  );
+}
+
 export function verifyWebhookSignature(
   body: string,
   signature: string
