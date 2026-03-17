@@ -20,6 +20,7 @@ export async function GET() {
         username: true,
         displayName: true,
         tier: true,
+        billingInterval: true,
         videosPerWeek: true,
         schedule: true,
         scheduleLocked: true,
@@ -43,9 +44,9 @@ export async function GET() {
   }
 }
 
-// TikTok accounts are now created via Stripe checkout (payment-gated).
+// TikTok accounts are now created via Paystack checkout (payment-gated).
 // Direct account creation is no longer supported.
-// Use POST /api/stripe/checkout to purchase a new account slot.
+// Use POST /api/paystack/initialize to purchase a new account slot.
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -68,7 +69,7 @@ export async function DELETE(request: NextRequest) {
     // Verify account belongs to user
     const account = await prisma.tikTokAccount.findFirst({
       where: { id, userId: session.user.id },
-      select: { id: true, stripeSubscriptionId: true },
+      select: { id: true, paystackSubscriptionCode: true },
     });
 
     if (!account) {
@@ -79,8 +80,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Prevent deletion of accounts with active subscriptions
-    // User must cancel the subscription first via the billing portal
-    if (account.stripeSubscriptionId) {
+    // User must cancel the subscription first via the account detail page
+    if (account.paystackSubscriptionCode) {
       return NextResponse.json(
         {
           success: false,

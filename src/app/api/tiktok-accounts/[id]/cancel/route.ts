@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { stripe } from "@/lib/stripe";
+import { disableSubscription } from "@/lib/paystack";
 
 export async function POST(
   _request: Request,
@@ -19,7 +19,7 @@ export async function POST(
 
     const account = await prisma.tikTokAccount.findFirst({
       where: { id: params.id, userId: session.user.id },
-      select: { id: true, stripeSubscriptionId: true },
+      select: { id: true, paystackSubscriptionCode: true, paystackEmailToken: true },
     });
 
     if (!account) {
@@ -29,16 +29,23 @@ export async function POST(
       );
     }
 
-    if (!account.stripeSubscriptionId) {
+    if (!account.paystackSubscriptionCode) {
       return NextResponse.json(
         { success: false, error: "No active subscription to cancel" },
         { status: 400 }
       );
     }
 
-    await stripe.subscriptions.cancel(account.stripeSubscriptionId);
+    if (!account.paystackEmailToken) {
+      return NextResponse.json(
+        { success: false, error: "Missing Paystack email token for cancellation" },
+        { status: 400 }
+      );
+    }
 
-    // Stripe webhook (customer.subscription.deleted) handles DB cleanup
+    await disableSubscription(account.paystackSubscriptionCode, account.paystackEmailToken);
+
+    // Paystack webhook (subscription.disable) handles DB cleanup
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("POST /api/tiktok-accounts/[id]/cancel error:", error);

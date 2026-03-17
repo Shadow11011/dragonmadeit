@@ -11,7 +11,7 @@ async function userHasActiveSubscription(userId: string): Promise<boolean> {
     where: {
       userId,
       tier: { not: "FREE" },
-      stripeSubscriptionId: { not: null },
+      paystackSubscriptionCode: { not: null },
     },
   });
   return count > 0;
@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          stripeCustomerId: user.stripeCustomerId,
+          paystackCustomerCode: user.paystackCustomerCode,
           onboardingComplete: user.onboardingComplete,
           hasActiveSubscription: hasActive,
         };
@@ -71,13 +71,13 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
-        token.stripeCustomerId = user.stripeCustomerId;
+        token.paystackCustomerCode = user.paystackCustomerCode;
         token.onboardingComplete = user.onboardingComplete;
         token.hasActiveSubscription = user.hasActiveSubscription;
         token.refreshedAt = Date.now();
       }
 
-      // Re-fetch from DB periodically to address staleness after Stripe events
+      // Re-fetch from DB periodically to address staleness after Paystack events
       if (
         trigger === "update" ||
         Date.now() - (token.refreshedAt ?? 0) > SESSION_REFRESH_INTERVAL
@@ -86,12 +86,12 @@ export const authOptions: NextAuthOptions = {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id },
             select: {
-              stripeCustomerId: true,
+              paystackCustomerCode: true,
               onboardingComplete: true,
             },
           });
           if (dbUser) {
-            token.stripeCustomerId = dbUser.stripeCustomerId;
+            token.paystackCustomerCode = dbUser.paystackCustomerCode;
             token.onboardingComplete = dbUser.onboardingComplete;
             token.hasActiveSubscription = await userHasActiveSubscription(
               token.id
@@ -107,7 +107,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       session.user.id = token.id;
-      session.user.stripeCustomerId = token.stripeCustomerId;
+      session.user.paystackCustomerCode = token.paystackCustomerCode;
       session.user.onboardingComplete = token.onboardingComplete;
       session.user.hasActiveSubscription = token.hasActiveSubscription;
       return session;

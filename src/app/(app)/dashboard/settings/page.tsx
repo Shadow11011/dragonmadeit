@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [portalLoading, setPortalLoading] = useState(false);
+
 
   // Danger Zone state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -50,29 +50,6 @@ export default function SettingsPage() {
       setSaveMessage({ type: "error", text: "Network error. Please try again." });
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleManageBilling() {
-    setPortalLoading(true);
-    setSaveMessage(null);
-    try {
-      const res = await fetch("/api/stripe/portal", {
-        method: "POST",
-      });
-
-      const data: unknown = await res.json();
-      const urlData = data as { url?: string; error?: string };
-
-      if (res.ok && urlData.url) {
-        window.location.href = urlData.url;
-      } else {
-        setSaveMessage({ type: "error", text: urlData.error ?? "Failed to open billing portal." });
-      }
-    } catch {
-      setSaveMessage({ type: "error", text: "Network error. Please try again." });
-    } finally {
-      setPortalLoading(false);
     }
   }
 
@@ -182,20 +159,12 @@ export default function SettingsPage() {
       <section className="rounded-xl bg-bg-secondary border border-border p-6">
         <h2 className="text-lg font-semibold mb-2">Billing</h2>
         <p className="text-sm text-text-secondary mb-4">
-          Manage your payment methods and view invoices through the Stripe billing portal.
           Subscription plans are managed per TikTok account on the{" "}
           <a href="/dashboard/accounts" className="text-accent-fire hover:underline">
             Accounts page
           </a>
-          .
+          . To cancel a subscription, visit the account detail page.
         </p>
-        <Button
-          variant="secondary"
-          onClick={handleManageBilling}
-          disabled={portalLoading}
-        >
-          {portalLoading ? "Opening..." : "Manage Billing"}
-        </Button>
       </section>
 
       {/* Session section */}

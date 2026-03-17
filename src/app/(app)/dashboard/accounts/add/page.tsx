@@ -7,8 +7,16 @@ import { Button } from "@/components/ui/Button";
 import { TierBadge } from "@/components/dashboard/TierBadge";
 import { ContentConfigStep } from "@/components/dashboard/ContentConfigStep";
 import { cn } from "@/lib/utils";
-import { TIER_CONFIG, PaidTier } from "@/types";
-import type { ContentConfig } from "@/types";
+import {
+  TIER_CONFIG,
+  type PaidTier,
+  type BillingInterval,
+  type ContentConfig,
+  getTierPrice,
+  getEffectiveMonthlyPrice,
+  formatPrice,
+} from "@/types";
+import { useCurrency } from "@/lib/geo";
 import { STORY_TYPE_CATALOGUE } from "@/lib/content-config";
 
 type Step = "tier" | "content" | "schedule" | "payment";
@@ -137,14 +145,26 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
   );
 }
 
+const BILLING_OPTIONS: { value: BillingInterval; label: string; badge?: string }[] = [
+  { value: "MONTHLY", label: "Monthly" },
+  { value: "QUARTERLY", label: "Quarterly", badge: "-15%" },
+  { value: "ANNUAL", label: "Annual", badge: "-30%" },
+];
+
 function TierSelectionStep({
   selectedTier,
+  billingInterval,
+  onBillingIntervalChange,
   onSelect,
   onContinue,
+  currency,
 }: {
   selectedTier: PaidTier | null;
+  billingInterval: BillingInterval;
+  onBillingIntervalChange: (interval: BillingInterval) => void;
   onSelect: (tier: PaidTier) => void;
   onContinue: () => void;
+  currency: "NGN" | "USD";
 }) {
   return (
     <div className="space-y-6">
@@ -155,10 +175,33 @@ function TierSelectionStep({
         </p>
       </div>
 
+      {/* Billing interval toggle */}
+      <div className="flex items-center justify-center gap-1 bg-bg-secondary rounded-lg p-1 w-fit mx-auto">
+        {BILLING_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onBillingIntervalChange(option.value)}
+            className={cn(
+              "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+              billingInterval === option.value
+                ? "bg-bg-tertiary text-text-primary shadow-sm"
+                : "text-text-secondary hover:text-text-primary"
+            )}
+          >
+            {option.label}
+            {option.badge && (
+              <span className="ml-1 text-xs text-accent-fire">{option.badge}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {PAID_TIERS.map((tierKey) => {
           const config = TIER_CONFIG[tierKey];
           const isSelected = selectedTier === tierKey;
+          const effectiveMonthly = getEffectiveMonthlyPrice(tierKey, billingInterval, currency);
 
           return (
             <button
@@ -191,10 +234,15 @@ function TierSelectionStep({
               </h3>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-3xl font-bold fire-text">
-                  ${config.monthlyPrice}
+                  {formatPrice(effectiveMonthly, currency)}
                 </span>
                 <span className="text-text-secondary text-sm">/mo</span>
               </div>
+              {billingInterval !== "MONTHLY" && (
+                <p className="text-xs text-accent-fire mt-1">
+                  {formatPrice(getTierPrice(tierKey, billingInterval, currency), currency)} billed {billingInterval === "QUARTERLY" ? "quarterly" : "annually"}
+                </p>
+              )}
               <p className="text-xs text-text-secondary mt-2">
                 {config.description}
               </p>
@@ -235,12 +283,16 @@ function TierSelectionStep({
 
 function ScheduleStep({
   tier,
+  billingInterval,
+  currency,
   schedule,
   onScheduleChange,
   onBack,
   onContinue,
 }: {
   tier: PaidTier;
+  billingInterval: BillingInterval;
+  currency: "NGN" | "USD";
   schedule: ScheduleConfig;
   onScheduleChange: (schedule: ScheduleConfig) => void;
   onBack: () => void;
@@ -329,7 +381,7 @@ function ScheduleStep({
           </span>
         </div>
         <span className="text-sm font-medium fire-text">
-          ${config.monthlyPrice}/mo
+          {formatPrice(getEffectiveMonthlyPrice(tier, billingInterval, currency), currency)}/mo
         </span>
       </div>
 
@@ -449,13 +501,17 @@ function ScheduleStep({
 
 function PaymentStep({
   tier,
+  billingInterval,
   schedule,
   contentConfig,
+  currency,
   onBack,
 }: {
   tier: PaidTier;
+  billingInterval: BillingInterval;
   schedule: ScheduleConfig;
   contentConfig: ContentConfig;
+  currency: "NGN" | "USD";
   onBack: () => void;
 }) {
   const config = TIER_CONFIG[tier];
@@ -467,16 +523,20 @@ function PaymentStep({
       ? WEEKDAYS.map((d) => d.key)
       : schedule.days;
 
+  const totalPrice = getTierPrice(tier, billingInterval, currency);
+  const effectiveMonthly = getEffectiveMonthlyPrice(tier, billingInterval, currency);
+
   async function handleCheckout() {
     setIsRedirecting(true);
     setError(null);
 
     try {
-      const res = await fetch("/api/stripe/checkout", {
+      const res = await fetch("/api/paystack/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tier,
+          billingInterval,
           contentConfig,
           schedule: {
             days: effectiveDays.map((d) => DAY_NAME_TO_NUMBER[d] ?? 0),
@@ -519,7 +579,7 @@ function PaymentStep({
               <span className="font-semibold">{config.name}</span>
             </div>
             <span className="text-lg font-bold fire-text">
-              ${config.monthlyPrice}/mo
+              {formatPrice(effectiveMonthly, currency)}/mo
             </span>
           </div>
         </div>
@@ -599,11 +659,18 @@ function PaymentStep({
         <div className="p-5 border-t border-border bg-bg-tertiary/30">
           <div className="flex items-center justify-between">
             <span className="text-sm text-text-secondary">
-              Monthly total
+              {billingInterval === "MONTHLY" ? "Monthly total" : billingInterval === "QUARTERLY" ? "Quarterly total" : "Annual total"}
             </span>
-            <span className="text-xl font-bold fire-text">
-              ${config.monthlyPrice}
-            </span>
+            <div className="text-right">
+              <span className="text-xl font-bold fire-text">
+                {formatPrice(totalPrice, currency)}
+              </span>
+              {billingInterval !== "MONTHLY" && (
+                <p className="text-xs text-text-secondary">
+                  {formatPrice(effectiveMonthly, currency)}/mo effective
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -653,10 +720,10 @@ function PaymentStep({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              Redirecting to Stripe...
+              Redirecting to payment...
             </span>
           ) : (
-            "Pay with Stripe"
+            "Proceed to Payment"
           )}
         </Button>
       </div>
@@ -667,6 +734,8 @@ function PaymentStep({
 export default function AddAccountPage() {
   const [step, setStep] = useState<Step>("tier");
   const [selectedTier, setSelectedTier] = useState<PaidTier | null>(null);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>("MONTHLY");
+  const { currency } = useCurrency();
   const [schedule, setSchedule] = useState<ScheduleConfig>({
     days: [],
     times: [],
@@ -714,8 +783,11 @@ export default function AddAccountPage() {
           {step === "tier" && (
             <TierSelectionStep
               selectedTier={selectedTier}
+              billingInterval={billingInterval}
+              onBillingIntervalChange={setBillingInterval}
               onSelect={handleTierSelect}
               onContinue={() => setStep("content")}
+              currency={currency}
             />
           )}
 
@@ -731,6 +803,8 @@ export default function AddAccountPage() {
           {step === "schedule" && selectedTier && (
             <ScheduleStep
               tier={selectedTier}
+              billingInterval={billingInterval}
+              currency={currency}
               schedule={schedule}
               onScheduleChange={setSchedule}
               onBack={() => setStep("content")}
@@ -741,8 +815,10 @@ export default function AddAccountPage() {
           {step === "payment" && selectedTier && (
             <PaymentStep
               tier={selectedTier}
+              billingInterval={billingInterval}
               schedule={schedule}
               contentConfig={contentConfig}
+              currency={currency}
               onBack={() => setStep("schedule")}
             />
           )}

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { stripe } from "@/lib/stripe";
+import { disableSubscription } from "@/lib/paystack";
 import { disconnectAccount, deleteProfile } from "@/lib/late-api";
 import { z } from "zod";
 
@@ -27,7 +27,7 @@ export async function GET() {
         id: true,
         email: true,
         name: true,
-        stripeCustomerId: true,
+        paystackCustomerCode: true,
         onboardingComplete: true,
         tiktokAccounts: {
           select: {
@@ -103,7 +103,7 @@ export async function PATCH(request: Request) {
         id: true,
         email: true,
         name: true,
-        stripeCustomerId: true,
+        paystackCustomerCode: true,
         onboardingComplete: true,
       },
     });
@@ -132,11 +132,12 @@ export async function DELETE() {
       where: { id: session.user.id },
       select: {
         id: true,
-        stripeCustomerId: true,
+        paystackCustomerCode: true,
         tiktokAccounts: {
           select: {
             id: true,
-            stripeSubscriptionId: true,
+            paystackSubscriptionCode: true,
+            paystackEmailToken: true,
             lateAccountId: true,
             lateProfileId: true,
           },
@@ -151,13 +152,13 @@ export async function DELETE() {
       );
     }
 
-    // Clean up each TikTok account: cancel Stripe sub, disconnect Late.dev
+    // Clean up each TikTok account: cancel Paystack sub, disconnect Late.dev
     for (const account of user.tiktokAccounts) {
-      if (account.stripeSubscriptionId) {
+      if (account.paystackSubscriptionCode && account.paystackEmailToken) {
         try {
-          await stripe.subscriptions.cancel(account.stripeSubscriptionId);
+          await disableSubscription(account.paystackSubscriptionCode, account.paystackEmailToken);
         } catch (err) {
-          console.error(`Failed to cancel Stripe subscription ${account.stripeSubscriptionId}:`, err);
+          console.error(`Failed to cancel Paystack subscription ${account.paystackSubscriptionCode}:`, err);
         }
       }
 
@@ -175,15 +176,6 @@ export async function DELETE() {
         } catch (err) {
           console.error(`Failed to delete Late.dev profile ${account.lateProfileId}:`, err);
         }
-      }
-    }
-
-    // Delete the Stripe customer
-    if (user.stripeCustomerId) {
-      try {
-        await stripe.customers.del(user.stripeCustomerId);
-      } catch (err) {
-        console.error(`Failed to delete Stripe customer ${user.stripeCustomerId}:`, err);
       }
     }
 

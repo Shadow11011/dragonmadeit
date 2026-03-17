@@ -4,6 +4,15 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import {
+  type PaidTier,
+  type Currency,
+  type BillingInterval,
+  getTierPrice,
+  getEffectiveMonthlyPrice,
+  formatPrice,
+  TIER_PRICES,
+} from "@/types";
 
 const CTA_TEXT: Record<string, string> = {
   HATCHLING: "Start My Hatchling Plan",
@@ -11,34 +20,47 @@ const CTA_TEXT: Record<string, string> = {
   ELDER_DRAGON: "Unleash the Elder Dragon",
 };
 
+const INTERVAL_LABEL: Record<BillingInterval, string> = {
+  MONTHLY: "/mo",
+  QUARTERLY: "/qtr",
+  ANNUAL: "/yr",
+};
+
 interface PricingTierCardProps {
   name: string;
-  price: number;
   description: string;
   features: string[];
   tierColor: string;
   popular?: boolean;
-  billingPeriod?: "monthly" | "annual";
-  tierKey?: string;
-  videosPerWeek?: number;
+  billingInterval: BillingInterval;
+  tierKey: PaidTier;
+  videosPerWeek: number;
+  currency: Currency;
 }
 
 export function PricingTierCard({
   name,
-  price,
   description,
   features,
   tierColor,
   popular = false,
-  billingPeriod = "monthly",
-  tierKey = "HATCHLING",
-  videosPerWeek = 3,
+  billingInterval,
+  tierKey,
+  videosPerWeek,
+  currency,
 }: PricingTierCardProps) {
-  const annualMonthlyPrice = Math.round(price * 0.7 * 100) / 100;
-  const displayPrice = billingPeriod === "annual" ? annualMonthlyPrice : price;
+  const totalPrice = getTierPrice(tierKey, billingInterval, currency);
+  const effectiveMonthly = getEffectiveMonthlyPrice(tierKey, billingInterval, currency);
+  const monthlyBase = TIER_PRICES[tierKey][currency];
   const videosPerMonth = videosPerWeek * 4;
-  const perVideo = (displayPrice / videosPerMonth).toFixed(2);
+  const perVideo = (effectiveMonthly / videosPerMonth).toFixed(2);
   const ctaText = CTA_TEXT[tierKey] || "Get Started";
+  const currencySymbol = currency === "NGN" ? "\u20a6" : "$";
+  const showDiscount = billingInterval !== "MONTHLY";
+
+  // Alternate currency for small text
+  const altCurrency: Currency = currency === "NGN" ? "USD" : "NGN";
+  const altEffectiveMonthly = getEffectiveMonthlyPrice(tierKey, billingInterval, altCurrency);
 
   return (
     <motion.div
@@ -68,19 +90,25 @@ export function PricingTierCard({
       </h3>
 
       <div className="mt-4 flex items-baseline gap-1">
-        {billingPeriod === "annual" && (
+        {showDiscount && (
           <span className="line-through text-text-secondary text-lg mr-2">
-            ${price}
+            {formatPrice(monthlyBase, currency)}
           </span>
         )}
         <span className="text-4xl font-bold text-text-primary">
-          ${displayPrice}
+          {formatPrice(effectiveMonthly, currency)}
         </span>
         <span className="text-text-secondary text-sm">/mo</span>
       </div>
 
+      {showDiscount && (
+        <p className="text-xs text-accent-fire mt-1">
+          {formatPrice(totalPrice, currency)}{INTERVAL_LABEL[billingInterval]} billed
+        </p>
+      )}
+
       <p className="text-xs text-text-secondary mt-1">
-        Just ${perVideo}/video &middot; {videosPerMonth} videos/mo
+        {formatPrice(altEffectiveMonthly, altCurrency)}/mo &middot; {currencySymbol}{perVideo}/video &middot; {videosPerMonth} videos/mo
       </p>
 
       <p className="mt-2 text-sm text-text-secondary">{description}</p>

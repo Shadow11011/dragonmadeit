@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { PricingTierCard } from "@/components/marketing/PricingTierCard";
-import { TIER_CONFIG, PaidTier } from "@/types";
+import { TIER_CONFIG, type PaidTier, type BillingInterval } from "@/types";
+import { useCurrency } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 
 const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
@@ -14,6 +15,12 @@ const TIER_META: Record<PaidTier, { popular?: boolean }> = {
   ELDER_DRAGON: {},
 };
 
+const BILLING_OPTIONS: { value: BillingInterval; label: string; badge?: string }[] = [
+  { value: "MONTHLY", label: "Monthly" },
+  { value: "QUARTERLY", label: "Quarterly", badge: "Save 15%" },
+  { value: "ANNUAL", label: "Annual", badge: "Save 30%" },
+];
+
 const FAQ = [
   {
     question: "Can I switch plans later?",
@@ -23,17 +30,17 @@ const FAQ = [
   {
     question: "What's the difference between plans?",
     answer:
-      "Every paid plan includes 1 TikTok account. The main difference is how many videos per week we generate and post for you — from 3/week on Hatchling up to 14/week (2x daily) on Elder Dragon. Elder Dragon also includes a custom content generation system.",
+      "Every paid plan includes 1 TikTok account. The main difference is how many videos per week we generate and post for you \u2014 from 3/week on Hatchling up to 14/week (2x daily) on Elder Dragon. Elder Dragon also includes a custom content generation system.",
   },
   {
     question: "Do you offer discounts for longer commitments?",
     answer:
-      "Yes! Save 15% with quarterly billing or 30% with annual billing. Contact us after signup to switch to a longer billing cycle.",
+      "Yes! Save 15% with quarterly billing or 30% with annual billing. Select your preferred billing cycle on the pricing toggle above.",
   },
   {
     question: "What payment methods do you accept?",
     answer:
-      "We accept all major credit cards (Visa, Mastercard, American Express) through our secure Stripe payment processing.",
+      "We accept all major cards, bank transfers, and mobile money through our secure Paystack payment processing.",
   },
   {
     question: "Can I cancel anytime?",
@@ -48,7 +55,7 @@ const FAQ = [
   {
     question: "Will my TikTok account get banned?",
     answer:
-      "No. We post through the official TikTok API via Late.dev — not bots or scrapers. Your account is safe and fully compliant with TikTok's terms of service.",
+      "No. We post through the official TikTok API via Late.dev \u2014 not bots or scrapers. Your account is safe and fully compliant with TikTok's terms of service.",
   },
   {
     question: "What does the AI content look like?",
@@ -58,7 +65,7 @@ const FAQ = [
   {
     question: "How is this different from AutoShorts?",
     answer:
-      "We start at $15/mo (vs $19), offer 66 content styles (vs limited templates), and handle the full pipeline from script to post. Most tools just schedule — we create AND post.",
+      "We start at $15/mo (vs $19), offer 66 content styles (vs limited templates), and handle the full pipeline from script to post. Most tools just schedule \u2014 we create AND post.",
   },
   {
     question: "Can I review videos before they post?",
@@ -126,7 +133,8 @@ function FAQItem({
 }
 
 export function PricingPageContent() {
-  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>("MONTHLY");
+  const { currency } = useCurrency();
 
   return (
     <div className="min-h-screen py-20">
@@ -147,32 +155,26 @@ export function PricingPageContent() {
         </motion.div>
 
         {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-2 mb-14">
-          <button
-            onClick={() => setBilling("monthly")}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-              billing === "monthly"
-                ? "bg-bg-tertiary text-text-primary"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setBilling("annual")}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-              billing === "annual"
-                ? "bg-bg-tertiary text-text-primary"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-          >
-            Annual
-            <span className="ml-2 text-xs bg-accent-fire/10 text-accent-fire px-2 py-0.5 rounded-full">
-              Save 30%
-            </span>
-          </button>
+        <div className="flex items-center justify-center gap-1 mb-14 bg-bg-secondary rounded-lg p-1 w-fit mx-auto">
+          {BILLING_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setBillingInterval(option.value)}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                billingInterval === option.value
+                  ? "bg-bg-tertiary text-text-primary shadow-sm"
+                  : "text-text-secondary hover:text-text-primary"
+              )}
+            >
+              {option.label}
+              {option.badge && (
+                <span className="ml-2 text-xs bg-accent-fire/10 text-accent-fire px-2 py-0.5 rounded-full">
+                  {option.badge}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Tier Cards */}
@@ -183,14 +185,14 @@ export function PricingPageContent() {
               <PricingTierCard
                 key={tierKey}
                 name={config.name}
-                price={config.monthlyPrice}
                 description={config.description}
                 features={config.features}
                 tierColor={config.fireColor}
                 popular={TIER_META[tierKey].popular}
-                billingPeriod={billing}
+                billingInterval={billingInterval}
                 tierKey={tierKey}
                 videosPerWeek={config.videosPerWeek}
+                currency={currency}
               />
             );
           })}
@@ -226,7 +228,7 @@ export function PricingPageContent() {
               </thead>
               <tbody>
                 {[
-                  { feature: "Starting price", dragon: "$15/mo", auto: "$19/mo", faceless: "$29/mo" },
+                  { feature: "Starting price", dragon: currency === "NGN" ? "\u20a623,000/mo" : "$15/mo", auto: "$19/mo", faceless: "$29/mo" },
                   { feature: "Creates videos", dragon: "\u2713", auto: "\u2713", faceless: "\u2713" },
                   { feature: "Posts to TikTok", dragon: "\u2713", auto: "\u2713", faceless: "\u2014" },
                   { feature: "Content styles", dragon: "66", auto: "Limited", faceless: "Limited" },
@@ -297,7 +299,7 @@ export function PricingPageContent() {
             href="/signup"
             className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:bg-accent-fire/90 transition-colors glow-pulse"
           >
-            See Plans from $15/mo
+            See Plans from {currency === "NGN" ? "\u20a623,000" : "$15"}/mo
           </a>
           <p className="text-xs text-text-secondary mt-3">
             14-day money-back guarantee. Cancel anytime.

@@ -134,8 +134,7 @@ export default function AccountDetailPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
-  const [portalLoading, setPortalLoading] = useState(false);
-  const [portalError, setPortalError] = useState<string | null>(null);
+
 
   const isPending = account?.username.startsWith("pending-") ?? false;
 
@@ -229,29 +228,6 @@ export default function AccountDetailPage() {
     } catch {
       setHealthStatus("error");
       setHealthMessage("Network error. Please try again.");
-    }
-  }
-
-  async function handleManageBilling() {
-    setPortalLoading(true);
-    setPortalError(null);
-    try {
-      const res = await fetch("/api/stripe/portal", {
-        method: "POST",
-      });
-
-      const data: unknown = await res.json();
-      const urlData = data as { url?: string; error?: string };
-
-      if (res.ok && urlData.url) {
-        window.location.href = urlData.url;
-      } else {
-        setPortalError(urlData.error ?? "Failed to open billing portal. Please try again.");
-      }
-    } catch {
-      setPortalError("Network error. Please check your connection and try again.");
-    } finally {
-      setPortalLoading(false);
     }
   }
 
@@ -834,23 +810,12 @@ export default function AccountDetailPage() {
             </p>
             <p className="text-xs text-text-secondary mt-0.5">
               ${tierConfig.monthlyPrice}/month &middot; {tierConfig.videosPerWeek} videos/week
+              {account?.billingInterval && account.billingInterval !== "MONTHLY" && (
+                <span> &middot; Billed {account.billingInterval.toLowerCase()}</span>
+              )}
             </p>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled={portalLoading}
-            onClick={() => void handleManageBilling()}
-          >
-            {portalLoading ? "Opening..." : "Manage in Stripe"}
-          </Button>
         </div>
-
-        {portalError && (
-          <div className="rounded-lg bg-error/10 border border-error/20 px-4 py-3 text-sm text-error">
-            {portalError}
-          </div>
-        )}
 
         {/* Cancel subscription */}
         <div className="pt-2 border-t border-border">

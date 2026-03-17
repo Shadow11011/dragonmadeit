@@ -31,7 +31,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong className="text-text-primary">Payment information:</strong>{" "}
-                processed securely through Stripe. We do not store your full
+                processed securely through Paystack. We do not store your full
                 credit card details.
               </li>
               <li>
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
                 content on your behalf via their API
               </li>
               <li>
-                <strong className="text-text-primary">Stripe:</strong> to process
+                <strong className="text-text-primary">Paystack:</strong> to process
                 payments securely
               </li>
               <li>

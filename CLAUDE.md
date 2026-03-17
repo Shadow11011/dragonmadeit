@@ -10,13 +10,14 @@ TikTok automation SaaS. "Set it and forget it" content automation with a dark dr
 - **Styling:** Tailwind CSS + Framer Motion (page transitions and micro-interactions)
 - **Database:** PostgreSQL + Prisma ORM
 - **Auth:** NextAuth.js
-- **Payments:** Stripe (subscriptions + webhooks)
+- **Payments:** Paystack (subscriptions + webhooks)
 - **TikTok Integration:** Late API
 - **Video Pipeline:** Flux images → Edge TTS / KokoroTTS → FFmpeg → MinIO storage
 - **Workflow Engine:** n8n (self-hosted, manages automation pipelines)
 - **Process Manager:** PM2 (production)
 - **Reverse Proxy:** Nginx + Certbot SSL (production)
 - **Dev Environment:** localhost on Linux
+- **Production URL:** https://dragonmadeit.vercel.app
 
 ## Two Zones: Marketing vs App
 
@@ -77,7 +78,7 @@ dragonmadeit/
 │   │   ├── api/
 │   │   │   ├── auth/            # NextAuth routes
 │   │   │   ├── webhooks/
-│   │   │   │   └── stripe/      # Stripe webhook handler
+│   │   │   │   └── paystack/    # Paystack webhook handler
 │   │   │   ├── tiktok/          # Late API integration
 │   │   │   └── user/            # User management endpoints
 │   │   ├── layout.tsx           # Root layout
@@ -99,7 +100,7 @@ dragonmadeit/
 │   │   └── ui/                  # Shared primitives (buttons, inputs, modals)
 │   ├── lib/
 │   │   ├── prisma.ts            # Prisma client singleton
-│   │   ├── stripe.ts            # Stripe helpers
+│   │   ├── paystack.ts          # Paystack helpers
 │   │   ├── auth.ts              # NextAuth config
 │   │   ├── late-api.ts          # Late API wrapper
 │   │   └── utils.ts
@@ -179,22 +180,24 @@ dragonmadeit/
 
 - Prisma with PostgreSQL
 - All models: `id` (cuid), `createdAt`, `updatedAt`
-- User → Stripe: `stripeCustomerId`, `stripeSubscriptionId`
+- User → Paystack: `paystackCustomerCode`, TikTokAccount → `paystackSubscriptionCode`, `paystackEmailToken`
 - Tier enum: `FREE`, `HATCHLING`, `DRAKE`, `ELDER_DRAGON`
 - TikTok accounts linked to users with Late API credentials
 - Content queue: video metadata, posting schedule, status
 
-## Stripe Integration Rules
+## Paystack Integration Rules
 
-- Webhook endpoint: `/api/webhooks/stripe`
-- Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`
+- Webhook endpoint: `/api/webhooks/paystack`
+- Events: `charge.success`, `subscription.create`, `subscription.disable`, `invoice.payment_failed`
+- Webhook verification: HMAC-SHA512 of raw body using `PAYSTACK_SECRET_KEY`, compared against `x-paystack-signature` header
 - **CRITICAL BUG FIX:** After payment confirmation, ALWAYS refresh the user's session/JWT to reflect new tier. Previous build had JWT staleness bug — customers showed free tier UI despite active subscription.
-- Always use `stripe.webhooks.constructEvent()` for verification
+- **paystackEmailToken:** Must be stored from `subscription.create` webhook — required to cancel subscriptions via API. If missing, subscription cannot be cancelled programmatically.
+- No billing portal — Paystack has no equivalent to Stripe's Customer Portal. Cancel is per-account via the dashboard.
 
 ## Known Pitfalls
 
 1. **DATABASE_URL encoding:** Special chars in PostgreSQL password must be URL-encoded or Prisma silently fails.
-2. **JWT session staleness:** Invalidate/refresh JWT after Stripe subscription changes.
+2. **JWT session staleness:** Invalidate/refresh JWT after Paystack subscription changes.
 3. **Nginx reverse proxy:** Include WebSocket upgrade headers for HMR. Set proper `proxy_pass` with `Host` forwarding.
 4. **Prisma .env:** Reads from project root by default. Non-standard locations break `DATABASE_URL`.
 5. **R3F + SSR:** React Three Fiber cannot server-render. Always use `next/dynamic` with `{ ssr: false }` for Canvas components. Forgetting this causes hydration crashes.
@@ -253,7 +256,6 @@ When a task touches 3+ files or requires parallel workstreams, delegate to subag
   "three": "^0.160",
   "@prisma/client": "^5",
   "next-auth": "^4",
-  "stripe": "^14",
   "tailwindcss": "^3",
   "framer-motion": "^11"
 }
@@ -265,8 +267,16 @@ When a task touches 3+ files or requires parallel workstreams, delegate to subag
 DATABASE_URL=postgresql://user:password@localhost:5432/dragonmadeit
 NEXTAUTH_SECRET=
 NEXTAUTH_URL=http://localhost:3000
-STRIPE_SECRET_KEY=
-STRIPE_PUBLISHABLE_KEY=
-STRIPE_WEBHOOK_SECRET=
+PAYSTACK_SECRET_KEY=
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=
+PAYSTACK_HATCHLING_MONTHLY_PLAN_CODE=
+PAYSTACK_HATCHLING_QUARTERLY_PLAN_CODE=
+PAYSTACK_HATCHLING_ANNUAL_PLAN_CODE=
+PAYSTACK_DRAKE_MONTHLY_PLAN_CODE=
+PAYSTACK_DRAKE_QUARTERLY_PLAN_CODE=
+PAYSTACK_DRAKE_ANNUAL_PLAN_CODE=
+PAYSTACK_ELDER_DRAGON_MONTHLY_PLAN_CODE=
+PAYSTACK_ELDER_DRAGON_QUARTERLY_PLAN_CODE=
+PAYSTACK_ELDER_DRAGON_ANNUAL_PLAN_CODE=
 LATE_API_KEY=
 ```
