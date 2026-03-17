@@ -12,6 +12,31 @@ export const TIER_VIDEOS_PER_WEEK: Record<Exclude<Tier, "FREE">, number> = {
   ELDER_DRAGON: 14,
 };
 
+/** Monthly base prices in NGN */
+const TIER_MONTHLY_NGN: Record<Exclude<Tier, "FREE">, number> = {
+  HATCHLING: 23000,
+  DRAKE: 60000,
+  ELDER_DRAGON: 200000,
+};
+
+/** Get plan amount in kobo (smallest currency unit) for Paystack */
+function getPlanAmountInKobo(tier: Exclude<Tier, "FREE">, interval: BillingInterval): number {
+  const monthly = TIER_MONTHLY_NGN[tier];
+  let amount: number;
+  switch (interval) {
+    case "MONTHLY":
+      amount = monthly;
+      break;
+    case "QUARTERLY":
+      amount = Math.round(monthly * 3 * 0.85); // 15% discount
+      break;
+    case "ANNUAL":
+      amount = Math.round(monthly * 12 * 0.70); // 30% discount
+      break;
+  }
+  return amount * 100; // Convert to kobo
+}
+
 export const PLAN_CODES: Record<Exclude<Tier, "FREE">, Record<BillingInterval, string>> = {
   HATCHLING: {
     MONTHLY: process.env.PAYSTACK_HATCHLING_MONTHLY_PLAN_CODE || "PLN_hatchling_monthly",
@@ -134,6 +159,7 @@ export async function initializeTransaction(
     reference: string;
   }>("POST", "/transaction/initialize", {
     email: customerEmail,
+    amount: getPlanAmountInKobo(tier, billingInterval),
     plan: planCode,
     callback_url: `${baseUrl}/dashboard/accounts?checkout=success`,
     metadata: {
