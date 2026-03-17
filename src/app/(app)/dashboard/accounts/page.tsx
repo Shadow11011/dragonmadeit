@@ -91,6 +91,28 @@ export default function AccountsPage() {
     void fetchAccounts();
   }, [fetchAccounts]);
 
+  // Poll for pending account after checkout — webhook may not have fired yet
+  const isCheckoutSuccess = searchParams.get("checkout") === "success";
+  const hasPendingAccount = accounts.some((a) => a.status === "pending");
+
+  useEffect(() => {
+    if (!isCheckoutSuccess || isLoading || hasPendingAccount) return;
+
+    // No pending account found yet — poll until webhook creates it
+    let attempts = 0;
+    const maxAttempts = 15; // ~30 seconds total
+    const interval = setInterval(() => {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        return;
+      }
+      void fetchAccounts();
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isCheckoutSuccess, isLoading, hasPendingAccount, fetchAccounts]);
+
   useEffect(() => {
     if (searchParams.get("checkout") === "success" || searchParams.get("linked") === "true") {
       setShowSuccess(true);
@@ -140,7 +162,7 @@ export default function AccountsPage() {
 
       {/* Post-payment CTA */}
       <AnimatePresence>
-        {showSuccess && searchParams.get("checkout") === "success" && (() => {
+        {showSuccess && isCheckoutSuccess && (() => {
           const pendingAccount = accounts.find((a) => a.status === "pending");
           return (
             <motion.div
@@ -155,15 +177,25 @@ export default function AccountsPage() {
                     Payment successful!
                   </h3>
                   <p className="text-sm text-text-secondary mt-1">
-                    Connect your TikTok account to start automated posting.
+                    {pendingAccount
+                      ? "Connect your TikTok account to start automated posting."
+                      : "Setting up your account\u2026 this usually takes a few seconds."}
                   </p>
                 </div>
-                {pendingAccount && (
+                {pendingAccount ? (
                   <Link href={`/dashboard/accounts/${pendingAccount.id}`}>
                     <Button className="fire-gradient text-white glow-fire whitespace-nowrap" size="md">
                       Connect TikTok
                     </Button>
                   </Link>
+                ) : (
+                  <div className="flex items-center gap-2 text-accent-fire text-sm">
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Waiting...</span>
+                  </div>
                 )}
               </div>
             </motion.div>
