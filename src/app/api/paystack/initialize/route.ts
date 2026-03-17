@@ -58,9 +58,10 @@ export async function POST(request: Request) {
       data: { url: result.authorizationUrl },
     });
   } catch (error) {
-    console.error("POST /api/paystack/initialize error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("POST /api/paystack/initialize error:", message, error);
     return NextResponse.json(
-      { success: false, error: "Failed to initialize payment" },
+      { success: false, error: `Failed to initialize payment: ${message}` },
       { status: 500 }
     );
   }

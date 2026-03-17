@@ -125,6 +125,9 @@ export async function initializeTransaction(
     metadata.contentConfig = JSON.stringify(contentConfig);
   }
 
+  const baseUrl = process.env.NEXTAUTH_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://dragonmadeit.vercel.app");
+
   const result = await paystackRequest<{
     authorization_url: string;
     access_code: string;
@@ -132,7 +135,7 @@ export async function initializeTransaction(
   }>("POST", "/transaction/initialize", {
     email: customerEmail,
     plan: planCode,
-    callback_url: `${process.env.NEXTAUTH_URL}/dashboard/accounts?checkout=success`,
+    callback_url: `${baseUrl}/dashboard/accounts?checkout=success`,
     metadata: {
       custom_fields: [],
       ...metadata,
