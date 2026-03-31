@@ -122,6 +122,21 @@ model TikTokAccount {
   updatedAt            DateTime      @updatedAt
 }
 
+model EmailVerificationCode {
+  id                  String    @id @default(cuid())
+  email               String
+  codeHash            String
+  type                String    // "SIGNUP" | "PASSWORD_RESET"
+  attempts            Int       @default(0)
+  expiresAt           DateTime
+  usedAt              DateTime?
+  pendingName         String?
+  pendingPasswordHash String?
+  createdAt           DateTime  @default(now())
+
+  @@index([email, type])
+}
+
 model ContentItem {
   id              String        @id @default(cuid())
   title           String

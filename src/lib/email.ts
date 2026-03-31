@@ -13,7 +13,7 @@ function getResendClient(): Resend | null {
   return globalForResend.resend;
 }
 
-const FROM_EMAIL = "DragonMadeIt <onboarding@resend.dev>";
+const FROM_EMAIL = "DragonMadeIt <hello@dragonmadeit.app>";
 
 const DASHBOARD_URL =
   process.env.NEXTAUTH_URL ?? "http://localhost:3000";
@@ -193,6 +193,78 @@ export async function sendPaymentFailedEmail({
     });
   } catch (error) {
     console.error("Failed to send payment failed email:", error);
+  }
+}
+
+export async function sendVerificationCodeEmail({
+  to,
+  code,
+}: {
+  to: string;
+  code: string;
+}): Promise<void> {
+  const client = getResendClient();
+  if (!client) return;
+
+  try {
+    const html = wrapInTemplate(`
+              <p style="margin: 0 0 16px; color: #e4e4e7;">
+                Enter this code to verify your email address:
+              </p>
+              <div style="margin: 0 0 24px; text-align: center;">
+                <span style="display: inline-block; font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #ff4500; font-family: monospace; background-color: #1a1a2e; padding: 16px 24px; border-radius: 8px; border: 1px solid #27272a;">
+                  ${code}
+                </span>
+              </div>
+              <p style="margin: 0; color: #71717a; font-size: 14px;">
+                This code expires in 10 minutes. If you didn&rsquo;t request this, you can safely ignore this email.
+              </p>
+    `);
+
+    await client.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: "Your DragonMadeIt verification code",
+      html,
+    });
+  } catch (error) {
+    console.error("Failed to send verification code email:", error);
+  }
+}
+
+export async function sendPasswordResetCodeEmail({
+  to,
+  code,
+}: {
+  to: string;
+  code: string;
+}): Promise<void> {
+  const client = getResendClient();
+  if (!client) return;
+
+  try {
+    const html = wrapInTemplate(`
+              <p style="margin: 0 0 16px; color: #e4e4e7;">
+                Enter this code to reset your password:
+              </p>
+              <div style="margin: 0 0 24px; text-align: center;">
+                <span style="display: inline-block; font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #ff4500; font-family: monospace; background-color: #1a1a2e; padding: 16px 24px; border-radius: 8px; border: 1px solid #27272a;">
+                  ${code}
+                </span>
+              </div>
+              <p style="margin: 0; color: #71717a; font-size: 14px;">
+                This code expires in 10 minutes. If you didn&rsquo;t request a password reset, you can safely ignore this email.
+              </p>
+    `);
+
+    await client.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: "Reset your DragonMadeIt password",
+      html,
+    });
+  } catch (error) {
+    console.error("Failed to send password reset email:", error);
   }
 }
 

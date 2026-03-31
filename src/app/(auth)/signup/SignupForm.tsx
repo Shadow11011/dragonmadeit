@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -22,7 +21,7 @@ export default function SignupForm() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/auth/signup/send-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name }),
@@ -35,19 +34,13 @@ export default function SignupForm() {
         return;
       }
 
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+      // Store pending data for the verify page
+      sessionStorage.setItem(
+        "pendingSignup",
+        JSON.stringify({ email, password, name, callbackUrl })
+      );
 
-      if (result?.error) {
-        setError("Invalid email or password");
-        setLoading(false);
-        return;
-      }
-
-      router.push(callbackUrl);
+      router.push("/signup/verify");
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
