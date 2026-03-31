@@ -91,30 +91,16 @@ export default function AccountsPage() {
     void fetchAccounts();
   }, [fetchAccounts]);
 
-  // After checkout, verify the transaction to create the account immediately
-  // instead of waiting for the webhook
+  // After checkout, refresh accounts (Gumroad webhook creates the account)
   const isCheckoutSuccess = searchParams.get("checkout") === "success";
-  const reference = searchParams.get("reference") ?? searchParams.get("trxref");
-  const hasPendingAccount = accounts.some((a) => a.status === "pending");
-  const [verifyAttempted, setVerifyAttempted] = useState(false);
 
   useEffect(() => {
-    if (!isCheckoutSuccess || !reference || hasPendingAccount || verifyAttempted) return;
-    setVerifyAttempted(true);
-
-    async function verifyAndRefresh() {
-      try {
-        await fetch("/api/paystack/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reference }),
-        });
-      } catch { /* best-effort */ }
-      void fetchAccounts();
+    if (isCheckoutSuccess) {
+      // Poll briefly for webhook to create the account
+      const timer = setTimeout(() => void fetchAccounts(), 3000);
+      return () => clearTimeout(timer);
     }
-
-    void verifyAndRefresh();
-  }, [isCheckoutSuccess, reference, hasPendingAccount, verifyAttempted, fetchAccounts]);
+  }, [isCheckoutSuccess, fetchAccounts]);
 
   useEffect(() => {
     if (searchParams.get("checkout") === "success" || searchParams.get("linked") === "true") {

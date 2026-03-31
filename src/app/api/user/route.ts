@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { disableSubscription } from "@/lib/paystack";
+import { cancelSubscription } from "@/lib/gumroad";
 import { disconnectAccount, deleteProfile } from "@/lib/late-api";
 import { z } from "zod";
 
@@ -27,7 +27,7 @@ export async function GET() {
         id: true,
         email: true,
         name: true,
-        paystackCustomerCode: true,
+        gumroadCustomerId: true,
         onboardingComplete: true,
         tiktokAccounts: {
           select: {
@@ -103,7 +103,7 @@ export async function PATCH(request: Request) {
         id: true,
         email: true,
         name: true,
-        paystackCustomerCode: true,
+        gumroadCustomerId: true,
         onboardingComplete: true,
       },
     });
@@ -132,12 +132,11 @@ export async function DELETE() {
       where: { id: session.user.id },
       select: {
         id: true,
-        paystackCustomerCode: true,
+        gumroadCustomerId: true,
         tiktokAccounts: {
           select: {
             id: true,
-            paystackSubscriptionCode: true,
-            paystackEmailToken: true,
+            gumroadSubscriptionId: true,
             lateAccountId: true,
             lateProfileId: true,
           },
@@ -152,13 +151,13 @@ export async function DELETE() {
       );
     }
 
-    // Clean up each TikTok account: cancel Paystack sub, disconnect Late.dev
+    // Clean up each TikTok account: cancel subscription, disconnect Late.dev
     for (const account of user.tiktokAccounts) {
-      if (account.paystackSubscriptionCode && account.paystackEmailToken) {
+      if (account.gumroadSubscriptionId) {
         try {
-          await disableSubscription(account.paystackSubscriptionCode, account.paystackEmailToken);
+          await cancelSubscription(account.gumroadSubscriptionId);
         } catch (err) {
-          console.error(`Failed to cancel Paystack subscription ${account.paystackSubscriptionCode}:`, err);
+          console.error(`Failed to cancel Gumroad subscription ${account.gumroadSubscriptionId}:`, err);
         }
       }
 

@@ -531,19 +531,10 @@ function PaymentStep({
     setError(null);
 
     try {
-      const res = await fetch("/api/paystack/initialize", {
+      const res = await fetch("/api/gumroad/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tier,
-          billingInterval,
-          contentConfig,
-          schedule: {
-            days: effectiveDays.map((d) => DAY_NAME_TO_NUMBER[d] ?? 0),
-            times: schedule.times.filter((t) => t !== ""),
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          },
-        }),
+        body: JSON.stringify({ tier }),
       });
 
       const data: unknown = await res.json();

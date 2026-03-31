@@ -40,7 +40,7 @@ const FAQ = [
   {
     question: "What payment methods do you accept?",
     answer:
-      "We accept all major cards, bank transfers, and mobile money through our secure Paystack payment processing.",
+      "We accept all major cards, bank transfers, and mobile money through Gumroad secure payment processing.",
   },
   {
     question: "Can I cancel anytime?",

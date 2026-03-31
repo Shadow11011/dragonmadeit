@@ -21,7 +21,7 @@ export interface SessionUser {
   id: string;
   email: string;
   name: string | null;
-  paystackCustomerCode: string | null;
+  gumroadCustomerId: string | null;
 }
 
 export type PaidTier = Exclude<Tier, "FREE">;
