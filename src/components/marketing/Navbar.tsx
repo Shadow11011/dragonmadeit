@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -51,16 +52,13 @@ export function Navbar() {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 text-xl font-bold fire-text">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2C8 6 4 9 4 14a8 8 0 0016 0c0-5-4-8-8-12z" fill="url(#fire-grad)" />
-                <defs>
-                  <linearGradient id="fire-grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ffd700" />
-                    <stop offset="50%" stopColor="#ff4500" />
-                    <stop offset="100%" stopColor="#ff8c00" />
-                  </linearGradient>
-                </defs>
-              </svg>
+              <Image
+                src="/images/dragon-mascot.png"
+                alt="DragonMadeIt mascot"
+                width={32}
+                height={32}
+                className="rounded-sm"
+              />
               DragonMadeIt
             </Link>
 

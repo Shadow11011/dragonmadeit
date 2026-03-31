@@ -7,6 +7,29 @@ const inter = Inter({ subsets: ["latin"], display: "swap" });
 export const metadata: Metadata = {
   title: "DragonMadeIt — TikTok Automation",
   description: "Set it and forget it. AI-powered TikTok content automation.",
+  metadataBase: new URL("https://dragonmadeit.app"),
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/images/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/images/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/images/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "DragonMadeIt — TikTok Automation",
+    description: "Set it and forget it. AI-powered TikTok content automation.",
+    url: "https://dragonmadeit.app",
+    siteName: "DragonMadeIt",
+    images: [{ url: "/images/og-image.png", width: 1200, height: 630 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DragonMadeIt — TikTok Automation",
+    description: "Set it and forget it. AI-powered TikTok content automation.",
+    images: ["/images/og-image.png"],
+  },
 };
 
 export default function RootLayout({
