@@ -39,16 +39,13 @@ export function mapGumroadProductToTier(
   return null;
 }
 
-const APP_URL = process.env.NEXTAUTH_URL ?? "https://dragonmadeit.app";
-
 /** Build the Gumroad checkout URL for a tier */
 export function getCheckoutUrl(
   tier: Exclude<Tier, "FREE">,
   email: string
 ): string {
   const product = GUMROAD_PRODUCTS[tier];
-  const redirect = encodeURIComponent(`${APP_URL}/dashboard`);
-  return `https://adonanthony.gumroad.com/l/${product.permalink}?email=${encodeURIComponent(email)}&wanted=true&redirect=${redirect}`;
+  return `https://adonanthony.gumroad.com/l/${product.permalink}?email=${encodeURIComponent(email)}&wanted=true`;
 }
 
 /** Cancel a Gumroad subscription */
