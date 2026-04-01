@@ -541,7 +541,16 @@ function PaymentStep({
       const urlData = data as { success?: boolean; data?: { url?: string }; error?: string };
 
       if (res.ok && urlData.data?.url) {
-        window.location.href = urlData.data.url;
+        // Open Gumroad overlay instead of navigating away
+        const w = window as unknown as { GumroadOverlay?: { show: (opts: { url: string }) => void } };
+        if (w.GumroadOverlay) {
+          w.GumroadOverlay.show({ url: urlData.data.url });
+          setIsRedirecting(false);
+        } else {
+          // Fallback: open in new tab so user doesn't lose the page
+          window.open(urlData.data.url, "_blank");
+          setIsRedirecting(false);
+        }
       } else {
         setError(urlData.error ?? "Failed to start checkout. Please try again.");
         setIsRedirecting(false);
