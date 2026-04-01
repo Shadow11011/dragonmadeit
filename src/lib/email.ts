@@ -13,7 +13,7 @@ function getResendClient(): Resend | null {
   return globalForResend.resend;
 }
 
-const FROM_EMAIL = "DragonMadeIt <hello@dragonmadeit.app>";
+const FROM_EMAIL = "DragonMadeIt <noreply@noreply.dragonmadeit.app>";
 
 const DASHBOARD_URL =
   process.env.NEXTAUTH_URL ?? "http://localhost:3000";
