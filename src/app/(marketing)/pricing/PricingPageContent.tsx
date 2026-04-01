@@ -228,7 +228,7 @@ export function PricingPageContent() {
               </thead>
               <tbody>
                 {[
-                  { feature: "Starting price", dragon: currency === "NGN" ? "\u20a623,000/mo" : "$15/mo", auto: "$19/mo", faceless: "$29/mo" },
+                  { feature: "Starting price", dragon: "$15/mo", auto: "$19/mo", faceless: "$29/mo" },
                   { feature: "Creates videos", dragon: "\u2713", auto: "\u2713", faceless: "\u2713" },
                   { feature: "Posts to TikTok", dragon: "\u2713", auto: "\u2713", faceless: "\u2014" },
                   { feature: "Content styles", dragon: "66", auto: "Limited", faceless: "Limited" },
@@ -299,7 +299,7 @@ export function PricingPageContent() {
             href="/signup"
             className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:bg-accent-fire/90 transition-colors glow-pulse"
           >
-            See Plans from {currency === "NGN" ? "\u20a623,000" : "$15"}/mo
+            See Plans from $15/mo
           </a>
           <p className="text-xs text-text-secondary mt-3">
             14-day money-back guarantee. Cancel anytime.

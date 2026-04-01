@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import {
   type PaidTier,
-  type Currency,
   type BillingInterval,
   getTierPrice,
   getEffectiveMonthlyPrice,
@@ -55,12 +54,8 @@ export function PricingTierCard({
   const videosPerMonth = videosPerWeek * 4;
   const perVideo = (effectiveMonthly / videosPerMonth).toFixed(2);
   const ctaText = CTA_TEXT[tierKey] || "Get Started";
-  const currencySymbol = currency === "NGN" ? "\u20a6" : "$";
+  const currencySymbol = "$";
   const showDiscount = billingInterval !== "MONTHLY";
-
-  // Alternate currency for small text
-  const altCurrency: Currency = currency === "NGN" ? "USD" : "NGN";
-  const altEffectiveMonthly = getEffectiveMonthlyPrice(tierKey, billingInterval, altCurrency);
 
   return (
     <motion.div
@@ -108,7 +103,7 @@ export function PricingTierCard({
       )}
 
       <p className="text-xs text-text-secondary mt-1">
-        {formatPrice(altEffectiveMonthly, altCurrency)}/mo &middot; {currencySymbol}{perVideo}/video &middot; {videosPerMonth} videos/mo
+        {currencySymbol}{perVideo}/video &middot; {videosPerMonth} videos/mo
       </p>
 
       <p className="mt-2 text-sm text-text-secondary">{description}</p>

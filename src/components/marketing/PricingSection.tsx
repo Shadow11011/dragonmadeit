@@ -53,7 +53,7 @@ export function PricingSection() {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, delay: 0.15 }}
         >
-          A freelance video editor charges $50-100 per video. Our AI does it from {currency === "NGN" ? "\u20a6288" : "$1.25"}.
+          A freelance video editor charges $50-100 per video. Our AI does it from $1.25.
         </motion.p>
 
         <div className="flex items-center justify-center gap-1 mb-14 bg-bg-secondary rounded-lg p-1 w-fit mx-auto">
