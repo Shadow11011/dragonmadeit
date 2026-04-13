@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { PAYSTACK_PLAN_CODES, initializeTransaction } from "@/lib/paystack";
+import { PAYSTACK_PLAN_CODES, PAYSTACK_PLAN_AMOUNTS, initializeTransaction } from "@/lib/paystack";
 import { z } from "zod";
 
 const schema = z.object({
@@ -31,11 +31,13 @@ export async function POST(request: Request) {
 
     const { tier, billingInterval } = parsed.data;
     const planCode = PAYSTACK_PLAN_CODES[tier][billingInterval];
+    const amount = PAYSTACK_PLAN_AMOUNTS[tier][billingInterval];
 
     const baseUrl = process.env.NEXTAUTH_URL ?? "https://dragonmadeit.app";
 
     const result = await initializeTransaction({
       email: session.user.email,
+      amount,
       plan: planCode,
       callbackUrl: `${baseUrl}/dashboard/accounts?checkout=success`,
       metadata: {

@@ -11,6 +11,28 @@ export const TIER_VIDEOS_PER_WEEK: Record<Exclude<Tier, "FREE">, number> = {
 
 type PaidTier = Exclude<Tier, "FREE">;
 
+/** Plan amounts in kobo (NGN smallest unit) for each tier + billing interval */
+export const PAYSTACK_PLAN_AMOUNTS: Record<
+  PaidTier,
+  Record<BillingInterval, number>
+> = {
+  HATCHLING: {
+    MONTHLY: 2300000,    // ₦23,000
+    QUARTERLY: 5865000,  // ₦58,650
+    ANNUAL: 19320000,    // ₦193,200
+  },
+  DRAKE: {
+    MONTHLY: 6000000,    // ₦60,000
+    QUARTERLY: 15300000, // ₦153,000
+    ANNUAL: 50400000,    // ₦504,000
+  },
+  ELDER_DRAGON: {
+    MONTHLY: 20000000,   // ₦200,000
+    QUARTERLY: 51000000, // ₦510,000
+    ANNUAL: 168000000,   // ₦1,680,000
+  },
+};
+
 /** Paystack plan codes for each tier + billing interval */
 export const PAYSTACK_PLAN_CODES: Record<
   PaidTier,
@@ -66,6 +88,7 @@ export function verifyWebhookSignature(
 export async function initializeTransaction(params: {
   email: string;
   plan: string;
+  amount: number;
   callbackUrl: string;
   metadata?: Record<string, unknown>;
 }): Promise<{ authorization_url: string; access_code: string; reference: string }> {
@@ -77,6 +100,7 @@ export async function initializeTransaction(params: {
     },
     body: JSON.stringify({
       email: params.email,
+      amount: params.amount,
       plan: params.plan,
       callback_url: params.callbackUrl,
       metadata: params.metadata,
