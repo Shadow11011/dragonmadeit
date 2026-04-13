@@ -11,7 +11,7 @@ async function userHasActiveSubscription(userId: string): Promise<boolean> {
     where: {
       userId,
       tier: { not: "FREE" },
-      gumroadSubscriptionId: { not: null },
+      paystackSubscriptionCode: { not: null },
     },
   });
   return count > 0;

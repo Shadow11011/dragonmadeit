@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getCheckoutUrl } from "@/lib/gumroad";
+import { PAYSTACK_PLAN_CODES, initializeTransaction } from "@/lib/paystack";
 import { z } from "zod";
 
 const schema = z.object({
   tier: z.enum(["HATCHLING", "DRAKE", "ELDER_DRAGON"]),
+  billingInterval: z.enum(["MONTHLY", "QUARTERLY", "ANNUAL"]),
 });
 
 export async function POST(request: Request) {
@@ -28,13 +29,30 @@ export async function POST(request: Request) {
       );
     }
 
-    const url = getCheckoutUrl(parsed.data.tier, session.user.email);
+    const { tier, billingInterval } = parsed.data;
+    const planCode = PAYSTACK_PLAN_CODES[tier][billingInterval];
 
-    return NextResponse.json({ success: true, data: { url } });
+    const baseUrl = process.env.NEXTAUTH_URL ?? "https://dragonmadeit.app";
+
+    const result = await initializeTransaction({
+      email: session.user.email,
+      plan: planCode,
+      callbackUrl: `${baseUrl}/dashboard/accounts?checkout=success`,
+      metadata: {
+        userId: session.user.id,
+        tier,
+        billingInterval,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: { authorization_url: result.authorization_url },
+    });
   } catch (error) {
-    console.error("POST /api/gumroad/checkout error:", error);
+    console.error("POST /api/paystack/initialize error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to create checkout" },
+      { success: false, error: "Failed to initialize payment" },
       { status: 500 }
     );
   }

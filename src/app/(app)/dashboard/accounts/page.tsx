@@ -91,7 +91,7 @@ export default function AccountsPage() {
     void fetchAccounts();
   }, [fetchAccounts]);
 
-  // After checkout, refresh accounts (Gumroad webhook creates the account)
+  // After checkout, refresh accounts (Paystack webhook creates the account)
   const isCheckoutSuccess = searchParams.get("checkout") === "success";
 
   useEffect(() => {

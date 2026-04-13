@@ -47,7 +47,7 @@ model User {
   image              String?
   hashedPassword     String?
   emailVerified      DateTime?
-  gumroadCustomerId    String?
+  paystackCustomerCode   String?
   onboardingComplete Boolean         @default(false)
   tiktokAccounts     TikTokAccount[]
   contentItems       ContentItem[]
@@ -99,7 +99,8 @@ model TikTokAccount {
   refreshToken         String?
   tier                 Tier            @default(FREE)
   billingInterval      BillingInterval @default(MONTHLY)
-  gumroadSubscriptionId    String?     @unique
+  paystackSubscriptionCode   String?     @unique
+  paystackEmailToken         String?
   videosPerWeek        Int           @default(0)
   schedule             Json?
   scheduleLocked       Boolean       @default(false)

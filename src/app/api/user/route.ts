@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { cancelSubscription } from "@/lib/gumroad";
+import { cancelSubscription } from "@/lib/paystack";
 import { disconnectAccount, deleteProfile } from "@/lib/late-api";
 import { z } from "zod";
 
@@ -27,7 +27,7 @@ export async function GET() {
         id: true,
         email: true,
         name: true,
-        gumroadCustomerId: true,
+        paystackCustomerCode: true,
         onboardingComplete: true,
         tiktokAccounts: {
           select: {
@@ -103,7 +103,7 @@ export async function PATCH(request: Request) {
         id: true,
         email: true,
         name: true,
-        gumroadCustomerId: true,
+        paystackCustomerCode: true,
         onboardingComplete: true,
       },
     });
@@ -132,11 +132,12 @@ export async function DELETE() {
       where: { id: session.user.id },
       select: {
         id: true,
-        gumroadCustomerId: true,
+        paystackCustomerCode: true,
         tiktokAccounts: {
           select: {
             id: true,
-            gumroadSubscriptionId: true,
+            paystackSubscriptionCode: true,
+            paystackEmailToken: true,
             lateAccountId: true,
             lateProfileId: true,
           },
@@ -153,11 +154,11 @@ export async function DELETE() {
 
     // Clean up each TikTok account: cancel subscription, disconnect Late.dev
     for (const account of user.tiktokAccounts) {
-      if (account.gumroadSubscriptionId) {
+      if (account.paystackSubscriptionCode && account.paystackEmailToken) {
         try {
-          await cancelSubscription(account.gumroadSubscriptionId);
+          await cancelSubscription(account.paystackSubscriptionCode, account.paystackEmailToken);
         } catch (err) {
-          console.error(`Failed to cancel Gumroad subscription ${account.gumroadSubscriptionId}:`, err);
+          console.error(`Failed to cancel Paystack subscription ${account.paystackSubscriptionCode}:`, err);
         }
       }
 

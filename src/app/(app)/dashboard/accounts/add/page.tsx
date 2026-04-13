@@ -531,26 +531,18 @@ function PaymentStep({
     setError(null);
 
     try {
-      const res = await fetch("/api/gumroad/checkout", {
+      const res = await fetch("/api/paystack/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, billingInterval }),
       });
 
       const data: unknown = await res.json();
-      const urlData = data as { success?: boolean; data?: { url?: string }; error?: string };
+      const urlData = data as { success?: boolean; data?: { authorization_url?: string }; error?: string };
 
-      if (res.ok && urlData.data?.url) {
-        // Open Gumroad overlay instead of navigating away
-        const w = window as unknown as { GumroadOverlay?: { show: (opts: { url: string }) => void } };
-        if (w.GumroadOverlay) {
-          w.GumroadOverlay.show({ url: urlData.data.url });
-          setIsRedirecting(false);
-        } else {
-          // Fallback: open in new tab so user doesn't lose the page
-          window.open(urlData.data.url, "_blank");
-          setIsRedirecting(false);
-        }
+      if (res.ok && urlData.data?.authorization_url) {
+        // Redirect to Paystack checkout page
+        window.location.href = urlData.data.authorization_url;
       } else {
         setError(urlData.error ?? "Failed to start checkout. Please try again.");
         setIsRedirecting(false);

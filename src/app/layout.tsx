@@ -41,7 +41,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-bg-primary text-text-primary antialiased`}>
         {children}
-        <script src="https://gumroad.com/js/gumroad.js" defer />
+        <script src="https://js.paystack.co/v2/inline.js" defer />
       </body>
     </html>
   );
