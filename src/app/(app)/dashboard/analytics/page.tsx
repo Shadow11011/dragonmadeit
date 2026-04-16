@@ -150,7 +150,7 @@ function AnalyticsSkeleton() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Analytics</h1>
+          <h1 className="text-3xl font-bold font-heading text-text-primary">Analytics</h1>
           <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
         </div>
         <div className="h-9 w-52 bg-bg-secondary rounded-lg animate-pulse" />
@@ -178,28 +178,28 @@ function EmptyState({ hasAccounts }: { hasAccounts: boolean }) {
       </div>
       {hasAccounts ? (
         <>
-          <h2 className="text-xl font-semibold text-text-primary mb-2">
+          <h2 className="text-xl font-semibold font-heading text-text-primary mb-2">
             No analytics data yet
           </h2>
           <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
             Your account is connected — metrics will appear here once your first post goes live.
           </p>
           <Link href="/dashboard/accounts">
-            <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110 transition-all">
+            <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-accent-fire text-white hover:brightness-110 transition-all">
               View Your Accounts
             </button>
           </Link>
         </>
       ) : (
         <>
-          <h2 className="text-xl font-semibold text-text-primary mb-2">
+          <h2 className="text-xl font-semibold font-heading text-text-primary mb-2">
             No data yet — your first post will change that
           </h2>
           <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
             Add a TikTok account to start posting. Views, likes, and engagement metrics will appear here automatically.
           </p>
           <Link href="/dashboard/accounts/add">
-            <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110 transition-all">
+            <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-accent-fire text-white hover:brightness-110 transition-all">
               Add Your First Account
             </button>
           </Link>
@@ -257,7 +257,7 @@ export default function AnalyticsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Analytics</h1>
+          <h1 className="text-3xl font-bold font-heading text-text-primary">Analytics</h1>
           <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
         </div>
         <div className="rounded-xl bg-bg-secondary border border-error/30 p-8 text-center">
@@ -299,7 +299,7 @@ export default function AnalyticsPage() {
       {/* Header with date range selector */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Analytics</h1>
+          <h1 className="text-3xl font-bold font-heading text-text-primary">Analytics</h1>
           <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
         </div>
 
@@ -355,7 +355,7 @@ export default function AnalyticsPage() {
           {/* Bar chart — Views */}
           {data!.dailyMetrics.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold text-text-primary mb-3">
+              <h2 className="text-lg font-semibold font-heading text-text-primary mb-3">
                 Views ({dateRange === 7 ? "This Week" : `Last ${dateRange} Days`})
               </h2>
               <div className="rounded-xl bg-bg-secondary border border-border p-6">
@@ -387,7 +387,7 @@ export default function AnalyticsPage() {
           {/* Engagement by Day */}
           {data!.dailyMetrics.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold text-text-primary mb-3">Engagement by Day</h2>
+              <h2 className="text-lg font-semibold font-heading text-text-primary mb-3">Engagement by Day</h2>
               <div className="rounded-xl bg-bg-secondary border border-border p-6">
                 <div className="space-y-3">
                   {data!.dailyMetrics.map((metric) => {
@@ -421,12 +421,12 @@ export default function AnalyticsPage() {
           {/* Top Performing Posts */}
           {data!.topPosts.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold text-text-primary mb-3">Top Performing Posts</h2>
+              <h2 className="text-lg font-semibold font-heading text-text-primary mb-3">Top Performing Posts</h2>
               <div className="space-y-3">
                 {data!.topPosts.map((post, index) => (
                   <div
                     key={post.id || index}
-                    className="rounded-xl bg-bg-secondary border border-border p-4 hover:border-accent-fire/30 transition-colors"
+                    className="rounded-xl bg-bg-secondary border border-border p-4 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 min-w-0 flex-1">

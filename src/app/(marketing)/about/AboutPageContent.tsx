@@ -13,7 +13,7 @@ export function AboutPageContent() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center space-y-4"
         >
-          <h1 className="text-5xl md:text-6xl font-bold fire-text">
+          <h1 className="text-5xl md:text-6xl font-bold font-heading fire-text">
             About DragonMadeIt
           </h1>
           <p className="text-xl text-text-secondary max-w-2xl mx-auto">
@@ -28,7 +28,7 @@ export function AboutPageContent() {
           transition={{ delay: 0.1 }}
           className="bg-bg-secondary border border-border rounded-xl p-8 space-y-4"
         >
-          <h2 className="text-2xl font-bold text-accent-fire">Why I built this</h2>
+          <h2 className="text-2xl font-bold font-heading text-accent-fire">Why I built this</h2>
           <p className="text-text-secondary leading-relaxed">
             I got obsessed with faceless TikTok. The idea that you could build an audience
             and generate income without ever showing your face — that hooked me. But the
@@ -50,7 +50,7 @@ export function AboutPageContent() {
           transition={{ delay: 0.2 }}
           className="space-y-6"
         >
-          <h2 className="text-2xl font-bold text-center">How it works</h2>
+          <h2 className="text-2xl font-bold font-heading text-center">How it works</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
@@ -91,7 +91,7 @@ export function AboutPageContent() {
           transition={{ delay: 0.4 }}
           className="bg-bg-secondary border border-border rounded-xl p-8 space-y-4"
         >
-          <h2 className="text-2xl font-bold text-accent-ember">The stack</h2>
+          <h2 className="text-2xl font-bold font-heading text-accent-ember">The stack</h2>
           <p className="text-text-secondary leading-relaxed">
             No vague &ldquo;cutting-edge AI&rdquo; marketing. Here&apos;s exactly what powers your content:
           </p>
@@ -121,13 +121,13 @@ export function AboutPageContent() {
           transition={{ delay: 0.5 }}
           className="text-center space-y-6"
         >
-          <h2 className="text-2xl font-bold">Ready to let the dragon work for you?</h2>
+          <h2 className="text-2xl font-bold font-heading">Ready to let the dragon work for you?</h2>
           <p className="text-text-secondary">
             14-day money-back guarantee. Cancel anytime.
           </p>
           <Link
             href="/pricing"
-            className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:brightness-110 transition-all glow-pulse"
+            className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:brightness-110 transition-all"
           >
             Start Automating — From $15/mo
           </Link>

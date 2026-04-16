@@ -146,7 +146,7 @@ export function PricingPageContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-5xl md:text-6xl font-bold fire-text mb-4">
+          <h1 className="text-5xl md:text-6xl font-bold font-heading fire-text mb-4">
             Pricing
           </h1>
           <p className="text-lg text-text-secondary">
@@ -205,7 +205,7 @@ export function PricingPageContent() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-2xl font-bold text-text-primary text-center mb-8">
+          <h2 className="text-2xl font-bold font-heading text-text-primary text-center mb-8">
             DragonMadeIt vs. the alternatives
           </h2>
           <div className="overflow-x-auto">
@@ -267,7 +267,7 @@ export function PricingPageContent() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-bold text-text-primary text-center mb-10">
+          <h2 className="text-3xl font-bold font-heading text-text-primary text-center mb-10">
             Frequently Asked Questions
           </h2>
           <div>
@@ -289,7 +289,7 @@ export function PricingPageContent() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-2xl font-bold text-text-primary mb-3">
+          <h2 className="text-2xl font-bold font-heading text-text-primary mb-3">
             Seen enough?
           </h2>
           <p className="text-text-secondary mb-6">
@@ -297,7 +297,7 @@ export function PricingPageContent() {
           </p>
           <a
             href="/signup"
-            className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:bg-accent-fire/90 transition-colors glow-pulse"
+            className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:bg-accent-fire/90 transition-colors"
           >
             See Plans from $15/mo
           </a>

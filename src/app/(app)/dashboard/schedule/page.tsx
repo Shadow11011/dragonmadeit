@@ -80,7 +80,7 @@ function ScheduleSkeleton() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-text-primary">Schedule</h1>
+        <h1 className="text-3xl font-bold font-heading text-text-primary">Schedule</h1>
         <p className="text-text-secondary text-sm mt-1">Your upcoming posts across all accounts.</p>
       </div>
       {/* Countdown skeleton */}
@@ -214,7 +214,7 @@ export default function SchedulePage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Schedule</h1>
+          <h1 className="text-3xl font-bold font-heading text-text-primary">Schedule</h1>
           <p className="text-text-secondary text-sm mt-1">Your upcoming posts across all accounts.</p>
         </div>
         <div className="rounded-xl bg-bg-secondary border border-error/30 p-8 text-center">
@@ -235,7 +235,7 @@ export default function SchedulePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-text-primary">Schedule</h1>
+        <h1 className="text-3xl font-bold font-heading text-text-primary">Schedule</h1>
         <p className="text-text-secondary text-sm mt-1">Your upcoming posts across all accounts.</p>
       </div>
 
@@ -260,7 +260,7 @@ export default function SchedulePage() {
           <div className="flex justify-center mb-4">
             <DragonMascot size={64} />
           </div>
-          <h2 className="text-xl font-semibold text-text-primary mb-2">
+          <h2 className="text-xl font-semibold font-heading text-text-primary mb-2">
             No upcoming posts yet
           </h2>
           <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
@@ -269,7 +269,7 @@ export default function SchedulePage() {
           <Link href="/dashboard/accounts">
             <Button
               size="md"
-              className="bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110"
+              className="bg-accent-fire text-white hover:brightness-110"
             >
               View Your Accounts
             </Button>
@@ -280,7 +280,7 @@ export default function SchedulePage() {
           <div className="flex justify-center mb-4">
             <DragonMascot size={64} />
           </div>
-          <h2 className="text-xl font-semibold text-text-primary mb-2">
+          <h2 className="text-xl font-semibold font-heading text-text-primary mb-2">
             Nothing scheduled yet
           </h2>
           <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
@@ -289,7 +289,7 @@ export default function SchedulePage() {
           <Link href="/dashboard/accounts/add">
             <Button
               size="md"
-              className="bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110"
+              className="bg-accent-fire text-white hover:brightness-110"
             >
               <span className="flex items-center gap-1.5">
                 <PlusIcon />
@@ -302,13 +302,13 @@ export default function SchedulePage() {
 
       {/* Week Overview */}
       <section>
-        <h2 className="text-lg font-semibold mb-3">Week Overview</h2>
+        <h2 className="text-lg font-semibold font-heading mb-3">Week Overview</h2>
         <ScheduleCalendar items={calendarItems} />
       </section>
 
       {/* Content Table */}
       <section>
-        <h2 className="text-lg font-semibold mb-3">Upcoming Content</h2>
+        <h2 className="text-lg font-semibold font-heading mb-3">Upcoming Content</h2>
         <ContentTable items={tableItems} />
       </section>
     </div>

@@ -87,7 +87,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Settings</h1>
+        <h1 className="text-3xl font-bold font-heading">Settings</h1>
         <div className="animate-pulse space-y-4">
           <div className="h-64 bg-bg-secondary rounded-xl" />
           <div className="h-32 bg-bg-secondary rounded-xl" />
@@ -99,7 +99,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
+        <h1 className="text-3xl font-bold font-heading">Settings</h1>
         <p className="text-sm text-text-secondary mt-1">
           Manage your profile, billing, and account.
         </p>
@@ -121,7 +121,7 @@ export default function SettingsPage() {
 
       {/* Profile section */}
       <section className="rounded-xl bg-bg-secondary border border-border p-6">
-        <h2 className="text-lg font-semibold mb-4">Profile</h2>
+        <h2 className="text-lg font-semibold font-heading mb-4">Profile</h2>
         <form onSubmit={handleSaveProfile} className="space-y-4 max-w-md">
           <div>
             <label htmlFor="settings-name" className="block text-sm text-text-secondary mb-1.5">
@@ -157,7 +157,7 @@ export default function SettingsPage() {
 
       {/* Billing section */}
       <section className="rounded-xl bg-bg-secondary border border-border p-6">
-        <h2 className="text-lg font-semibold mb-2">Billing</h2>
+        <h2 className="text-lg font-semibold font-heading mb-2">Billing</h2>
         <p className="text-sm text-text-secondary mb-4">
           Subscription plans are managed per TikTok account on the{" "}
           <a href="/dashboard/accounts" className="text-accent-fire hover:underline">
@@ -169,7 +169,7 @@ export default function SettingsPage() {
 
       {/* Session section */}
       <section className="rounded-xl bg-bg-secondary border border-border p-6">
-        <h2 className="text-lg font-semibold mb-2">Session</h2>
+        <h2 className="text-lg font-semibold font-heading mb-2">Session</h2>
         <p className="text-sm text-text-secondary mb-4">
           Sign out of your current session on this device.
         </p>
@@ -183,7 +183,7 @@ export default function SettingsPage() {
 
       {/* Danger Zone */}
       <section className="border border-red-500/30 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-red-400 mb-2">Danger Zone</h2>
+        <h2 className="text-lg font-semibold font-heading text-red-400 mb-2">Danger Zone</h2>
         <p className="text-sm text-text-secondary mb-4">
           Permanently delete your account and all associated data. This action cannot be undone.
         </p>

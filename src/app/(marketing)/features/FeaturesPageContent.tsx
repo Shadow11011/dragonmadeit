@@ -89,7 +89,7 @@ function FeatureSection({
       >
         {/* Text content */}
         <div className="flex-1">
-          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold font-heading text-text-primary mb-4">
             {feature.title}
           </h2>
           <p className="text-text-secondary leading-relaxed mb-6">
@@ -148,7 +148,7 @@ export function FeaturesPageContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-5xl md:text-6xl font-bold fire-text mb-4">
+          <h1 className="text-5xl md:text-6xl font-bold font-heading fire-text mb-4">
             One tool. Full pipeline.
           </h1>
           <p className="text-lg text-text-secondary max-w-2xl mx-auto">
@@ -175,7 +175,7 @@ export function FeaturesPageContent() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl font-bold text-text-primary mb-4">
+          <h2 className="text-3xl font-bold font-heading text-text-primary mb-4">
             Seen enough? Pick a plan.
           </h2>
           <p className="text-text-secondary mb-8">

@@ -45,7 +45,7 @@ export default function LoginForm() {
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
         <Link href="/" className="inline-block">
-          <h1 className="text-4xl font-bold fire-text">DragonMadeIt</h1>
+          <h1 className="text-4xl font-bold font-heading fire-text">DragonMadeIt</h1>
         </Link>
         <p className="mt-2 text-text-secondary">Welcome back</p>
       </div>
