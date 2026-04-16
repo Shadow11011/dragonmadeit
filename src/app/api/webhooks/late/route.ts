@@ -22,6 +22,17 @@ interface ZernioAccountPayload {
   timestamp: string;
 }
 
+function extractAccountId(body: unknown): string | null {
+  const b = body as {
+    post?: { platforms?: Array<{ accountId?: string | { _id?: string } }> };
+    account?: { accountId?: string };
+  };
+  const acctObj = b.post?.platforms?.[0]?.accountId;
+  if (typeof acctObj === "string") return acctObj;
+  if (acctObj && typeof acctObj === "object" && acctObj._id) return acctObj._id;
+  return b.account?.accountId ?? null;
+}
+
 export async function POST(request: Request) {
   try {
     const rawBody = await request.text();
@@ -115,11 +126,34 @@ export async function POST(request: Request) {
         const { post } = body as ZernioPostPayload;
         const postId = post?.id;
         if (postId) {
-          await prisma.contentItem.updateMany({
+          const { count } = await prisma.contentItem.updateMany({
             where: { tiktokPostId: postId },
             data: { status: "POSTED", postedAt: new Date() },
           });
-          console.log(`Zernio webhook: post ${postId} published`);
+          // Fallback: if no existing row (pipeline Create node missed it),
+          // create one here so the post shows up on the dashboard.
+          if (count === 0) {
+            const accountId = extractAccountId(body);
+            if (accountId) {
+              const acct = await prisma.tikTokAccount.findFirst({
+                where: { lateAccountId: accountId },
+                select: { id: true, userId: true },
+              });
+              if (acct) {
+                await prisma.contentItem.create({
+                  data: {
+                    title: (post.content ?? "Auto-generated video").slice(0, 180),
+                    status: "POSTED",
+                    postedAt: new Date(),
+                    tiktokPostId: postId,
+                    tiktokAccountId: acct.id,
+                    userId: acct.userId,
+                  },
+                });
+              }
+            }
+          }
+          console.log(`Zernio webhook: post ${postId} published (count=${count})`);
         }
         break;
       }
@@ -129,11 +163,31 @@ export async function POST(request: Request) {
         const { post } = body as ZernioPostPayload;
         const postId = post?.id;
         if (postId) {
-          await prisma.contentItem.updateMany({
+          const { count } = await prisma.contentItem.updateMany({
             where: { tiktokPostId: postId },
             data: { status: "FAILED" },
           });
-          console.log(`Zernio webhook: post ${postId} ${event}`);
+          if (count === 0) {
+            const accountId = extractAccountId(body);
+            if (accountId) {
+              const acct = await prisma.tikTokAccount.findFirst({
+                where: { lateAccountId: accountId },
+                select: { id: true, userId: true },
+              });
+              if (acct) {
+                await prisma.contentItem.create({
+                  data: {
+                    title: (post.content ?? "Auto-generated video").slice(0, 180),
+                    status: "FAILED",
+                    tiktokPostId: postId,
+                    tiktokAccountId: acct.id,
+                    userId: acct.userId,
+                  },
+                });
+              }
+            }
+          }
+          console.log(`Zernio webhook: post ${postId} ${event} (count=${count})`);
 
           const failedItem = await prisma.contentItem.findFirst({
             where: { tiktokPostId: postId },
