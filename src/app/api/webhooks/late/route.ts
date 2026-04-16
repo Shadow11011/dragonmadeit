@@ -3,24 +3,38 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendPostFailedEmail } from "@/lib/email";
 
-interface LateWebhookPayload {
+interface ZernioPostPayload {
+  id: string;
   event: string;
-  data: Record<string, unknown>;
+  post: { id: string; content?: string; status?: string };
+  timestamp: string;
+}
+
+interface ZernioAccountPayload {
+  id: string;
+  event: string;
+  account: {
+    accountId: string;
+    profileId?: string;
+    platform?: string;
+    username?: string;
+  };
+  timestamp: string;
 }
 
 export async function POST(request: Request) {
   try {
     const rawBody = await request.text();
 
-    // Verify HMAC-SHA256 signature
     const signature =
+      request.headers.get("x-zernio-signature") ??
       request.headers.get("x-late-signature") ??
       request.headers.get("x-signature");
 
     if (!signature) {
       return NextResponse.json(
         { success: false, error: "Missing signature" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -29,14 +43,11 @@ export async function POST(request: Request) {
       console.error("LATE_WEBHOOK_SECRET is not configured");
       return NextResponse.json(
         { success: false, error: "Webhook not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    const expected = createHmac("sha256", secret)
-      .update(rawBody)
-      .digest("hex");
-
+    const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
     const sigBuffer = Buffer.from(signature, "hex");
     const expectedBuffer = Buffer.from(expected, "hex");
 
@@ -44,65 +55,62 @@ export async function POST(request: Request) {
       sigBuffer.length !== expectedBuffer.length ||
       !timingSafeEqual(sigBuffer, expectedBuffer)
     ) {
-      console.error("Late webhook signature verification failed");
+      console.error("Zernio webhook signature verification failed");
       return NextResponse.json(
         { success: false, error: "Invalid signature" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    // Parse verified payload
     let body: unknown;
     try {
       body = JSON.parse(rawBody);
     } catch {
       return NextResponse.json(
         { success: false, error: "Invalid payload" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!body || typeof body !== "object") {
       return NextResponse.json(
         { success: false, error: "Invalid payload" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const payload = body as LateWebhookPayload;
-    const { event, data } = payload;
-
-    if (!event || !data) {
+    const event = (body as { event?: string }).event;
+    if (!event) {
       return NextResponse.json(
-        { success: false, error: "Missing event or data" },
-        { status: 400 }
+        { success: false, error: "Missing event" },
+        { status: 400 },
       );
     }
 
     switch (event) {
       case "post.published": {
-        const postId = data.postId as string | undefined;
+        const { post } = body as ZernioPostPayload;
+        const postId = post?.id;
         if (postId) {
           await prisma.contentItem.updateMany({
             where: { tiktokPostId: postId },
-            data: {
-              status: "POSTED",
-              postedAt: new Date(),
-            },
+            data: { status: "POSTED", postedAt: new Date() },
           });
-          console.log(`Late webhook: post ${postId} published`);
+          console.log(`Zernio webhook: post ${postId} published`);
         }
         break;
       }
 
-      case "post.failed": {
-        const postId = data.postId as string | undefined;
+      case "post.failed":
+      case "post.partial": {
+        const { post } = body as ZernioPostPayload;
+        const postId = post?.id;
         if (postId) {
           await prisma.contentItem.updateMany({
             where: { tiktokPostId: postId },
             data: { status: "FAILED" },
           });
-          console.log(`Late webhook: post ${postId} failed`);
+          console.log(`Zernio webhook: post ${postId} ${event}`);
 
           const failedItem = await prisma.contentItem.findFirst({
             where: { tiktokPostId: postId },
@@ -120,23 +128,23 @@ export async function POST(request: Request) {
       }
 
       case "account.disconnected": {
-        const accountId = data.accountId as string | undefined;
+        const { account } = body as ZernioAccountPayload;
+        const accountId = account?.accountId;
         if (accountId) {
-          const account = await prisma.tikTokAccount.findFirst({
+          const existing = await prisma.tikTokAccount.findFirst({
             where: { lateAccountId: accountId },
             select: { id: true },
           });
-
-          if (account) {
+          if (existing) {
             await prisma.tikTokAccount.update({
-              where: { id: account.id },
+              where: { id: existing.id },
               data: {
                 lateAccountId: null,
                 username: `disconnected-${Date.now()}`,
               },
             });
             console.log(
-              `Late webhook: account ${accountId} disconnected, updated TikTokAccount ${account.id}`
+              `Zernio webhook: account ${accountId} disconnected → TikTokAccount ${existing.id}`,
             );
           }
         }
@@ -144,21 +152,21 @@ export async function POST(request: Request) {
       }
 
       case "webhook.test": {
-        console.log("Late webhook: test event received");
+        console.log("Zernio webhook: test event received");
         break;
       }
 
       default: {
-        console.log(`Late webhook: unhandled event ${event}`);
+        console.log(`Zernio webhook: unhandled event ${event}`);
       }
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Late webhook handler error:", error);
+    console.error("Zernio webhook handler error:", error);
     return NextResponse.json(
       { success: false, error: "Webhook handler failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
