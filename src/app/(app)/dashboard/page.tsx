@@ -149,7 +149,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">
+          <h1 className="font-heading text-2xl text-text-primary">
             {getGreeting()}{firstName ? `, ${firstName}` : ""}
           </h1>
           <p className="text-text-secondary text-sm mt-1">
@@ -176,19 +176,14 @@ export default function DashboardPage() {
           <div className="flex justify-center mb-4">
             <DragonMascot size={64} />
           </div>
-          <h2 className="text-xl font-semibold text-text-primary mb-2">
+          <h2 className="font-heading text-xl text-text-primary mb-2">
             Your first video is 5 minutes away
           </h2>
           <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
             Pick a tier, choose your content style, and we handle the rest. Automated TikTok content, posted on schedule.
           </p>
           <Link href="/dashboard/accounts/add">
-            <Button
-              size="md"
-              className="bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white hover:brightness-110"
-            >
-              Add Your First Account
-            </Button>
+            <Button size="md">Add your first account</Button>
           </Link>
         </div>
       )}
@@ -246,13 +241,13 @@ export default function DashboardPage() {
       {/* Quick links section */}
       {hasAccounts && (
         <section>
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+          <h2 className="font-heading text-xl mb-4">Quick actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
               href="/dashboard/accounts"
-              className="rounded-xl bg-bg-secondary border border-border p-5 hover:border-accent-fire/30 transition-colors group"
+              className="rounded-xl bg-bg-secondary border border-border p-5 transition-colors group"
             >
-              <h3 className="font-semibold text-text-primary group-hover:text-accent-fire transition-colors">
+              <h3 className="font-semibold text-text-primary transition-colors">
                 Manage Accounts
               </h3>
               <p className="text-sm text-text-secondary mt-1">
@@ -261,9 +256,9 @@ export default function DashboardPage() {
             </Link>
             <Link
               href="/dashboard/settings"
-              className="rounded-xl bg-bg-secondary border border-border p-5 hover:border-accent-fire/30 transition-colors group"
+              className="rounded-xl bg-bg-secondary border border-border p-5 transition-colors group"
             >
-              <h3 className="font-semibold text-text-primary group-hover:text-accent-fire transition-colors">
+              <h3 className="font-semibold text-text-primary transition-colors">
                 Account Settings
               </h3>
               <p className="text-sm text-text-secondary mt-1">

@@ -18,7 +18,7 @@ export function StatsCard({ label, value, icon, trend, accentColor }: StatsCardP
   return (
     <div
       className={cn(
-        "rounded-xl bg-bg-secondary border border-border p-5 transition-colors hover:border-accent-fire/30"
+        "rounded-lg bg-bg-secondary border border-border p-5"
       )}
     >
       <div className="flex items-center gap-2 mb-2">
@@ -28,7 +28,7 @@ export function StatsCard({ label, value, icon, trend, accentColor }: StatsCardP
         >
           {icon}
         </span>
-        <span className="text-sm text-text-secondary">{label}</span>
+        <span className="font-heading text-xs text-text-secondary">{label}</span>
       </div>
       <div className="flex items-end gap-2">
         <span className="text-2xl font-bold">{value}</span>
