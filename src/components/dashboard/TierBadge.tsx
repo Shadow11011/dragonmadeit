@@ -6,7 +6,7 @@ interface TierBadgeProps {
 
 const TIER_STYLES: Record<string, string> = {
   FREE: "bg-text-secondary/10 text-text-secondary",
-  HATCHLING: "bg-cyan-400/10 text-cyan-400",
+  HATCHLING: "bg-[#c87533]/10 text-[#c87533]",
   DRAKE: "bg-accent-ember/10 text-accent-ember",
   ELDER_DRAGON: "bg-accent-gold/10 text-accent-gold",
 };

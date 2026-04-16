@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typography Pairing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Figtree:wght@400;600;700&family=Playfair+Display:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&family=Libre+Baskerville:wght@400;700&family=Literata:opsz,wght@7..72,400;7..72,700&family=Young+Serif&family=Bitter:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #ece9e5; font-family: system-ui; padding: 32px; }
+  h2 { font-family: system-ui; font-size: 20px; font-weight: 600; margin-bottom: 8px; color: #fff; }
+  .subtitle { font-size: 14px; color: #807a73; margin-bottom: 32px; }
+
+  .pairings { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  .pairing {
+    background: #111;
+    border: 2px solid #222;
+    border-radius: 12px;
+    padding: 32px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .pairing:hover { border-color: #ff4500; }
+  .pairing.selected { border-color: #ff4500; box-shadow: 0 0 20px rgba(255,69,0,0.15); }
+  .pairing .label {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ff4500;
+    font-family: system-ui;
+    font-weight: 600;
+  }
+
+  .pairing .hero-text { margin-bottom: 16px; }
+  .pairing .body-text { font-size: 14px; line-height: 1.6; color: #807a73; margin-bottom: 16px; }
+  .pairing .meta {
+    font-size: 11px;
+    color: #555;
+    border-top: 1px solid #222;
+    padding-top: 12px;
+    font-family: system-ui;
+  }
+  .pairing .meta strong { color: #807a73; }
+
+  .indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff4500;
+    color: #000;
+    padding: 8px 24px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: system-ui;
+    display: none;
+    z-index: 100;
+  }
+  .indicator.show { display: block; }
+
+  @media (max-width: 700px) {
+    .pairings { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h2>Which serif pairing fits the editorial vibe?</h2>
+<p class="subtitle">The display font sets the magazine tone. Body stays sans-serif (Figtree) for readability. Click your pick.</p>
+
+<div class="pairings">
+
+  <div class="pairing" data-choice="a" onclick="select(this)">
+    <div class="label">A</div>
+    <div class="hero-text">
+      <div style="font-family:'Source Serif 4',serif;font-size:42px;font-weight:700;line-height:1.1;letter-spacing:-1px;">The faceless content engine for TikTok.</div>
+    </div>
+    <div class="body-text" style="font-family:'Figtree',sans-serif;">AI writes your scripts, generates videos, and posts them to TikTok on autopilot. 66 content styles. Zero filming. You collect the views.</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:20px;font-weight:400;color:#ece9e5;margin-bottom:12px;">How it works</div>
+    <div class="meta"><strong>Display:</strong> Source Serif 4 &mdash; clean, modern serif with optical sizing. Feels editorial without being stuffy. <strong>Body:</strong> Figtree</div>
+  </div>
+
+  <div class="pairing" data-choice="b" onclick="select(this)">
+    <div class="label">B</div>
+    <div class="hero-text">
+      <div style="font-family:'Literata',serif;font-size:42px;font-weight:700;line-height:1.1;letter-spacing:-0.5px;">The faceless content engine for TikTok.</div>
+    </div>
+    <div class="body-text" style="font-family:'Figtree',sans-serif;">AI writes your scripts, generates videos, and posts them to TikTok on autopilot. 66 content styles. Zero filming. You collect the views.</div>
+    <div style="font-family:'Literata',serif;font-size:20px;font-weight:400;color:#ece9e5;margin-bottom:12px;">How it works</div>
+    <div class="meta"><strong>Display:</strong> Literata &mdash; warm, book-like serif with optical sizing. Feels like a high-end publication. <strong>Body:</strong> Figtree</div>
+  </div>
+
+  <div class="pairing" data-choice="c" onclick="select(this)">
+    <div class="label">C</div>
+    <div class="hero-text">
+      <div style="font-family:'Bitter',serif;font-size:42px;font-weight:700;line-height:1.1;letter-spacing:-0.5px;">The faceless content engine for TikTok.</div>
+    </div>
+    <div class="body-text" style="font-family:'Figtree',sans-serif;">AI writes your scripts, generates videos, and posts them to TikTok on autopilot. 66 content styles. Zero filming. You collect the views.</div>
+    <div style="font-family:'Bitter',serif;font-size:20px;font-weight:400;color:#ece9e5;margin-bottom:12px;">How it works</div>
+    <div class="meta"><strong>Display:</strong> Bitter &mdash; slab serif with character. Feels bold, slightly industrial. More edge than the others. <strong>Body:</strong> Figtree</div>
+  </div>
+
+  <div class="pairing" data-choice="d" onclick="select(this)">
+    <div class="label">D</div>
+    <div class="hero-text">
+      <div style="font-family:'Young Serif',serif;font-size:42px;font-weight:400;line-height:1.1;letter-spacing:-0.5px;">The faceless content engine for TikTok.</div>
+    </div>
+    <div class="body-text" style="font-family:'Figtree',sans-serif;">AI writes your scripts, generates videos, and posts them to TikTok on autopilot. 66 content styles. Zero filming. You collect the views.</div>
+    <div style="font-family:'Young Serif',serif;font-size:20px;font-weight:400;color:#ece9e5;margin-bottom:12px;">How it works</div>
+    <div class="meta"><strong>Display:</strong> Young Serif &mdash; contemporary serif with organic curves. Feels warm, confident, slightly playful. Only has weight 400 (no bold). <strong>Body:</strong> Figtree</div>
+  </div>
+
+</div>
+
+<div class="indicator" id="indicator"></div>
+
+<script>
+  let selected = null;
+  function select(el) {
+    document.querySelectorAll('.pairing').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    selected = el.dataset.choice;
+    const ind = document.getElementById('indicator');
+    ind.textContent = 'Selected: ' + el.dataset.choice.toUpperCase();
+    ind.classList.add('show');
+
+    // Record event
+    fetch('/event', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({type:'click', choice: el.dataset.choice, text: el.querySelector('h3,div')?.textContent || '', timestamp: Date.now()})
+    }).catch(() => {});
+  }
+</script>
+
+</body>
+</html>

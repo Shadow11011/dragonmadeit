@@ -29,13 +29,13 @@ interface ScheduleConfig {
 const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
 
 const TIER_BORDER_COLORS: Record<PaidTier, string> = {
-  HATCHLING: "border-cyan-400/40 hover:border-cyan-400/70",
+  HATCHLING: "border-[#c87533]/40 hover:border-[#c87533]/70",
   DRAKE: "border-accent-ember/40 hover:border-accent-ember/70",
   ELDER_DRAGON: "border-accent-gold/40 hover:border-accent-gold/70",
 };
 
 const TIER_SELECTED_BORDER: Record<PaidTier, string> = {
-  HATCHLING: "border-cyan-400 ring-2 ring-cyan-400/20",
+  HATCHLING: "border-[#c87533] ring-2 ring-[#c87533]/20",
   DRAKE: "border-accent-ember ring-2 ring-accent-ember/20",
   ELDER_DRAGON: "border-accent-gold ring-2 ring-accent-gold/20",
 };

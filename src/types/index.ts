@@ -98,8 +98,8 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
     hasApiAccess: false,
     hasPrioritySupport: false,
     hasCustomContentGen: false,
-    color: "text-cyan-400",
-    fireColor: "#22d3ee",
+    color: "text-[#c87533]",
+    fireColor: "#c87533",
   },
   DRAKE: {
     name: "Drake",
