@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getNextPostTime, normalizeSchedule } from "@/lib/schedule-utils";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 const DAY_NAME_TO_NUMBER: Record<string, number> = {
@@ -94,7 +95,7 @@ export async function PATCH(
       );
     }
 
-    const schedule = {
+    const schedule: Prisma.InputJsonValue = {
       days,
       times: parsed.data.times,
       timezone: parsed.data.timezone,
