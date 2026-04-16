@@ -67,7 +67,7 @@ export function FreeTierGate({ children }: { children: React.ReactNode }) {
       <Link href="/dashboard/accounts">
         <Button
           size="lg"
-          className="bg-gradient-to-r from-[#ff4500] to-[#ff8c00] text-white shadow-[0_0_20px_rgba(255,69,0,0.3)]"
+          className="bg-accent-fire text-white"
         >
           Add Your First Account
         </Button>
