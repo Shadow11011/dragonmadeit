@@ -61,15 +61,13 @@ export function PricingTierCard({
   return (
     <motion.div
       className={cn(
-        "relative rounded-xl p-6 md:p-8 border-2 flex flex-col",
+        "relative rounded-lg p-6 md:p-8 flex flex-col bg-bg-secondary",
         popular && "md:scale-105 md:-my-2"
       )}
       style={{
-        borderColor: tierColor,
-        backgroundColor: "rgba(18, 18, 26, 0.85)",
-        backdropFilter: "blur(8px)",
+        borderTop: "3px solid " + tierColor,
       }}
-      whileHover={{ scale: 1.03 }}
+      whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       {popular && (
@@ -81,7 +79,7 @@ export function PricingTierCard({
         </div>
       )}
 
-      <h3 className="text-xl font-bold" style={{ color: tierColor }}>
+      <h3 className="text-xl font-bold font-heading" style={{ color: tierColor }}>
         {name}
       </h3>
 

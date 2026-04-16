@@ -28,8 +28,10 @@ export function PricingSection() {
   return (
     <section className="relative py-24 md:py-32">
       <div className="mx-auto max-w-5xl px-4">
+        <div className="chapter-label">04 — PRICING</div>
+
         <motion.h2
-          className="text-4xl md:text-5xl font-bold text-text-primary text-center mb-4"
+          className="text-4xl md:text-5xl font-bold font-heading text-text-primary text-center mb-4"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
@@ -37,24 +39,6 @@ export function PricingSection() {
         >
           Pick your dragon, pick your pace
         </motion.h2>
-        <motion.p
-          className="text-text-secondary text-center mb-3 max-w-md mx-auto"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          3, 7, or 14 AI-generated videos per week. All fully automated. All faceless.
-        </motion.p>
-        <motion.p
-          className="text-sm text-text-secondary text-center mb-10 max-w-lg mx-auto"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-        >
-          A freelance video editor charges $50-100 per video. Our AI does it from $1.25.
-        </motion.p>
 
         <div className="flex items-center justify-center gap-1 mb-14 bg-bg-secondary rounded-lg p-1 w-fit mx-auto">
           {BILLING_OPTIONS.map((option) => (

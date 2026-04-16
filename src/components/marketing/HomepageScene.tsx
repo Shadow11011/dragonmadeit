@@ -6,7 +6,7 @@ import { ChapterProblem } from "@/components/marketing/ChapterProblem";
 import HowItWorksSection from "@/components/marketing/HowItWorksSection";
 import { FeaturesSection } from "@/components/marketing/FeaturesSection";
 import { PricingSection } from "@/components/marketing/PricingSection";
-// import { ChapterProof } from "@/components/marketing/ChapterProof";
+import { ChapterProof } from "@/components/marketing/ChapterProof";
 import { CTASection } from "@/components/marketing/CTASection";
 
 export function HomepageScene() {
@@ -18,7 +18,7 @@ export function HomepageScene() {
       <HowItWorksSection />
       <FeaturesSection />
       <PricingSection />
-      {/* <ChapterProof /> */}
+      <ChapterProof />
       <CTASection />
     </div>
   );
