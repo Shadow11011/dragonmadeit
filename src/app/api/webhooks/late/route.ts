@@ -47,17 +47,50 @@ export async function POST(request: Request) {
       );
     }
 
-    const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-    const sigBuffer = Buffer.from(signature, "hex");
-    const expectedBuffer = Buffer.from(expected, "hex");
+    const expectedHex = createHmac("sha256", secret).update(rawBody).digest("hex");
+    const expectedB64 = createHmac("sha256", secret).update(rawBody).digest("base64");
 
-    if (
-      sigBuffer.length !== expectedBuffer.length ||
-      !timingSafeEqual(sigBuffer, expectedBuffer)
-    ) {
-      console.error("Zernio webhook signature verification failed");
+    // Normalize: Zernio may send "sha256=HEX" or "t=...,v1=HEX"
+    const rawSig = signature.trim();
+    const candidateSigs: string[] = [rawSig];
+    const eqMatch = rawSig.match(/(?:^|[,;=])([a-f0-9]{64})\b/i);
+    if (eqMatch) candidateSigs.push(eqMatch[1]);
+    const prefixStripped = rawSig.replace(/^sha256=/i, "");
+    candidateSigs.push(prefixStripped);
+
+    const matches = candidateSigs.some((cand) => {
+      // Try hex
+      try {
+        const a = Buffer.from(cand, "hex");
+        const b = Buffer.from(expectedHex, "hex");
+        if (a.length === b.length && timingSafeEqual(a, b)) return true;
+      } catch {}
+      // Try base64
+      try {
+        const a = Buffer.from(cand, "base64");
+        const b = Buffer.from(expectedB64, "base64");
+        if (a.length === b.length && timingSafeEqual(a, b)) return true;
+      } catch {}
+      return false;
+    });
+
+    if (!matches) {
+      console.error("Zernio webhook signature verification failed", {
+        received: rawSig.slice(0, 16) + "…" + rawSig.slice(-8),
+        expectedHexHead: expectedHex.slice(0, 16),
+      });
       return NextResponse.json(
-        { success: false, error: "Invalid signature" },
+        {
+          success: false,
+          error: "Invalid signature",
+          debug: {
+            recv: rawSig,
+            expHex: expectedHex,
+            expB64: expectedB64,
+            bodyLen: rawBody.length,
+            bodyHead: rawBody.slice(0, 100),
+          },
+        },
         { status: 401 },
       );
     }
