@@ -4,9 +4,18 @@ import { authOptions } from "@/lib/auth";
 import { PAYSTACK_PLAN_CODES, PAYSTACK_PLAN_AMOUNTS, initializeTransaction } from "@/lib/paystack";
 import { z } from "zod";
 
+const scheduleShape = z
+  .object({
+    days: z.array(z.number().int().min(0).max(6)).min(1),
+    times: z.array(z.string().regex(/^\d{2}:\d{2}$/)).min(1),
+    timezone: z.string().min(1).default("America/New_York"),
+  })
+  .optional();
+
 const schema = z.object({
   tier: z.enum(["HATCHLING", "DRAKE", "ELDER_DRAGON"]),
   billingInterval: z.enum(["MONTHLY", "QUARTERLY", "ANNUAL"]),
+  schedule: scheduleShape,
 });
 
 export async function POST(request: Request) {
@@ -29,7 +38,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { tier, billingInterval } = parsed.data;
+    const { tier, billingInterval, schedule } = parsed.data;
     const planCode = PAYSTACK_PLAN_CODES[tier][billingInterval];
     const amount = PAYSTACK_PLAN_AMOUNTS[tier][billingInterval];
 
@@ -44,6 +53,7 @@ export async function POST(request: Request) {
         userId: session.user.id,
         tier,
         billingInterval,
+        ...(schedule ? { schedule } : {}),
       },
     });
 

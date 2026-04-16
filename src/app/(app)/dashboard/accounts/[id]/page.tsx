@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
 import { TierBadge } from "@/components/dashboard/TierBadge";
 import { ContentConfigEditor } from "@/components/dashboard/ContentConfigEditor";
+import { ScheduleEditor } from "@/components/dashboard/ScheduleEditor";
 import { TIER_CONFIG } from "@/types";
 import type { ContentConfig, TikTokAccountInfo, PostingSchedule } from "@/types";
 import { STORY_TYPE_CATALOGUE } from "@/lib/content-config";
@@ -129,6 +130,7 @@ export default function AccountDetailPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showContentEditor, setShowContentEditor] = useState(false);
+  const [showScheduleEditor, setShowScheduleEditor] = useState(false);
   const [healthStatus, setHealthStatus] = useState<HealthStatus>("idle");
   const [healthMessage, setHealthMessage] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -674,21 +676,38 @@ export default function AccountDetailPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Schedule (display only, locked) */}
+      {/* Schedule */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.15 }}
         className="rounded-xl bg-bg-secondary border border-border p-6 space-y-3"
       >
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-text-primary">Schedule</h2>
-          <span className="inline-flex items-center rounded-full bg-accent-fire/10 text-accent-fire px-2 py-0.5 text-[10px] font-medium uppercase">
-            Locked
-          </span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-text-primary">Schedule</h2>
+            {account.scheduleLocked && (
+              <span className="inline-flex items-center rounded-full bg-accent-fire/10 text-accent-fire px-2 py-0.5 text-[10px] font-medium uppercase">
+                Locked
+              </span>
+            )}
+          </div>
+          {!account.scheduleLocked && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowScheduleEditor((v) => !v)}
+            >
+              {showScheduleEditor
+                ? "Close"
+                : account.schedule
+                  ? "Edit"
+                  : "Set schedule"}
+            </Button>
+          )}
         </div>
 
-        {account.schedule ? (
+        {!showScheduleEditor && account.schedule ? (
           <>
             <div>
               <p className="text-xs text-text-secondary uppercase tracking-wide mb-2">
@@ -719,11 +738,38 @@ export default function AccountDetailPage() {
               </div>
             )}
           </>
-        ) : (
+        ) : !showScheduleEditor ? (
           <p className="text-sm text-text-secondary">
             No schedule configured for this account.
           </p>
-        )}
+        ) : null}
+
+        <AnimatePresence>
+          {showScheduleEditor && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-4 border-t border-border">
+                <ScheduleEditor
+                  accountId={accountId}
+                  videosPerWeek={account.videosPerWeek ?? 0}
+                  initial={account.schedule}
+                  onSaved={(schedule) => {
+                    setAccount((prev) =>
+                      prev ? { ...prev, schedule } : prev,
+                    );
+                    setShowScheduleEditor(false);
+                  }}
+                  onCancel={() => setShowScheduleEditor(false)}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Check Health */}

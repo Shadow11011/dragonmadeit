@@ -10,6 +10,26 @@ import {
   sendPaymentConfirmedEmail,
   sendPaymentFailedEmail,
 } from "@/lib/email";
+import { getNextPostTime, normalizeSchedule } from "@/lib/schedule-utils";
+
+interface MetadataSchedule {
+  days: number[];
+  times: string[];
+  timezone: string;
+}
+
+function extractSchedule(data: Record<string, unknown>): MetadataSchedule | null {
+  const meta = (data.metadata ?? {}) as Record<string, unknown>;
+  const s = meta.schedule;
+  if (!s || typeof s !== "object") return null;
+  const normalized = normalizeSchedule(s);
+  if (!normalized) return null;
+  return {
+    days: normalized.days,
+    times: normalized.times,
+    timezone: normalized.timezone,
+  };
+}
 
 export async function POST(request: Request) {
   try {
@@ -81,6 +101,9 @@ export async function POST(request: Request) {
           });
         }
 
+        const schedule = extractSchedule(data);
+        const nextPostAt = schedule ? getNextPostTime(schedule) : null;
+
         // Create pending TikTok account
         const account = await prisma.tikTokAccount.create({
           data: {
@@ -91,6 +114,7 @@ export async function POST(request: Request) {
             paystackEmailToken: emailToken,
             videosPerWeek,
             userId: user.id,
+            ...(schedule ? { schedule, nextPostAt } : {}),
           },
         });
 
