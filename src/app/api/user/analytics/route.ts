@@ -2,7 +2,46 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getAnalytics, getDailyMetrics } from "@/lib/late-api";
+import type { ContentStatus } from "@prisma/client";
+
+interface AccountStats {
+  posted: number;
+  scheduled: number;
+  processing: number;
+  failed: number;
+  total: number;
+  successRate: number;
+  lastPostedAt: string | null;
+  nextPostAt: string | null;
+  dailyCounts: Array<{ date: string; posted: number; failed: number }>;
+}
+
+interface AccountBlock {
+  id: string;
+  username: string;
+  displayName: string | null;
+  tier: string;
+  videosPerWeek: number;
+  videoType: string;
+  isLinked: boolean;
+  stats: AccountStats;
+  recent: Array<{
+    id: string;
+    title: string;
+    status: ContentStatus;
+    scheduledAt: string | null;
+    postedAt: string | null;
+    tiktokPostId: string | null;
+    createdAt: string;
+  }>;
+}
+
+function startOfDayISO(offsetDays = 0): string {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - offsetDays);
+  return d.toISOString().slice(0, 10);
+}
 
 export async function GET(request: Request) {
   try {
@@ -12,142 +51,139 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get("days") ?? "7", 10);
+    const days = Math.min(90, Math.max(1, parseInt(searchParams.get("days") ?? "7", 10)));
 
-    const fromDate = new Date();
-    fromDate.setDate(fromDate.getDate() - days);
-    const fromDateStr = fromDate.toISOString().split("T")[0];
-    const toDateStr = new Date().toISOString().split("T")[0];
-
-    // Get all user's TikTok accounts that have a Late profile
     const accounts = await prisma.tikTokAccount.findMany({
-      where: { userId: session.user.id, lateProfileId: { not: null } },
-      select: { id: true, lateProfileId: true, username: true },
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        tier: true,
+        videosPerWeek: true,
+        videoType: true,
+        nextPostAt: true,
+      },
     });
 
-    if (accounts.length === 0) {
-      return NextResponse.json({
-        totalViews: 0,
-        totalLikes: 0,
-        totalComments: 0,
-        totalShares: 0,
-        avgEngagementRate: 0,
-        dailyMetrics: [],
-        topPosts: [],
-      });
+    const accountIds = accounts.map((a) => a.id);
+
+    const items = accountIds.length
+      ? await prisma.contentItem.findMany({
+          where: {
+            userId: session.user.id,
+            tiktokAccountId: { in: accountIds },
+          },
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            scheduledAt: true,
+            postedAt: true,
+            tiktokPostId: true,
+            createdAt: true,
+            tiktokAccountId: true,
+          },
+        })
+      : [];
+
+    const byAccount: Record<string, typeof items> = {};
+    for (const it of items) {
+      const key = it.tiktokAccountId ?? "";
+      if (!key) continue;
+      (byAccount[key] ??= []).push(it);
     }
 
-    // Fetch analytics for each account in parallel
-    const [analyticsResults, dailyResults] = await Promise.all([
-      Promise.all(
-        accounts.map((a) =>
-          getAnalytics({
-            profileId: a.lateProfileId!,
-            fromDate: fromDateStr,
-            toDate: toDateStr,
-            sortBy: "engagement",
-            limit: 10,
-          }).catch(() => null)
-        )
-      ),
-      Promise.all(
-        accounts.map((a) =>
-          getDailyMetrics({
-            profileId: a.lateProfileId!,
-            fromDate: fromDateStr,
-            toDate: toDateStr,
-          }).catch(() => null)
-        )
-      ),
-    ]);
-
-    // Aggregate analytics across accounts
-    let totalViews = 0;
-    let totalLikes = 0;
-    let totalComments = 0;
-    let totalShares = 0;
-    let totalEngagement = 0;
-    let postCount = 0;
-    const topPosts: Array<{
-      id: string;
-      content: string | null;
-      views: number;
-      likes: number;
-      engagementRate: number;
-      username: string;
-    }> = [];
-
-    for (let i = 0; i < analyticsResults.length; i++) {
-      const result = analyticsResults[i];
-      if (!result) continue;
-      const username = accounts[i].username;
-      for (const post of result.posts) {
-        totalViews += post.views;
-        totalLikes += post.likes;
-        totalComments += post.comments;
-        totalShares += post.shares;
-        totalEngagement += post.engagementRate;
-        postCount++;
-        topPosts.push({
-          id: post.id,
-          content: post.content,
-          views: post.views,
-          likes: post.likes,
-          engagementRate: post.engagementRate,
-          username,
-        });
-      }
+    const dayKeys: string[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      dayKeys.push(startOfDayISO(i));
     }
 
-    // Sort top posts by views and take top 5
-    topPosts.sort((a, b) => b.views - a.views);
-    const top5 = topPosts.slice(0, 5);
+    const blocks: AccountBlock[] = accounts.map((a) => {
+      const rows = byAccount[a.id] ?? [];
 
-    // Merge daily metrics across accounts by date
-    const dailyMap = new Map<
-      string,
-      {
-        views: number;
-        likes: number;
-        comments: number;
-        shares: number;
-        engagementTotal: number;
-      }
-    >();
-    for (const result of dailyResults) {
-      if (!result) continue;
-      for (const day of result) {
-        const existing = dailyMap.get(day.date);
-        if (existing) {
-          existing.views += day.views;
-          existing.likes += day.likes;
-          existing.comments += day.comments;
-          existing.shares += day.shares;
-          existing.engagementTotal += day.engagementTotal;
-        } else {
-          dailyMap.set(day.date, { ...day });
+      let posted = 0;
+      let scheduled = 0;
+      let processing = 0;
+      let failed = 0;
+      let lastPostedAt: Date | null = null;
+
+      const dailyMap: Record<string, { posted: number; failed: number }> = {};
+      for (const k of dayKeys) dailyMap[k] = { posted: 0, failed: 0 };
+
+      for (const r of rows) {
+        if (r.status === "POSTED") {
+          posted++;
+          if (r.postedAt && (!lastPostedAt || r.postedAt > lastPostedAt)) {
+            lastPostedAt = r.postedAt;
+          }
+        } else if (r.status === "SCHEDULED") {
+          scheduled++;
+        } else if (r.status === "PROCESSING") {
+          processing++;
+        } else if (r.status === "FAILED") {
+          failed++;
+        }
+
+        const when = r.postedAt ?? r.createdAt;
+        if (when) {
+          const key = when.toISOString().slice(0, 10);
+          if (dailyMap[key]) {
+            if (r.status === "POSTED") dailyMap[key].posted++;
+            else if (r.status === "FAILED") dailyMap[key].failed++;
+          }
         }
       }
-    }
 
-    const dailyMetrics = Array.from(dailyMap.entries())
-      .map(([date, m]) => ({ date, ...m }))
-      .sort((a, b) => a.date.localeCompare(b.date));
+      const terminal = posted + failed;
+      const successRate = terminal > 0 ? Math.round((posted / terminal) * 100) : 0;
+
+      return {
+        id: a.id,
+        username: a.username,
+        displayName: a.displayName,
+        tier: a.tier,
+        videosPerWeek: a.videosPerWeek,
+        videoType: a.videoType,
+        isLinked: !a.username.startsWith("pending-"),
+        stats: {
+          posted,
+          scheduled,
+          processing,
+          failed,
+          total: posted + scheduled + processing + failed,
+          successRate,
+          lastPostedAt: lastPostedAt ? lastPostedAt.toISOString() : null,
+          nextPostAt: a.nextPostAt ? a.nextPostAt.toISOString() : null,
+          dailyCounts: dayKeys.map((k) => ({
+            date: k,
+            posted: dailyMap[k]?.posted ?? 0,
+            failed: dailyMap[k]?.failed ?? 0,
+          })),
+        },
+        recent: rows.slice(0, 5).map((r) => ({
+          id: r.id,
+          title: r.title,
+          status: r.status,
+          scheduledAt: r.scheduledAt?.toISOString() ?? null,
+          postedAt: r.postedAt?.toISOString() ?? null,
+          tiktokPostId: r.tiktokPostId,
+          createdAt: r.createdAt.toISOString(),
+        })),
+      };
+    });
 
     return NextResponse.json({
-      totalViews,
-      totalLikes,
-      totalComments,
-      totalShares,
-      avgEngagementRate: postCount > 0 ? totalEngagement / postCount : 0,
-      dailyMetrics,
-      topPosts: top5,
+      accounts: blocks,
+      range: { days, from: dayKeys[0], to: dayKeys[dayKeys.length - 1] },
     });
   } catch (error) {
-    console.error("Analytics API error:", error);
+    console.error("GET /api/user/analytics error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch analytics" },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

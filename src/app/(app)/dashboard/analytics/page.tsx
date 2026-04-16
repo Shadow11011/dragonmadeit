@@ -2,246 +2,106 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { StatsCard } from "@/components/dashboard/StatsCard";
+import { motion } from "framer-motion";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
+import { TierBadge } from "@/components/dashboard/TierBadge";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
 /* ------------------------------------------------------------------ */
 
-interface DailyMetric {
-  date: string;
-  views: number;
-  likes: number;
-  comments: number;
-  shares: number;
-  engagementTotal: number;
+type ContentStatus =
+  | "DRAFT"
+  | "SCHEDULED"
+  | "PROCESSING"
+  | "POSTED"
+  | "FAILED";
+
+interface AccountStats {
+  posted: number;
+  scheduled: number;
+  processing: number;
+  failed: number;
+  total: number;
+  successRate: number;
+  lastPostedAt: string | null;
+  nextPostAt: string | null;
+  dailyCounts: Array<{ date: string; posted: number; failed: number }>;
 }
 
-interface AnalyticsData {
-  totalViews: number;
-  totalLikes: number;
-  totalComments: number;
-  totalShares: number;
-  avgEngagementRate: number;
-  dailyMetrics: DailyMetric[];
-  topPosts: Array<{
+interface AccountBlock {
+  id: string;
+  username: string;
+  displayName: string | null;
+  tier: "FREE" | "HATCHLING" | "DRAKE" | "ELDER_DRAGON";
+  videosPerWeek: number;
+  videoType: string;
+  isLinked: boolean;
+  stats: AccountStats;
+  recent: Array<{
     id: string;
-    content: string | null;
-    views: number;
-    likes: number;
-    engagementRate: number;
-    username: string;
+    title: string;
+    status: ContentStatus;
+    scheduledAt: string | null;
+    postedAt: string | null;
+    tiktokPostId: string | null;
+    createdAt: string;
   }>;
 }
 
 type DateRange = 7 | 30 | 90;
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                           */
-/* ------------------------------------------------------------------ */
+const STATUS_STYLE: Record<ContentStatus, { bg: string; text: string }> = {
+  DRAFT: { bg: "bg-bg-tertiary", text: "text-text-secondary" },
+  SCHEDULED: { bg: "bg-accent-ember/20", text: "text-accent-ember" },
+  PROCESSING: { bg: "bg-accent-fire/20", text: "text-accent-fire" },
+  POSTED: { bg: "bg-success/20", text: "text-success" },
+  FAILED: { bg: "bg-error/20", text: "text-error" },
+};
 
-function formatNumber(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
-  return n.toString();
+function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }) + " UTC";
 }
 
-function getDayLabel(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
+function daysFromNow(iso: string | null): string {
+  if (!iso) return "—";
+  const diff = new Date(iso).getTime() - Date.now();
+  if (diff <= 0) return "any moment";
+  const mins = Math.round(diff / 60000);
+  if (mins < 60) return `in ${mins}m`;
+  const hours = Math.round(mins / 60);
+  if (hours < 48) return `in ${hours}h`;
+  return `in ${Math.round(hours / 24)}d`;
 }
-
-/* ------------------------------------------------------------------ */
-/*  Icons                                                             */
-/* ------------------------------------------------------------------ */
-
-function BarChartIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="10" width="3" height="8" rx="1" fill="currentColor" />
-      <rect x="7" y="6" width="3" height="12" rx="1" fill="currentColor" />
-      <rect x="12" y="3" width="3" height="15" rx="1" fill="currentColor" />
-    </svg>
-  );
-}
-
-function PercentIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="13" cy="13" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <path d="M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function HeartIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M10 17L8.55 15.7C4.4 11.9 2 9.7 2 7C2 4.8 3.8 3 6 3C7.3 3 8.5 3.6 9.3 4.5L10 5.3L10.7 4.5C11.5 3.6 12.7 3 14 3C16.2 3 18 4.8 18 7C18 9.7 15.6 11.9 11.45 15.7L10 17Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-      />
-    </svg>
-  );
-}
-
-function ShareIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="14" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="6" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="14" cy="15" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <path d="M8.3 8.8L11.7 6.2" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M8.3 11.2L11.7 13.8" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2 10C2 10 5 5 10 5C15 5 18 10 18 10C18 10 15 15 10 15C5 15 2 10 2 10Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-    </svg>
-  );
-}
-
-function ExternalLinkIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M6 2H3C2.44772 2 2 2.44772 2 3V11C2 11.5523 2.44772 12 3 12H11C11.5523 12 12 11.5523 12 11V8"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M8 2H12V6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 2L7 7"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Loading skeleton                                                  */
-/* ------------------------------------------------------------------ */
-
-function AnalyticsSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-3xl font-bold font-heading text-text-primary">Analytics</h1>
-          <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
-        </div>
-        <div className="h-9 w-52 bg-bg-secondary rounded-lg animate-pulse" />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 bg-bg-secondary rounded-xl animate-pulse" />
-        ))}
-      </div>
-      <div className="h-64 bg-bg-secondary rounded-xl animate-pulse" />
-      <div className="h-48 bg-bg-secondary rounded-xl animate-pulse" />
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Empty state                                                       */
-/* ------------------------------------------------------------------ */
-
-function EmptyState({ hasAccounts }: { hasAccounts: boolean }) {
-  return (
-    <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
-      <div className="flex justify-center mb-4">
-        <DragonMascot size={64} />
-      </div>
-      {hasAccounts ? (
-        <>
-          <h2 className="text-xl font-semibold font-heading text-text-primary mb-2">
-            No analytics data yet
-          </h2>
-          <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
-            Your account is connected — metrics will appear here once your first post goes live.
-          </p>
-          <Link href="/dashboard/accounts">
-            <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-accent-fire text-white hover:brightness-110 transition-all">
-              View Your Accounts
-            </button>
-          </Link>
-        </>
-      ) : (
-        <>
-          <h2 className="text-xl font-semibold font-heading text-text-primary mb-2">
-            No data yet — your first post will change that
-          </h2>
-          <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
-            Add a TikTok account to start posting. Views, likes, and engagement metrics will appear here automatically.
-          </p>
-          <Link href="/dashboard/accounts/add">
-            <button className="inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm bg-accent-fire text-white hover:brightness-110 transition-all">
-              Add Your First Account
-            </button>
-          </Link>
-        </>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Main component                                                    */
-/* ------------------------------------------------------------------ */
 
 export default function AnalyticsPage() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [hasAccounts, setHasAccounts] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<{ accounts: AccountBlock[] } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>(7);
 
   const fetchAnalytics = useCallback(async (days: DateRange) => {
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
     try {
-      const [analyticsRes, countRes] = await Promise.all([
-        fetch(`/api/user/analytics?days=${days}`),
-        fetch("/api/user/accounts/count"),
-      ]);
-      if (!analyticsRes.ok) {
+      const res = await fetch(`/api/user/analytics?days=${days}`);
+      if (!res.ok) {
         throw new Error("Failed to load analytics");
       }
-      const json: unknown = await analyticsRes.json();
-      setData(json as AnalyticsData);
-      if (countRes.ok) {
-        const countJson = (await countRes.json()) as { count?: number };
-        setHasAccounts((countJson.count ?? 0) > 0);
-      }
+      const json = (await res.json()) as { accounts: AccountBlock[] };
+      setData(json);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
+      setError(err instanceof Error ? err.message : "Failed to load analytics");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -249,234 +109,258 @@ export default function AnalyticsPage() {
     void fetchAnalytics(dateRange);
   }, [dateRange, fetchAnalytics]);
 
-  if (loading) {
-    return <AnalyticsSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold font-heading text-text-primary">Analytics</h1>
-          <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
-        </div>
-        <div className="rounded-xl bg-bg-secondary border border-error/30 p-8 text-center">
-          <p className="text-error font-medium">{error}</p>
-          <button
-            onClick={() => void fetchAnalytics(dateRange)}
-            className="mt-3 text-sm text-accent-fire hover:underline"
-          >
-            Try again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const isEmpty =
-    !data ||
-    (data.totalViews === 0 &&
-      data.totalLikes === 0 &&
-      data.totalShares === 0 &&
-      data.dailyMetrics.length === 0);
-
-  /* ---- Derived chart values ---- */
-  const maxViews = data
-    ? Math.max(...data.dailyMetrics.map((d) => d.views), 1)
-    : 1;
-  const maxEngagement = data
-    ? Math.max(...data.dailyMetrics.map((d) => d.engagementTotal), 1)
-    : 1;
-
-  const DATE_RANGE_OPTIONS: { label: string; value: DateRange }[] = [
-    { label: "7 days", value: 7 },
-    { label: "30 days", value: 30 },
-    { label: "90 days", value: 90 },
-  ];
+  const accounts = data?.accounts ?? [];
+  const linkedAccounts = accounts.filter((a) => a.isLinked);
 
   return (
-    <div className="space-y-6">
-      {/* Header with date range selector */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="space-y-6 max-w-5xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-heading text-text-primary">Analytics</h1>
-          <p className="text-text-secondary text-sm mt-1">Track your TikTok performance across all accounts.</p>
+          <h1 className="text-3xl font-bold font-heading">Analytics</h1>
+          <p className="text-sm text-text-secondary mt-1">
+            Posting performance per account.
+          </p>
         </div>
-
-        <div className="flex rounded-lg bg-bg-secondary border border-border overflow-hidden">
-          {DATE_RANGE_OPTIONS.map((opt) => (
+        <div className="inline-flex rounded-md bg-bg-secondary border border-border p-1">
+          {([7, 30, 90] as DateRange[]).map((d) => (
             <button
-              key={opt.value}
-              onClick={() => setDateRange(opt.value)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                dateRange === opt.value
+              key={d}
+              onClick={() => setDateRange(d)}
+              className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                dateRange === d
                   ? "bg-accent-fire text-white"
-                  : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+                  : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              {opt.label}
+              {d}d
             </button>
           ))}
         </div>
       </div>
 
-      {isEmpty ? (
-        <EmptyState hasAccounts={hasAccounts} />
-      ) : (
-        <>
-          {/* Stats row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatsCard
-              label="Total Views"
-              value={formatNumber(data!.totalViews)}
-              icon={<BarChartIcon />}
-              accentColor="#ff4500"
-            />
-            <StatsCard
-              label="Engagement Rate"
-              value={`${data!.avgEngagementRate.toFixed(1)}%`}
-              icon={<PercentIcon />}
-              accentColor="#ff8c00"
-            />
-            <StatsCard
-              label="Total Likes"
-              value={formatNumber(data!.totalLikes)}
-              icon={<HeartIcon />}
-              accentColor="#ffd700"
-            />
-            <StatsCard
-              label="Total Shares"
-              value={formatNumber(data!.totalShares)}
-              icon={<ShareIcon />}
-              accentColor="#22c55e"
-            />
+      {isLoading && (
+        <div className="rounded-xl bg-bg-secondary border border-border p-8 text-center text-text-secondary">
+          Loading…
+        </div>
+      )}
+
+      {!isLoading && error && (
+        <div className="rounded-xl bg-error/10 border border-error/20 p-6">
+          <p className="text-sm text-error">{error}</p>
+          <button
+            className="mt-3 text-sm underline text-error"
+            onClick={() => void fetchAnalytics(dateRange)}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !error && linkedAccounts.length === 0 && (
+        <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
+          <div className="flex justify-center mb-4">
+            <DragonMascot size={48} color="#ff4500" />
+          </div>
+          <h2 className="text-lg font-semibold font-heading">
+            No linked TikTok accounts
+          </h2>
+          <p className="text-sm text-text-secondary mt-1 max-w-md mx-auto">
+            Link a TikTok account to start seeing posting analytics here. Stats
+            appear automatically after your first post.
+          </p>
+          <Link
+            href="/dashboard/accounts"
+            className="inline-block mt-4 text-sm text-accent-fire hover:underline"
+          >
+            Go to accounts →
+          </Link>
+        </div>
+      )}
+
+      {!isLoading && !error && linkedAccounts.map((acct) => (
+        <motion.div
+          key={acct.id}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="rounded-xl bg-bg-secondary border border-border overflow-hidden"
+        >
+          {/* Account header */}
+          <div className="p-5 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-text-primary">
+                  @{acct.username}
+                </h3>
+                <p className="text-xs text-text-secondary mt-0.5">
+                  {acct.videoType === "AI_IMAGES" ? "AI Images" : "Gameplay"} · {acct.videosPerWeek} videos/week
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <TierBadge tier={acct.tier} />
+              <Link
+                href={`/dashboard/accounts/${acct.id}`}
+                className="text-xs text-accent-fire hover:underline"
+              >
+                Manage →
+              </Link>
+            </div>
           </div>
 
-          {/* Bar chart — Views */}
-          {data!.dailyMetrics.length > 0 && (
-            <section>
-              <h2 className="text-lg font-semibold font-heading text-text-primary mb-3">
-                Views ({dateRange === 7 ? "This Week" : `Last ${dateRange} Days`})
-              </h2>
-              <div className="rounded-xl bg-bg-secondary border border-border p-6">
-                <div className="flex items-end justify-between gap-3 h-48">
-                  {data!.dailyMetrics.map((metric) => {
-                    const heightPercent = (metric.views / maxViews) * 100;
-                    return (
-                      <div
-                        key={metric.date}
-                        className="flex-1 flex flex-col items-center gap-2"
-                      >
-                        <div className="w-full flex justify-center">
-                          <div
-                            className="w-full max-w-[40px] rounded-t-md fire-gradient transition-all duration-700"
-                            style={{ height: `${heightPercent}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-text-secondary">
-                          {getDayLabel(metric.date)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </section>
-          )}
+          {/* Stat tiles */}
+          <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-border border-b border-border">
+            <StatTile label="Posted" value={acct.stats.posted} tone="success" />
+            <StatTile label="Scheduled" value={acct.stats.scheduled} tone="ember" />
+            <StatTile label="Processing" value={acct.stats.processing} tone="fire" />
+            <StatTile label="Failed" value={acct.stats.failed} tone="error" />
+            <StatTile label="Success" value={`${acct.stats.successRate}%`} tone="default" />
+          </div>
 
-          {/* Engagement by Day */}
-          {data!.dailyMetrics.length > 0 && (
-            <section>
-              <h2 className="text-lg font-semibold font-heading text-text-primary mb-3">Engagement by Day</h2>
-              <div className="rounded-xl bg-bg-secondary border border-border p-6">
-                <div className="space-y-3">
-                  {data!.dailyMetrics.map((metric) => {
-                    const widthPercent =
-                      (metric.engagementTotal / maxEngagement) * 100;
-                    return (
-                      <div
-                        key={metric.date}
-                        className="flex items-center gap-3"
-                      >
-                        <span className="text-xs text-text-secondary w-8">
-                          {getDayLabel(metric.date)}
-                        </span>
-                        <div className="flex-1 h-3 rounded-full bg-bg-tertiary overflow-hidden">
-                          <div
-                            className="h-full rounded-full fire-gradient transition-all duration-700"
-                            style={{ width: `${widthPercent}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-medium w-10 text-right">
-                          {formatNumber(metric.engagementTotal)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </section>
-          )}
+          {/* Timing row */}
+          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-b border-border">
+            <div>
+              <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">
+                Last posted
+              </p>
+              <p className="text-text-primary font-medium">
+                {formatDate(acct.stats.lastPostedAt)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">
+                Next scheduled
+              </p>
+              <p className="text-text-primary font-medium">
+                {formatDate(acct.stats.nextPostAt)}
+                <span className="text-text-secondary font-normal ml-1">
+                  ({daysFromNow(acct.stats.nextPostAt)})
+                </span>
+              </p>
+            </div>
+          </div>
 
-          {/* Top Performing Posts */}
-          {data!.topPosts.length > 0 && (
-            <section>
-              <h2 className="text-lg font-semibold font-heading text-text-primary mb-3">Top Performing Posts</h2>
-              <div className="space-y-3">
-                {data!.topPosts.map((post, index) => (
-                  <div
-                    key={post.id || index}
-                    className="rounded-xl bg-bg-secondary border border-border p-4 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-fire/10 text-accent-fire text-xs font-bold">
-                          {index + 1}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm text-text-primary leading-relaxed">
-                            {post.content
-                              ? post.content.length > 80
-                                ? post.content.slice(0, 80) + "..."
-                                : post.content
-                              : "Untitled post"}
-                          </p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-text-secondary">
-                            <span className="flex items-center gap-1">
-                              <EyeIcon />
-                              {formatNumber(post.views)} views
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <HeartIcon />
-                              {formatNumber(post.likes)} likes
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <PercentIcon />
-                              {post.engagementRate.toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
+          {/* Daily chart */}
+          <div className="p-5 border-b border-border">
+            <p className="text-xs text-text-secondary uppercase tracking-wide mb-3">
+              Last {dateRange} days
+            </p>
+            <DailyChart data={acct.stats.dailyCounts} />
+          </div>
+
+          {/* Recent items */}
+          <div className="p-5">
+            <p className="text-xs text-text-secondary uppercase tracking-wide mb-3">
+              Recent items
+            </p>
+            {acct.recent.length === 0 ? (
+              <p className="text-sm text-text-secondary">
+                No content items yet. First post goes live after your next scheduled slot.
+              </p>
+            ) : (
+              <div className="divide-y divide-border">
+                {acct.recent.map((r) => {
+                  const style = STATUS_STYLE[r.status];
+                  const when = r.postedAt ?? r.scheduledAt ?? r.createdAt;
+                  return (
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between py-2.5 text-sm"
+                    >
+                      <div className="flex-1 min-w-0 pr-3">
+                        <p className="text-text-primary truncate">{r.title}</p>
+                        <p className="text-xs text-text-secondary mt-0.5">
+                          {formatDate(when)}
+                        </p>
                       </div>
-                      {post.id && post.username && (
-                        <a
-                          href={`https://www.tiktok.com/@${post.username}/video/${post.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex shrink-0 items-center gap-1 text-xs text-accent-fire hover:text-accent-ember transition-colors mt-0.5"
-                          title="View on TikTok"
-                        >
-                          <ExternalLinkIcon />
-                          <span className="hidden sm:inline">View</span>
-                        </a>
-                      )}
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${style.bg} ${style.text}`}
+                      >
+                        {r.status}
+                      </span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            </section>
-          )}
-        </>
-      )}
+            )}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function StatTile({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number | string;
+  tone: "success" | "ember" | "fire" | "error" | "default";
+}) {
+  const toneClass =
+    tone === "success"
+      ? "text-success"
+      : tone === "ember"
+        ? "text-accent-ember"
+        : tone === "fire"
+          ? "text-accent-fire"
+          : tone === "error"
+            ? "text-error"
+            : "text-text-primary";
+  return (
+    <div className="p-4 text-center">
+      <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">
+        {label}
+      </p>
+      <p className={`text-2xl font-bold ${toneClass}`}>{value}</p>
+    </div>
+  );
+}
+
+function DailyChart({
+  data,
+}: {
+  data: Array<{ date: string; posted: number; failed: number }>;
+}) {
+  const max = Math.max(1, ...data.map((d) => d.posted + d.failed));
+  return (
+    <div className="flex items-end gap-1 h-24">
+      {data.map((d) => {
+        const total = d.posted + d.failed;
+        const postedH = max > 0 ? (d.posted / max) * 100 : 0;
+        const failedH = max > 0 ? (d.failed / max) * 100 : 0;
+        const label = new Date(d.date).toLocaleDateString("en-US", {
+          month: "numeric",
+          day: "numeric",
+        });
+        return (
+          <div key={d.date} className="flex-1 flex flex-col items-center gap-1" title={`${label}: ${d.posted} posted, ${d.failed} failed`}>
+            <div className="w-full flex flex-col-reverse h-20">
+              {d.posted > 0 && (
+                <div
+                  className="w-full bg-success rounded-t-sm"
+                  style={{ height: `${postedH}%` }}
+                />
+              )}
+              {d.failed > 0 && (
+                <div
+                  className="w-full bg-error"
+                  style={{ height: `${failedH}%` }}
+                />
+              )}
+              {total === 0 && (
+                <div className="w-full bg-bg-tertiary rounded-t-sm" style={{ height: "4px" }} />
+              )}
+            </div>
+            <span className="text-[10px] text-text-secondary">
+              {label}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
