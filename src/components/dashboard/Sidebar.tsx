@@ -140,7 +140,7 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile header bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 md:hidden flex items-center justify-between h-14 px-4 bg-bg-secondary/80 backdrop-blur-md border-b border-border">
+      <div className="fixed top-0 left-0 right-0 z-50 md:hidden flex items-center justify-between h-14 px-4 bg-bg-secondary border-b border-border">
         <button
           onClick={() => setMobileOpen(true)}
           className="rounded-lg p-2 text-text-primary hover:bg-bg-tertiary transition-colors"
@@ -148,14 +148,14 @@ export function Sidebar() {
         >
           <MenuIcon />
         </button>
-        <span className="text-lg font-bold fire-text">DragonMadeIt</span>
+        <span className="font-heading text-lg fire-text">DragonMadeIt</span>
         <div className="w-10" />
       </div>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-bg-primary/70 md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -176,7 +176,7 @@ export function Sidebar() {
             onClick={() => setMobileOpen(false)}
           >
             <DragonMascot size={28} />
-            <span className="text-lg font-bold fire-text">DragonMadeIt</span>
+            <span className="font-heading text-lg fire-text">DragonMadeIt</span>
           </Link>
           {/* Mobile close button */}
           <button
@@ -208,7 +208,7 @@ export function Sidebar() {
                     : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50"
                 )}
               >
-                <span className="shrink-0">{item.icon}</span>
+                <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", isActive ? "bg-accent-fire" : "bg-border")} />
                 <span className="flex-1">{item.label}</span>
                 {item.badge !== undefined && item.badge > 0 && (
                   <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-accent-fire/15 px-1.5 text-xs font-medium text-accent-fire">
@@ -225,7 +225,7 @@ export function Sidebar() {
           <Link
             href="/dashboard/accounts/add"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#ff4500] to-[#ff8c00] hover:brightness-110 transition-all"
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-accent-fire hover:bg-accent-fire/90 transition-all"
           >
             <PlusIcon />
             <span>Add Account</span>
