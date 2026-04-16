@@ -537,10 +537,6 @@ function PaymentStep({
         .filter((n): n is number => typeof n === "number")
         .sort();
       const cleanTimes = schedule.times.filter((t) => /^\d{2}:\d{2}$/.test(t));
-      const tzGuess =
-        typeof Intl !== "undefined"
-          ? Intl.DateTimeFormat().resolvedOptions().timeZone
-          : "America/New_York";
 
       const res = await fetch("/api/paystack/initialize", {
         method: "POST",
@@ -550,7 +546,7 @@ function PaymentStep({
           billingInterval,
           schedule:
             dayNums.length > 0 && cleanTimes.length > 0
-              ? { days: dayNums, times: cleanTimes, timezone: tzGuess }
+              ? { days: dayNums, times: cleanTimes, timezone: "UTC" }
               : undefined,
         }),
       });

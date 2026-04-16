@@ -26,18 +26,6 @@ const WEEKDAYS: Array<{ num: number; label: string }> = [
   { num: 0, label: "Sun" },
 ];
 
-const COMMON_TIMEZONES = [
-  "America/New_York",
-  "America/Los_Angeles",
-  "America/Chicago",
-  "Europe/London",
-  "Europe/Berlin",
-  "Asia/Lagos",
-  "Asia/Tokyo",
-  "Australia/Sydney",
-  "UTC",
-];
-
 export function ScheduleEditor({
   accountId,
   videosPerWeek,
@@ -47,9 +35,8 @@ export function ScheduleEditor({
 }: ScheduleEditorProps) {
   const [days, setDays] = useState<number[]>(initial?.days ?? []);
   const [times, setTimes] = useState<string[]>(initial?.times ?? ["09:00"]);
-  const [timezone, setTimezone] = useState<string>(
-    initial?.timezone ?? "America/New_York",
-  );
+  // All schedules run on UTC so there's no ambiguity across users / servers.
+  const timezone = "UTC";
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -197,25 +184,9 @@ export function ScheduleEditor({
         </div>
       </div>
 
-      <div>
-        <p className="text-xs text-text-secondary uppercase tracking-wide mb-2">
-          Timezone
-        </p>
-        <select
-          value={timezone}
-          onChange={(e) => {
-            setSaveStatus("idle");
-            setTimezone(e.target.value);
-          }}
-          className="rounded-md bg-bg-tertiary border border-border px-3 py-1.5 text-sm text-text-primary"
-        >
-          {COMMON_TIMEZONES.map((tz) => (
-            <option key={tz} value={tz}>
-              {tz}
-            </option>
-          ))}
-        </select>
-      </div>
+      <p className="text-xs text-text-secondary">
+        Times are in <span className="text-text-primary font-medium">UTC</span>.
+      </p>
 
       {error && <p className="text-sm text-error">{error}</p>}
 
