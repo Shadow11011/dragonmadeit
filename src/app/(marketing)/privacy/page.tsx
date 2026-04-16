@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy — DragonMadeIt",
   description: "Privacy Policy for DragonMadeIt TikTok automation platform.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

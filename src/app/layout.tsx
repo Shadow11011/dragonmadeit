@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "DragonMadeIt — TikTok Automation",
   description: "Set it and forget it. AI-powered TikTok content automation.",
   metadataBase: new URL("https://dragonmadeit.app"),
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32" },

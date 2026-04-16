@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms of Service — DragonMadeIt",
   description: "Terms of Service for DragonMadeIt TikTok automation platform.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {
