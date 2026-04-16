@@ -24,8 +24,8 @@ export function Navbar() {
       {/* Announcement bar */}
       {!announcementDismissed && (
         <div className="fixed top-0 left-0 right-0 z-[60] bg-accent-fire text-white text-center text-sm py-2 px-4 flex items-center justify-center">
-          <span className="flex-1 text-center">
-            🔥 Launch pricing — lock in current rates before they increase
+          <span className="flex-1 text-center font-body">
+            Launch pricing — lock in current rates before they increase
           </span>
           <button
             onClick={() => setAnnouncementDismissed(true)}
@@ -41,7 +41,7 @@ export function Navbar() {
 
       <motion.header
         className={cn(
-          "fixed left-0 right-0 z-50 nav-blur border-b border-border/50",
+          "fixed left-0 right-0 z-50 bg-bg-primary border-b border-border/50",
           announcementDismissed ? "top-0" : "top-[36px]"
         )}
         initial={{ y: -80 }}
@@ -51,7 +51,7 @@ export function Navbar() {
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold fire-text">
+            <Link href="/" className="flex items-center gap-2 text-xl font-bold font-heading fire-text">
               <Image
                 src="/images/dragon-mascot.png"
                 alt="DragonMadeIt mascot"
@@ -124,7 +124,7 @@ export function Navbar() {
         {/* Mobile backdrop overlay */}
         {mobileOpen && (
           <div
-            className="md:hidden fixed inset-0 z-40 bg-black/50"
+            className="md:hidden fixed inset-0 z-40 bg-bg-primary/70"
             onClick={() => setMobileOpen(false)}
           />
         )}
@@ -132,7 +132,7 @@ export function Navbar() {
         {/* Mobile menu — CSS transition instead of AnimatePresence for lighter bundle */}
         <div
           className={cn(
-            "md:hidden nav-blur border-t border-border/50 overflow-hidden transition-all duration-200 ease-in-out relative z-50",
+            "md:hidden bg-bg-primary border-t border-border/50 overflow-hidden transition-all duration-200 ease-in-out relative z-50",
             mobileOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
           )}
         >
