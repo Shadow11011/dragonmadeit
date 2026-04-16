@@ -48,3 +48,6 @@ Thumbs.db
 *.swp
 *.swo
 .claude/worktrees/
+.superpowers/
+.memsearch/
+design-refs/
