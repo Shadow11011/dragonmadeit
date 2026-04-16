@@ -102,7 +102,13 @@ export async function PATCH(
     };
 
     const normalized = normalizeSchedule(schedule);
-    const nextPostAt = normalized ? getNextPostTime(normalized) : null;
+    let nextPostAt: Date | null = null;
+    try {
+      nextPostAt = normalized ? getNextPostTime(normalized) : null;
+    } catch (e) {
+      console.error("getNextPostTime failed", e);
+      nextPostAt = null;
+    }
 
     const updated = await prisma.tikTokAccount.update({
       where: { id },
@@ -129,8 +135,15 @@ export async function PATCH(
       `PATCH /api/tiktok-accounts/${params?.id}/schedule error:`,
       error,
     );
+    const message =
+      error instanceof Error ? error.message : String(error);
+    const name = error instanceof Error ? error.name : "Error";
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      {
+        success: false,
+        error: "Internal server error",
+        debug: { name, message: message.slice(0, 500) },
+      },
       { status: 500 },
     );
   }
