@@ -8,16 +8,20 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ["var(--font-heading)", "Georgia", "serif"],
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
+      },
       colors: {
-        "bg-primary": "#0a0a0f",
-        "bg-secondary": "#12121a",
-        "bg-tertiary": "#1a1a2e",
+        "bg-primary": "#0f0d0b",
+        "bg-secondary": "#171412",
+        "bg-tertiary": "#201c18",
         "accent-fire": "#ff4500",
         "accent-ember": "#ff8c00",
         "accent-gold": "#ffd700",
-        "text-primary": "#e4e4e7",
-        "text-secondary": "#71717a",
-        border: "#27272a",
+        "text-primary": "#ece9e5",
+        "text-secondary": "#807a73",
+        border: "#302c27",
         success: "#22c55e",
         error: "#ef4444",
         warning: "#f59e0b",

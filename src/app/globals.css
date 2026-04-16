@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-tertiary: #1a1a2e;
+  --bg-primary: oklch(0.11 0.008 45);
+  --bg-secondary: oklch(0.14 0.01 45);
+  --bg-tertiary: oklch(0.18 0.012 45);
   --accent-fire: #ff4500;
   --accent-ember: #ff8c00;
   --accent-gold: #ffd700;
-  --text-primary: #e4e4e7;
-  --text-secondary: #71717a;
-  --border: #27272a;
+  --text-primary: oklch(0.92 0.005 45);
+  --text-secondary: oklch(0.55 0.01 45);
+  --border: oklch(0.25 0.008 45);
 }
 
 * {
@@ -84,10 +84,8 @@ a {
 }
 
 .fire-text {
-  background: linear-gradient(to right, #ff8c00, #ff4500, #ffd700);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-fire);
+  /* Solid color — no gradient text, ever */
 }
 
 /* Scrollbar */
@@ -108,33 +106,22 @@ a {
   background: var(--text-secondary);
 }
 
-/* Glow effects */
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(255, 69, 0, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(255, 69, 0, 0.6), 0 0 60px rgba(255, 140, 0, 0.3); }
-}
-
-.glow-fire {
-  box-shadow: 0 0 15px rgba(255, 69, 0, 0.3), 0 0 30px rgba(255, 69, 0, 0.1);
-}
-
+.glow-fire,
 .glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
+  /* removed: AI glow effects */
 }
 
-/* Navbar blur */
 .nav-blur {
-  background: rgba(10, 10, 15, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: oklch(0.13 0.01 45);
+  /* solid dark with warm tint — no backdrop-filter */
 }
 
 /* Tier-specific colors */
-.tier-hatchling { color: #22d3ee; }
+.tier-hatchling { color: #c87533; }
 .tier-drake { color: #ff8c00; }
 .tier-elder-dragon { color: #ffd700; }
 
-.tier-border-hatchling { border-color: #22d3ee; }
+.tier-border-hatchling { border-color: #c87533; }
 .tier-border-drake { border-color: #ff8c00; }
 .tier-border-elder-dragon { border-color: #ffd700; }
 
@@ -144,9 +131,28 @@ a {
   outline-offset: 2px;
 }
 
-/* Disabled fire gradient variant */
 .fire-gradient-disabled {
-  background: linear-gradient(to right, #ff8c00, #ff4500, #ffd700);
+  background: var(--accent-fire);
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.font-heading {
+  font-family: var(--font-heading), Georgia, serif;
+}
+
+.font-body {
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Chapter label — editorial section markers */
+.chapter-label {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--accent-fire);
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-bottom: 24px;
 }

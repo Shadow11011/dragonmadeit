@@ -1,8 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Young_Serif, Figtree } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+const heading = Young_Serif({
+  subsets: ["latin"],
+  display: "swap",
+  weight: "400",
+  variable: "--font-heading",
+});
+
+const body = Figtree({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-body",
+});
 
 export const metadata: Metadata = {
   title: "DragonMadeIt — TikTok Automation",
@@ -42,7 +53,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} bg-bg-primary text-text-primary antialiased`}>
+      <body className={`${heading.variable} ${body.variable} font-body bg-bg-primary text-text-primary antialiased`}>
         {children}
         <script src="https://js.paystack.co/v2/inline.js" defer />
       </body>
