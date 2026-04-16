@@ -80,17 +80,7 @@ export async function POST(request: Request) {
         expectedHexHead: expectedHex.slice(0, 16),
       });
       return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid signature",
-          debug: {
-            recv: rawSig,
-            expHex: expectedHex,
-            expB64: expectedB64,
-            bodyLen: rawBody.length,
-            bodyHead: rawBody.slice(0, 100),
-          },
-        },
+        { success: false, error: "Invalid signature" },
         { status: 401 },
       );
     }
