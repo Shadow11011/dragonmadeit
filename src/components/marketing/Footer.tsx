@@ -22,7 +22,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="text-xl font-bold fire-text">
+            <Link href="/" className="text-xl font-bold font-heading fire-text">
               DragonMadeIt
             </Link>
             <p className="mt-3 text-sm text-text-secondary leading-relaxed">
@@ -41,7 +41,7 @@ export function Footer() {
 
           {/* Product */}
           <div>
-            <h3 className="text-sm font-semibold text-text-primary mb-4">Product</h3>
+            <h3 className="text-sm font-semibold font-heading text-text-primary mb-4">Product</h3>
             <ul className="space-y-2">
               {PRODUCT_LINKS.map((link) => (
                 <li key={link.href}>
@@ -55,7 +55,7 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-text-primary mb-4">Company</h3>
+            <h3 className="text-sm font-semibold font-heading text-text-primary mb-4">Company</h3>
             <ul className="space-y-2">
               {COMPANY_LINKS.map((link) => (
                 <li key={link.href}>
@@ -69,7 +69,7 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="text-sm font-semibold text-text-primary mb-4">Legal</h3>
+            <h3 className="text-sm font-semibold font-heading text-text-primary mb-4">Legal</h3>
             <ul className="space-y-2">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.label}>
@@ -85,7 +85,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-text-secondary">
-            &copy; 2026 <span className="fire-text font-semibold">DragonMadeIt</span>. All rights reserved.
+            &copy; 2026 <span className="fire-text font-semibold font-heading">DragonMadeIt</span>. All rights reserved.
           </p>
           <p className="text-xs text-text-secondary">
             Official TikTok API integration via Late.dev
