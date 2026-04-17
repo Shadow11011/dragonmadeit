@@ -11,19 +11,11 @@ import {
   sendPaymentFailedEmail,
 } from "@/lib/email";
 import { getNextPostTime, normalizeSchedule } from "@/lib/schedule-utils";
-import type { Prisma } from "@prisma/client";
+import type { PostingSchedule } from "@/types";
 
-function extractSchedule(data: Record<string, unknown>): Prisma.InputJsonValue | null {
+function extractSchedule(data: Record<string, unknown>): PostingSchedule | null {
   const meta = (data.metadata ?? {}) as Record<string, unknown>;
-  const s = meta.schedule;
-  if (!s || typeof s !== "object") return null;
-  const normalized = normalizeSchedule(s);
-  if (!normalized) return null;
-  return {
-    days: normalized.days,
-    times: normalized.times,
-    timezone: normalized.timezone,
-  };
+  return normalizeSchedule(meta.schedule);
 }
 
 export async function POST(request: Request) {
@@ -83,7 +75,6 @@ export async function POST(request: Request) {
           select: { id: true },
         });
         if (existing) {
-          console.log("paystack webhook: account already exists for subscription", subscriptionCode);
           break;
         }
 
@@ -97,12 +88,10 @@ export async function POST(request: Request) {
         }
 
         const schedule = extractSchedule(data);
-        const nextPostAt = schedule
-          ? getNextPostTime(normalizeSchedule(schedule))
-          : null;
+        const nextPostAt = schedule ? getNextPostTime(schedule) : null;
 
         // Create pending TikTok account
-        const account = await prisma.tikTokAccount.create({
+        await prisma.tikTokAccount.create({
           data: {
             username: `pending-${Date.now()}`,
             tier,
@@ -111,14 +100,20 @@ export async function POST(request: Request) {
             paystackEmailToken: emailToken,
             videosPerWeek,
             userId: user.id,
-            ...(schedule ? { schedule, nextPostAt } : {}),
+            ...(schedule
+              ? {
+                  schedule: {
+                    days: schedule.days,
+                    times: schedule.times,
+                    timezone: schedule.timezone,
+                  },
+                  nextPostAt,
+                }
+              : {}),
           },
         });
 
-        console.log(`paystack webhook: created account ${account.id} for user ${user.id} tier ${tier}`);
-
-        // Send confirmation email
-        sendPaymentConfirmedEmail({
+        await sendPaymentConfirmedEmail({
           to: email,
           tier,
           name: user.name,
@@ -162,17 +157,12 @@ export async function POST(request: Request) {
           },
         });
 
-        console.log(`paystack webhook: disabled subscription ${subscriptionCode}`);
         break;
       }
 
       case "charge.success": {
         // Recurring charge success — subscription already exists, nothing to create.
         // Paystack handles renewal automatically.
-        const subscriptionCode = (data.subscription as { subscription_code?: string })?.subscription_code;
-        if (subscriptionCode) {
-          console.log(`paystack webhook: charge.success for subscription ${subscriptionCode}`);
-        }
         break;
       }
 
@@ -185,7 +175,7 @@ export async function POST(request: Request) {
             select: { user: { select: { email: true, name: true } } },
           });
           if (failedAccount?.user?.email) {
-            sendPaymentFailedEmail({
+            await sendPaymentFailedEmail({
               to: failedAccount.user.email,
               name: failedAccount.user.name,
             });
@@ -195,7 +185,7 @@ export async function POST(request: Request) {
       }
 
       default:
-        console.log(`paystack webhook: unhandled event ${event}`);
+        break;
     }
   } catch (error) {
     console.error("Paystack webhook error:", error);

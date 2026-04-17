@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getNextPostTime, normalizeSchedule } from "@/lib/schedule-utils";
+import { getNextPostTime } from "@/lib/schedule-utils";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
@@ -23,7 +23,9 @@ const scheduleSchema = z.object({
   times: z
     .array(z.string().regex(/^\d{2}:\d{2}$/))
     .min(1, "Select at least one time"),
-  timezone: z.string().min(1).default("America/New_York"),
+  // All schedules are UTC. The field is accepted for forward-compat but
+  // ignored and overwritten before persisting.
+  timezone: z.string().optional(),
 });
 
 function normalizeDays(days: (number | string)[]): number[] {
@@ -34,7 +36,13 @@ function normalizeDays(days: (number | string)[]): number[] {
   const valid = nums.filter(
     (n): n is number => typeof n === "number" && n >= 0 && n <= 6,
   );
-  return Array.from(new Set(valid)).sort();
+  return Array.from(new Set(valid)).sort((a, b) => a - b);
+}
+
+function compareHHMM(a: string, b: string): number {
+  const [ah, am] = a.split(":").map((v) => parseInt(v, 10));
+  const [bh, bm] = b.split(":").map((v) => parseInt(v, 10));
+  return ah * 60 + am - (bh * 60 + bm);
 }
 
 export async function PATCH(
@@ -90,22 +98,23 @@ export async function PATCH(
     const days = normalizeDays(parsed.data.days);
     if (days.length === 0) {
       return NextResponse.json(
-        { success: false, error: "No valid days provided" },
+        { success: false, error: "Select at least one valid day (Sun–Sat)" },
         { status: 400 },
       );
     }
 
+    const times = [...parsed.data.times].sort(compareHHMM);
+
     const schedule: Prisma.InputJsonValue = {
       days,
-      times: parsed.data.times,
-      timezone: parsed.data.timezone,
+      times,
+      timezone: "UTC",
     };
 
-    const normalized = normalizeSchedule(schedule);
     let nextPostAt: Date | null = null;
     try {
-      nextPostAt = normalized ? getNextPostTime(normalized) : null;
-      if (nextPostAt && normalized) {
+      nextPostAt = getNextPostTime({ days, times, timezone: "UTC" });
+      if (nextPostAt) {
         const startOfTodayUtc = new Date();
         startOfTodayUtc.setUTCHours(0, 0, 0, 0);
         const postedToday = await prisma.contentItem.count({
@@ -115,13 +124,12 @@ export async function PATCH(
             postedAt: { gte: startOfTodayUtc },
           },
         });
-        const dailyCap = normalized.times.length;
+        const dailyCap = times.length;
         if (postedToday >= dailyCap) {
           const tomorrow = new Date();
           tomorrow.setUTCHours(0, 0, 0, 0);
           tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-          const firstTime = [...normalized.times].sort()[0];
-          const [h, m] = firstTime.split(":").map((v) => parseInt(v, 10));
+          const [h, m] = times[0].split(":").map((v) => parseInt(v, 10));
           tomorrow.setUTCHours(h, m, 0, 0);
           nextPostAt = tomorrow;
         }
@@ -156,15 +164,8 @@ export async function PATCH(
       `PATCH /api/tiktok-accounts/${params?.id}/schedule error:`,
       error,
     );
-    const message =
-      error instanceof Error ? error.message : String(error);
-    const name = error instanceof Error ? error.name : "Error";
     return NextResponse.json(
-      {
-        success: false,
-        error: "Internal server error",
-        debug: { name, message: message.slice(0, 500) },
-      },
+      { success: false, error: "Internal server error" },
       { status: 500 },
     );
   }

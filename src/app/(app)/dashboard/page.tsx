@@ -234,25 +234,25 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           label="TikTok Accounts"
-          value={summary.count}
+          value={formatNumber(summary.count)}
           icon={<UserIcon />}
           accentColor="#ffd700"
         />
         <StatsCard
           label="Total Posts"
-          value={summary.totalPosts}
+          value={formatNumber(summary.totalPosts)}
           icon={<FlameIcon />}
           accentColor="#ff4500"
         />
         <StatsCard
           label="Scheduled"
-          value={summary.scheduledPosts}
+          value={formatNumber(summary.scheduledPosts)}
           icon={<CalendarIcon />}
           accentColor="#ff8c00"
         />
         <StatsCard
           label="Processing"
-          value={summary.processing}
+          value={formatNumber(summary.processing)}
           icon={<EyeIcon />}
           accentColor="#22c55e"
         />

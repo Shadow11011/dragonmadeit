@@ -76,6 +76,7 @@ export async function GET(request: Request) {
             tiktokAccountId: { in: accountIds },
           },
           orderBy: { createdAt: "desc" },
+          take: 500,
           select: {
             id: true,
             title: true,
@@ -84,6 +85,7 @@ export async function GET(request: Request) {
             postedAt: true,
             tiktokPostId: true,
             createdAt: true,
+            updatedAt: true,
             tiktokAccountId: true,
           },
         })
@@ -127,7 +129,12 @@ export async function GET(request: Request) {
           failed++;
         }
 
-        const when = r.postedAt ?? r.createdAt;
+        // Bucket by the event time for that status. POSTED uses postedAt;
+        // FAILED uses updatedAt (when the failure was recorded) so the chart
+        // reflects the failure date, not when the item was queued.
+        let when: Date | null = null;
+        if (r.status === "POSTED") when = r.postedAt ?? null;
+        else if (r.status === "FAILED") when = r.updatedAt ?? r.createdAt;
         if (when) {
           const key = when.toISOString().slice(0, 10);
           if (dailyMap[key]) {

@@ -1,5 +1,11 @@
 import type { PostingSchedule } from "@/types";
 
+function compareHHMM(a: string, b: string): number {
+  const [ah, am] = a.split(":").map((v) => parseInt(v, 10));
+  const [bh, bm] = b.split(":").map((v) => parseInt(v, 10));
+  return ah * 60 + am - (bh * 60 + bm);
+}
+
 /**
  * Normalizes raw schedule JSON from the database.
  * The add-account wizard stores `{ days, time, timezone }` (singular `time` string)
@@ -45,14 +51,15 @@ export function formatTimeDisplay(time: string): string {
 
 /**
  * Returns the next Date that matches one of the scheduled days and times.
- * Returns null if the schedule is empty or null.
+ * Accepts a `PostingSchedule` or raw JSON from the database; returns null
+ * if the value can't be coerced into a valid schedule.
  */
-export function getNextPostTime(schedule: PostingSchedule | null): Date | null {
+export function getNextPostTime(schedule: unknown): Date | null {
   const normalized = normalizeSchedule(schedule);
   if (!normalized) return null;
 
   const now = new Date();
-  const sortedTimes = [...normalized.times].sort();
+  const sortedTimes = [...normalized.times].sort(compareHHMM);
   const scheduledDays = new Set(normalized.days);
 
   // Build a formatter to get the current time in the schedule's timezone

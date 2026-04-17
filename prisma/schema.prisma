@@ -146,7 +146,7 @@ model ContentItem {
   status          ContentStatus @default(DRAFT)
   scheduledAt     DateTime?
   postedAt        DateTime?
-  tiktokPostId    String?
+  tiktokPostId    String?       @unique
   userId          String
   user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   tiktokAccountId String?

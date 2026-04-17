@@ -53,14 +53,18 @@ export function ScheduleEditor({
   const toggleDay = useCallback(
     (dayNum: number) => {
       setSaveStatus("idle");
+      setError(null);
       setDays((prev) => {
         if (prev.includes(dayNum)) {
-          return prev.filter((d) => d !== dayNum);
+          return prev.filter((d) => d !== dayNum).sort((a, b) => a - b);
         }
         if (prev.length >= requiredDays) {
-          return [...prev.slice(1), dayNum];
+          setError(
+            `Your tier only allows ${requiredDays} posting day${requiredDays === 1 ? "" : "s"}. Remove one first.`,
+          );
+          return prev;
         }
-        return [...prev, dayNum].sort();
+        return [...prev, dayNum].sort((a, b) => a - b);
       });
     },
     [requiredDays],

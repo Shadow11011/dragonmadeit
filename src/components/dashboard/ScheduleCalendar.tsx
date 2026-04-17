@@ -92,7 +92,7 @@ export function ScheduleCalendar({ items }: ScheduleCalendarProps) {
         date,
         dayName: DAY_NAMES[date.getDay()],
         dateLabel: `${date.getMonth() + 1}/${date.getDate()}`,
-        isToday: i === 6,
+        isToday: isSameDay(date, today),
         items: dayItems,
       };
     });

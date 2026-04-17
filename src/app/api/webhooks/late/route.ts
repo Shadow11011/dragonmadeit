@@ -22,6 +22,13 @@ interface ZernioAccountPayload {
   timestamp: string;
 }
 
+function truncateForDb(value: string | undefined | null, maxChars: number): string {
+  if (!value) return "";
+  const graphemes = Array.from(value);
+  if (graphemes.length <= maxChars) return value;
+  return graphemes.slice(0, maxChars).join("");
+}
+
 function extractAccountId(body: unknown): string | null {
   const b = body as {
     post?: { platforms?: Array<{ accountId?: string | { _id?: string } }> };
@@ -126,34 +133,38 @@ export async function POST(request: Request) {
         const { post } = body as ZernioPostPayload;
         const postId = post?.id;
         if (postId) {
-          const { count } = await prisma.contentItem.updateMany({
-            where: { tiktokPostId: postId },
-            data: { status: "POSTED", postedAt: new Date() },
-          });
-          // Fallback: if no existing row (pipeline Create node missed it),
-          // create one here so the post shows up on the dashboard.
-          if (count === 0) {
-            const accountId = extractAccountId(body);
-            if (accountId) {
-              const acct = await prisma.tikTokAccount.findFirst({
+          const accountId = extractAccountId(body);
+          const acct = accountId
+            ? await prisma.tikTokAccount.findFirst({
                 where: { lateAccountId: accountId },
                 select: { id: true, userId: true },
-              });
-              if (acct) {
-                await prisma.contentItem.create({
-                  data: {
-                    title: (post.content ?? "Auto-generated video").slice(0, 180),
-                    status: "POSTED",
-                    postedAt: new Date(),
-                    tiktokPostId: postId,
-                    tiktokAccountId: acct.id,
-                    userId: acct.userId,
-                  },
-                });
-              }
-            }
+              })
+            : null;
+          if (!acct && accountId) {
+            console.warn(
+              `Zernio webhook: post.published ${postId} had accountId ${accountId} but no matching TikTokAccount`,
+            );
           }
-          console.log(`Zernio webhook: post ${postId} published (count=${count})`);
+          if (acct) {
+            await prisma.contentItem.upsert({
+              where: { tiktokPostId: postId },
+              update: { status: "POSTED", postedAt: new Date() },
+              create: {
+                title: truncateForDb(post.content, 180) || "Auto-generated video",
+                status: "POSTED",
+                postedAt: new Date(),
+                tiktokPostId: postId,
+                tiktokAccountId: acct.id,
+                userId: acct.userId,
+              },
+            });
+          } else {
+            // No account context to attach a new row — update in place if it exists.
+            await prisma.contentItem.updateMany({
+              where: { tiktokPostId: postId },
+              data: { status: "POSTED", postedAt: new Date() },
+            });
+          }
         }
         break;
       }
@@ -163,38 +174,43 @@ export async function POST(request: Request) {
         const { post } = body as ZernioPostPayload;
         const postId = post?.id;
         if (postId) {
-          const { count } = await prisma.contentItem.updateMany({
-            where: { tiktokPostId: postId },
-            data: { status: "FAILED" },
-          });
-          if (count === 0) {
-            const accountId = extractAccountId(body);
-            if (accountId) {
-              const acct = await prisma.tikTokAccount.findFirst({
+          const accountId = extractAccountId(body);
+          const acct = accountId
+            ? await prisma.tikTokAccount.findFirst({
                 where: { lateAccountId: accountId },
                 select: { id: true, userId: true },
-              });
-              if (acct) {
-                await prisma.contentItem.create({
-                  data: {
-                    title: (post.content ?? "Auto-generated video").slice(0, 180),
-                    status: "FAILED",
-                    tiktokPostId: postId,
-                    tiktokAccountId: acct.id,
-                    userId: acct.userId,
-                  },
-                });
-              }
-            }
+              })
+            : null;
+          if (!acct && accountId) {
+            console.warn(
+              `Zernio webhook: ${event} ${postId} had accountId ${accountId} but no matching TikTokAccount`,
+            );
           }
-          console.log(`Zernio webhook: post ${postId} ${event} (count=${count})`);
+          if (acct) {
+            await prisma.contentItem.upsert({
+              where: { tiktokPostId: postId },
+              update: { status: "FAILED" },
+              create: {
+                title: truncateForDb(post.content, 180) || "Auto-generated video",
+                status: "FAILED",
+                tiktokPostId: postId,
+                tiktokAccountId: acct.id,
+                userId: acct.userId,
+              },
+            });
+          } else {
+            await prisma.contentItem.updateMany({
+              where: { tiktokPostId: postId },
+              data: { status: "FAILED" },
+            });
+          }
 
-          const failedItem = await prisma.contentItem.findFirst({
+          const failedItem = await prisma.contentItem.findUnique({
             where: { tiktokPostId: postId },
             select: { user: { select: { email: true, name: true } } },
           });
           if (failedItem?.user?.email) {
-            sendPostFailedEmail({
+            await sendPostFailedEmail({
               to: failedItem.user.email,
               postId,
               name: failedItem.user.name,
@@ -220,22 +236,14 @@ export async function POST(request: Request) {
                 username: `disconnected-${Date.now()}`,
               },
             });
-            console.log(
-              `Zernio webhook: account ${accountId} disconnected → TikTokAccount ${existing.id}`,
-            );
           }
         }
         break;
       }
 
-      case "webhook.test": {
-        console.log("Zernio webhook: test event received");
+      case "webhook.test":
+      default:
         break;
-      }
-
-      default: {
-        console.log(`Zernio webhook: unhandled event ${event}`);
-      }
     }
 
     return NextResponse.json({ received: true });
