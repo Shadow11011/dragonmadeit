@@ -74,12 +74,19 @@ function getFirstName(fullName: string | null | undefined): string | null {
 interface AccountSummary {
   count: number;
   totalPosts: number;
-  totalViews: number;
+  processing: number;
   scheduledPosts: number;
 }
 
-interface AnalyticsSummary {
-  totalViews: number;
+interface AnalyticsResponse {
+  accounts: Array<{
+    stats: {
+      posted: number;
+      scheduled: number;
+      processing: number;
+      failed: number;
+    };
+  }>;
 }
 
 function formatNumber(n: number): string {
@@ -93,7 +100,7 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<AccountSummary>({
     count: 0,
     totalPosts: 0,
-    totalViews: 0,
+    processing: 0,
     scheduledPosts: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -115,8 +122,21 @@ export default function DashboardPage() {
 
         if (analyticsRes.ok) {
           const analyticsJson: unknown = await analyticsRes.json();
-          const analyticsData = analyticsJson as AnalyticsSummary;
-          setSummary((prev) => ({ ...prev, totalViews: analyticsData.totalViews }));
+          const analyticsData = analyticsJson as AnalyticsResponse;
+          const totals = (analyticsData.accounts ?? []).reduce(
+            (acc, a) => ({
+              posted: acc.posted + (a.stats?.posted ?? 0),
+              scheduled: acc.scheduled + (a.stats?.scheduled ?? 0),
+              processing: acc.processing + (a.stats?.processing ?? 0),
+            }),
+            { posted: 0, scheduled: 0, processing: 0 },
+          );
+          setSummary((prev) => ({
+            ...prev,
+            totalPosts: totals.posted,
+            scheduledPosts: totals.scheduled,
+            processing: totals.processing,
+          }));
         }
       } catch {
         // Use default values
@@ -231,8 +251,8 @@ export default function DashboardPage() {
           accentColor="#ff8c00"
         />
         <StatsCard
-          label="Total Views"
-          value={formatNumber(summary.totalViews)}
+          label="Processing"
+          value={summary.processing}
           icon={<EyeIcon />}
           accentColor="#22c55e"
         />
