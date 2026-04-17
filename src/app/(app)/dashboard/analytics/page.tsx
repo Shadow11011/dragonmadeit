@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
 import { TierBadge } from "@/components/dashboard/TierBadge";
+import { ContentTable } from "@/components/dashboard/ContentTable";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -112,6 +113,24 @@ export default function AnalyticsPage() {
   const accounts = data?.accounts ?? [];
   const linkedAccounts = accounts.filter((a) => a.isLinked);
 
+  // Cross-account post history (POSTED + FAILED), sorted newest first.
+  const postHistory = linkedAccounts
+    .flatMap((a) =>
+      a.recent
+        .filter((r) => r.status === "POSTED" || r.status === "FAILED")
+        .map((r) => ({
+          id: r.id,
+          title: r.title,
+          status: r.status,
+          scheduledAt: r.postedAt ?? r.scheduledAt,
+          tiktokAccountUsername: a.username,
+          tiktokPostId: r.tiktokPostId ?? undefined,
+          _when: new Date(r.postedAt ?? r.createdAt).getTime(),
+        })),
+    )
+    .sort((a, b) => b._when - a._when)
+    .slice(0, 15);
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
@@ -176,6 +195,13 @@ export default function AnalyticsPage() {
             Go to accounts →
           </Link>
         </div>
+      )}
+
+      {!isLoading && !error && postHistory.length > 0 && (
+        <section>
+          <h2 className="text-lg font-semibold font-heading mb-3">Post History</h2>
+          <ContentTable items={postHistory.map(({ _when, ...rest }) => { void _when; return rest; })} />
+        </section>
       )}
 
       {!isLoading && !error && linkedAccounts.map((acct) => (

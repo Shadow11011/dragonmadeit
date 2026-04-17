@@ -187,20 +187,24 @@ export default function SchedulePage() {
         title: item.title,
         status: item.status,
         scheduledAt: item.scheduledAt,
+        postedAt: item.postedAt,
+        createdAt: item.createdAt,
       })),
     [contentItems]
   );
 
   const tableItems = useMemo(
     () =>
-      contentItems.map((item) => ({
-        id: item.id,
-        title: item.title,
-        status: item.status,
-        scheduledAt: item.scheduledAt,
-        tiktokAccountUsername: item.tiktokAccountUsername ?? undefined,
-        tiktokPostId: item.tiktokPostId ?? undefined,
-      })),
+      contentItems
+        .filter((item) => item.status === "SCHEDULED" || item.status === "PROCESSING")
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          status: item.status,
+          scheduledAt: item.scheduledAt,
+          tiktokAccountUsername: item.tiktokAccountUsername ?? undefined,
+          tiktokPostId: item.tiktokPostId ?? undefined,
+        })),
     [contentItems]
   );
 

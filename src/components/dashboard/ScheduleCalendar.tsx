@@ -10,6 +10,8 @@ interface CalendarItem {
   title: string;
   status: string;
   scheduledAt: string | null;
+  postedAt?: string | null;
+  createdAt?: string | null;
 }
 
 interface DayColumn {
@@ -64,21 +66,25 @@ export function ScheduleCalendar({ items }: ScheduleCalendarProps) {
   const days = useMemo<DayColumn[]>(() => {
     const today = new Date();
 
+    // Last 7 days: today-6 through today
     return Array.from({ length: 7 }, (_, i) => {
       const date = new Date(today);
-      date.setDate(today.getDate() + i);
+      date.setDate(today.getDate() - (6 - i));
 
       const dayItems = items
-        .filter((item) => {
-          if (!item.scheduledAt) return false;
-          const scheduled = new Date(item.scheduledAt);
-          return isSameDay(scheduled, date);
+        .map((item) => {
+          const displayAt = item.postedAt ?? item.scheduledAt ?? item.createdAt ?? null;
+          return { item, displayAt };
         })
-        .map((item) => ({
+        .filter(({ displayAt }) => {
+          if (!displayAt) return false;
+          return isSameDay(new Date(displayAt), date);
+        })
+        .map(({ item, displayAt }) => ({
           id: item.id,
           title: item.title,
           status: isContentStatus(item.status) ? item.status : ("DRAFT" as ContentStatusValue),
-          time: item.scheduledAt ? formatTime(item.scheduledAt) : "",
+          time: displayAt ? formatTime(displayAt) : "",
         }))
         .sort((a, b) => a.time.localeCompare(b.time));
 
@@ -86,7 +92,7 @@ export function ScheduleCalendar({ items }: ScheduleCalendarProps) {
         date,
         dayName: DAY_NAMES[date.getDay()],
         dateLabel: `${date.getMonth() + 1}/${date.getDate()}`,
-        isToday: i === 0,
+        isToday: i === 6,
         items: dayItems,
       };
     });
