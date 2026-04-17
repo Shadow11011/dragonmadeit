@@ -105,6 +105,27 @@ export async function PATCH(
     let nextPostAt: Date | null = null;
     try {
       nextPostAt = normalized ? getNextPostTime(normalized) : null;
+      if (nextPostAt && normalized) {
+        const startOfTodayUtc = new Date();
+        startOfTodayUtc.setUTCHours(0, 0, 0, 0);
+        const postedToday = await prisma.contentItem.count({
+          where: {
+            tiktokAccountId: id,
+            status: "POSTED",
+            postedAt: { gte: startOfTodayUtc },
+          },
+        });
+        const dailyCap = normalized.times.length;
+        if (postedToday >= dailyCap) {
+          const tomorrow = new Date();
+          tomorrow.setUTCHours(0, 0, 0, 0);
+          tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+          const firstTime = [...normalized.times].sort()[0];
+          const [h, m] = firstTime.split(":").map((v) => parseInt(v, 10));
+          tomorrow.setUTCHours(h, m, 0, 0);
+          nextPostAt = tomorrow;
+        }
+      }
     } catch (e) {
       console.error("getNextPostTime failed", e);
       nextPostAt = null;
