@@ -1,194 +1,160 @@
 "use client";
 
-import { motion } from "framer-motion";
-import Image from "next/image";
+import { Reveal } from "@/components/marketing/primitives/Reveal";
+import { FEATURES } from "@/components/marketing/FeaturesSection";
 
-interface FeatureDetail {
-  title: string;
-  description: string;
-  subFeatures: string[];
-  image: string;
-}
-
-const FEATURES: FeatureDetail[] = [
+const DEEP_FEATURES = [
   {
-    title: "AI Content Generation",
-    description:
-      "Our AI handles the entire creative process — scripts, visuals, voiceover, and final assembly. Every video is unique and optimized for TikTok's algorithm.",
-    subFeatures: [
-      "AI-generated scripts tailored to trending topics",
-      "Flux-powered image generation for eye-catching visuals",
-      "Edge TTS and KokoroTTS voice synthesis for narration",
-      "Automatic video assembly with FFmpeg pipeline",
-      "66 content styles across every trending niche",
+    t: "AI content generation",
+    d: "Flux-powered visuals, Edge TTS + KokoroTTS voiceover, FFmpeg assembly. Every step of the pipeline lives here.",
+    sub: [
+      "AI scripts tuned to trending hooks",
+      "Flux image generation",
+      "KokoroTTS / Edge TTS narration",
+      "Automatic FFmpeg assembly",
+      "66 content styles",
     ],
-    image: "/images/features/ai-content-generation.png",
   },
   {
-    title: "Smart Scheduling & Automation",
-    description:
-      "Set your posting schedule once and your dragon handles the rest. Videos are generated, queued, and posted without you touching a thing.",
-    subFeatures: [
-      "Automated posting on your chosen schedule",
-      "Queue-based content pipeline — never miss a day",
-      "Timezone-aware scheduling",
-      "Pause and resume with a single click",
-      "Batch scheduling for weeks ahead",
+    t: "Smart scheduling",
+    d: "Set the cadence once. The dragon queues, generates, and posts. Timezone-aware, batch-planned, resumable.",
+    sub: [
+      "Automated posting on your schedule",
+      "Queue-based pipeline",
+      "Timezone-aware",
+      "Pause & resume single-click",
+      "Batch weeks ahead",
     ],
-    image: "/images/features/smart-scheduling.png",
   },
   {
-    title: "66 Viral Content Styles",
-    description:
-      "From Reddit stories to true crime, horror to motivation — pick the niches that resonate with your audience. Our AI knows what hooks viewers in the first 3 seconds.",
-    subFeatures: [
-      "Reddit stories, true crime, horror, motivation, and more",
-      "Each niche optimized for engagement and virality",
-      "Mix and match styles for variety",
-      "AI selects trending topics within your niche",
-      "New styles added regularly based on TikTok trends",
+    t: "Performance analytics",
+    d: "Know what burns and what fizzles. Track every metric. Double down on what works.",
+    sub: [
+      "Real-time view & engagement",
+      "Cross-style comparison",
+      "Growth visualization",
+      "Best-performer surfacing",
+      "Data-driven optimization",
     ],
-    image: "/images/features/multi-account-management.png",
-  },
-  {
-    title: "Performance Analytics",
-    description:
-      "Know exactly what's working. Track every metric that matters and double down on your best-performing content styles.",
-    subFeatures: [
-      "Real-time view and engagement tracking",
-      "Content performance comparison across styles",
-      "Growth trend visualization",
-      "Best-performing content identification",
-      "Data-driven niche optimization",
-    ],
-    image: "/images/features/performance-analytics.png",
   },
 ];
 
-function FeatureSection({
-  feature,
-  index,
-}: {
-  feature: FeatureDetail;
-  index: number;
-}) {
-  const isReversed = index % 2 === 1;
-
-  return (
-    <motion.section
-      className="py-16 md:py-24"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.6 }}
-    >
-      <div
-        className={`flex flex-col ${
-          isReversed ? "md:flex-row-reverse" : "md:flex-row"
-        } gap-8 md:gap-16 items-center`}
-      >
-        {/* Text content */}
-        <div className="flex-1">
-          <h2 className="text-3xl md:text-4xl font-bold font-heading text-text-primary mb-4">
-            {feature.title}
-          </h2>
-          <p className="text-text-secondary leading-relaxed mb-6">
-            {feature.description}
-          </p>
-          <ul className="space-y-3">
-            {feature.subFeatures.map((sub) => (
-              <li
-                key={sub}
-                className="flex items-start gap-3 text-sm text-text-primary"
-              >
-                <svg
-                  className="mt-0.5 h-4 w-4 shrink-0 text-accent-fire"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={3}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                {sub}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Visual element */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-full max-w-md rounded-2xl border border-border overflow-hidden">
-            <Image
-              src={feature.image}
-              alt={feature.title}
-              width={896}
-              height={512}
-              className="w-full h-auto"
-            />
-          </div>
-        </div>
-      </div>
-    </motion.section>
-  );
-}
-
 export function FeaturesPageContent() {
   return (
-    <div className="min-h-screen py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-5xl md:text-6xl font-bold font-heading fire-text mb-4">
-            One tool. Full pipeline.
+    <>
+      <section className="sec-pad" style={{ textAlign: "center" }}>
+        <div className="wrap">
+          <div className="eyebrow">CH · FEATURES</div>
+          <h1 className="h-display mt-6">
+            One tool. <span style={{ fontStyle: "italic", color: "var(--fire)" }}>Full pipeline.</span>
           </h1>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-            Script to screen to TikTok — fully automated. Here&apos;s every step we handle.
+          <p className="text-2 mt-6" style={{ fontSize: 18, maxWidth: 620, margin: "24px auto 0" }}>
+            Script → voice → visuals → cut → post. Every step forged by the dragon, not you.
           </p>
-        </motion.div>
-
-        {/* Feature sections */}
-        <div className="divide-y divide-border/50">
-          {FEATURES.map((feature, index) => (
-            <FeatureSection
-              key={feature.title}
-              feature={feature}
-              index={index}
-            />
-          ))}
         </div>
+      </section>
 
-        {/* Bottom CTA */}
-        <motion.div
-          className="text-center py-20"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="text-3xl font-bold font-heading text-text-primary mb-4">
-            Seen enough? Pick a plan.
-          </h2>
-          <p className="text-text-secondary mb-8">
-            Start automating your TikTok tonight.
-          </p>
-          <a
-            href="/pricing"
-            className="inline-block px-8 py-3 rounded-lg bg-accent-fire text-white font-semibold hover:bg-accent-fire/90 transition-colors"
-          >
-            See Plans from $15/mo
-          </a>
-        </motion.div>
-      </div>
-    </div>
+      <section className="sec-pad-sm">
+        <div className="wrap">
+          <div className="features-grid">
+            {FEATURES.map((f, i) => (
+              <Reveal key={f.t} delay={i * 60}>
+                <div
+                  className="mono"
+                  style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                >
+                  {f.n}
+                </div>
+                <div className="h3 mt-4">{f.t}</div>
+                <p className="text-2 mt-4" style={{ fontSize: 14, lineHeight: 1.65 }}>
+                  {f.d}
+                </p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {DEEP_FEATURES.map((f, i) => (
+        <section key={f.t} className="sec-pad">
+          <div className="wrap">
+            <div
+              className="deep-grid"
+              style={{
+                display: "grid",
+                gridTemplateColumns: i % 2 === 1 ? "1fr 1.1fr" : "1.1fr 1fr",
+                gap: 64,
+                alignItems: "center",
+              }}
+            >
+              <div style={{ order: i % 2 === 1 ? 2 : 0 }}>
+                <div
+                  className="mono"
+                  style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                >
+                  {String(i + 1).padStart(2, "0")} · DEEP DIVE
+                </div>
+                <h2 className="h1 mt-4">{f.t}</h2>
+                <p className="text-2 mt-6" style={{ fontSize: 16 }}>
+                  {f.d}
+                </p>
+                <ul className="stack gap-3 mt-8">
+                  {f.sub.map((s) => (
+                    <li key={s} className="row gap-3" style={{ fontSize: 14 }}>
+                      <span style={{ color: "var(--fire)" }}>◆</span>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div
+                style={{
+                  aspectRatio: "4/3",
+                  border: "1px solid var(--border)",
+                  borderRadius: "calc(var(--radius-base) * 2)",
+                  background: "var(--bg-1)",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                <svg width="100%" height="100%" style={{ position: "absolute", inset: 0 }}>
+                  <defs>
+                    <pattern id={`p${i}`} width="20" height="20" patternUnits="userSpaceOnUse">
+                      <path d="M0 20 L20 0" stroke="var(--border)" strokeWidth="1" opacity="0.4" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill={`url(#p${i})`} />
+                </svg>
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    className="mono"
+                    style={{ color: "var(--text-3)", fontSize: 12, letterSpacing: "0.2em" }}
+                  >
+                    [ {f.t.toUpperCase()} VISUAL ]
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ))}
+
+      <style jsx>{`
+        @media (max-width: 760px) {
+          .deep-grid {
+            grid-template-columns: 1fr !important;
+            gap: 32px !important;
+          }
+        }
+      `}</style>
+    </>
   );
 }

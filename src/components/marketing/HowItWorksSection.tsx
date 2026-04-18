@@ -1,67 +1,113 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { Fragment, useEffect, useState } from "react";
+import { Reveal } from "@/components/marketing/primitives/Reveal";
 
-const steps = [
-  { number: "01", title: "Pick your niche", description: "Choose from 66 story styles — Reddit, horror, motivation, true crime. Pick a voice and video type. Done in 60 seconds." },
-  { number: "02", title: "AI creates your videos", description: "Scripts, visuals, voiceover, editing — full TikTok videos assembled without a camera, mic, or editing software." },
-  { number: "03", title: "Watch it grow", description: "Videos post on your schedule automatically. Track views and engagement from your dashboard while you sleep." },
+const STEPS = [
+  {
+    n: "01",
+    t: "Pick your niche",
+    d: "Choose from 66 story styles. Reddit, horror, motivation, true crime. Set voice, pacing, length. Done in 60 seconds.",
+  },
+  {
+    n: "02",
+    t: "The dragon forges",
+    d: "Scripts, visuals, voiceover, editing. Full TikTok videos assembled without a camera, mic, or editor software.",
+  },
+  {
+    n: "03",
+    t: "Watch it grow",
+    d: "Videos post on schedule automatically. Track views and engagement while you sleep. Keep what works, kill what doesn't.",
+  },
 ];
 
+const NODES = ["SCRIPT", "IMAGES", "VOICE", "ASSEMBLE", "POST"];
+
 export default function HowItWorksSection() {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const iv = setInterval(() => setActive((a) => (a + 1) % NODES.length), 1400);
+    return () => clearInterval(iv);
+  }, []);
+
   return (
-    <section id="chapter-02" className="py-24">
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="chapter-label">02 — HOW IT WORKS</div>
+    <section className="sec-pad" id="how-it-works" style={{ position: "relative", zIndex: 2 }}>
+      <div className="wrap">
+        <Reveal>
+          <div className="chapter-label">CH.02 · THE FORGE</div>
+        </Reveal>
+        <Reveal>
+          <h2 className="h1">
+            From zero to posting
+            <br />
+            <span style={{ color: "var(--fire)", fontStyle: "italic" }}>in under two minutes.</span>
+          </h2>
+        </Reveal>
 
-        <motion.h2
-          className="font-heading text-[clamp(1.75rem,3vw,2.25rem)] text-text-primary leading-[1.15] mb-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+        <div
+          className="mt-16 steps-grid"
+          style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}
         >
-          From zero to posting in under 2 minutes
-        </motion.h2>
-        <p className="text-text-secondary mb-12 max-w-lg">No camera. No skills. No excuses.</p>
-
-        <motion.div
-          className="w-full rounded-xl border border-border overflow-hidden bg-bg-secondary mb-16"
-          initial={{ opacity: 0, scale: 0.97 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex items-center gap-2 px-4 py-3 bg-bg-tertiary border-b border-border">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-error/40" />
-              <div className="w-3 h-3 rounded-full bg-warning/40" />
-              <div className="w-3 h-3 rounded-full bg-success/40" />
-            </div>
-            <div className="flex-1 text-center">
-              <span className="text-xs text-text-secondary">dragonmadeit.app/dashboard</span>
-            </div>
-          </div>
-          <div className="aspect-video bg-bg-primary p-6 flex items-center justify-center">
-            <p className="text-text-secondary text-sm">Dashboard preview</p>
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {steps.map((step, i) => (
-            <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-            >
-              <div className="text-xs text-accent-fire font-semibold mb-2">{step.number}</div>
-              <h3 className="font-heading text-lg text-text-primary mb-2">{step.title}</h3>
-              <p className="text-sm text-text-secondary leading-relaxed">{step.description}</p>
-            </motion.div>
+          {STEPS.map((s, i) => (
+            <Reveal key={s.n} delay={i * 120}>
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20 }}>
+                <div
+                  className="mono"
+                  style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                >
+                  {s.n}
+                </div>
+                <div className="h2 mt-4">{s.t}</div>
+                <p className="text-2 mt-4" style={{ fontSize: 14 }}>
+                  {s.d}
+                </p>
+              </div>
+            </Reveal>
           ))}
         </div>
+
+        <Reveal delay={300}>
+          <div className="mt-16 terminal">
+            <div className="terminal-head">
+              <div className="term-dot" style={{ background: "#ff5f57" }} />
+              <div className="term-dot" style={{ background: "#febc2e" }} />
+              <div className="term-dot" style={{ background: "#28c840" }} />
+              <span
+                className="mono"
+                style={{ marginLeft: 12, color: "var(--text-3)", fontSize: 11 }}
+              >
+                dragonmadeit.app/dashboard
+              </span>
+            </div>
+            <div className="pipe" style={{ padding: 40 }}>
+              {NODES.map((n, i) => (
+                <Fragment key={n}>
+                  <div className={"pipe-node" + (i <= active ? " live" : "")}>
+                    <div
+                      className="mono"
+                      style={{ fontSize: 10, letterSpacing: "0.2em", color: "var(--fire)" }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </div>
+                    <div className="mt-2" style={{ fontSize: 13, fontWeight: 600 }}>
+                      {n}
+                    </div>
+                  </div>
+                  {i < NODES.length - 1 && <div className="pipe-arrow">→</div>}
+                </Fragment>
+              ))}
+            </div>
+          </div>
+        </Reveal>
       </div>
+      <style jsx>{`
+        @media (max-width: 760px) {
+          .steps-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }

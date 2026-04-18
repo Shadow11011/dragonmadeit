@@ -1,162 +1,183 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/utils";
-import {
-  type PaidTier,
-  type Currency,
-  type BillingInterval,
-  getTierPrice,
-  getEffectiveMonthlyPrice,
-  formatPrice,
-  TIER_PRICES,
-} from "@/types";
+import { Sigil } from "@/components/marketing/primitives/Sigil";
 
-const CTA_TEXT: Record<string, string> = {
-  HATCHLING: "Start My Hatchling Plan",
-  DRAKE: "Go Daily with Drake",
-  ELDER_DRAGON: "Unleash the Elder Dragon",
-};
+export type Interval = "MONTHLY" | "QUARTERLY" | "ANNUAL";
 
-const INTERVAL_LABEL: Record<BillingInterval, string> = {
-  MONTHLY: "/mo",
-  QUARTERLY: "/qtr",
-  ANNUAL: "/yr",
-};
-
-interface PricingTierCardProps {
+export interface TierSpec {
+  key: "HATCHLING" | "DRAKE" | "ELDER_DRAGON";
   name: string;
-  description: string;
+  color: string;
+  price: number;
+  videos: number;
+  popular: boolean;
+  desc: string;
   features: string[];
-  tierColor: string;
-  popular?: boolean;
-  billingInterval: BillingInterval;
-  tierKey: PaidTier;
-  videosPerWeek: number;
-  currency: Currency;
 }
 
-export function PricingTierCard({
-  name,
-  description,
-  features,
-  tierColor,
-  popular = false,
-  billingInterval,
-  tierKey,
-  videosPerWeek,
-  currency,
-}: PricingTierCardProps) {
-  const totalPrice = getTierPrice(tierKey, billingInterval, currency);
-  const effectiveMonthly = getEffectiveMonthlyPrice(tierKey, billingInterval, currency);
-  const monthlyBase = TIER_PRICES[tierKey][currency];
-  const videosPerMonth = videosPerWeek * 4;
-  const perVideo = (effectiveMonthly / videosPerMonth).toFixed(2);
-  const ctaText = CTA_TEXT[tierKey] || "Get Started";
-  const currencySymbol = "$";
-  const showDiscount = billingInterval !== "MONTHLY";
+export const TIERS: TierSpec[] = [
+  {
+    key: "HATCHLING",
+    name: "Hatchling",
+    color: "#c87533",
+    price: 15,
+    videos: 3,
+    popular: false,
+    desc: "For the first-time forger. Start the fire.",
+    features: [
+      "3 videos per week",
+      "1 TikTok account",
+      "66 content styles",
+      "AI scripts + voiceover",
+      "Basic analytics",
+      "Email support",
+    ],
+  },
+  {
+    key: "DRAKE",
+    name: "Drake",
+    color: "#ff8c00",
+    price: 39,
+    videos: 7,
+    popular: true,
+    desc: "Daily fire. The algorithm's favorite.",
+    features: [
+      "7 videos per week (daily)",
+      "1 TikTok account",
+      "66 content styles",
+      "AI scripts + voiceover",
+      "Advanced analytics",
+      "Priority support",
+      "Content scheduling",
+    ],
+  },
+  {
+    key: "ELDER_DRAGON",
+    name: "Elder Dragon",
+    color: "#ffd700",
+    price: 129,
+    videos: 14,
+    popular: false,
+    desc: "Twice-daily dominance. Scorched-earth growth.",
+    features: [
+      "14 videos per week (2×/day)",
+      "1 TikTok account",
+      "66 content styles",
+      "AI scripts + voiceover",
+      "Custom content generation",
+      "Dedicated strategist",
+      "Priority rendering",
+      "White-glove onboarding",
+    ],
+  },
+];
+
+const CTA_COPY: Record<TierSpec["key"], string> = {
+  HATCHLING: "Hatch my channel",
+  DRAKE: "Go daily with Drake",
+  ELDER_DRAGON: "Unleash the Elder",
+};
+
+export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: Interval }) {
+  const mult = { MONTHLY: 1, QUARTERLY: 0.85, ANNUAL: 0.7 }[interval];
+  const monthly = Math.round(tier.price * mult);
+  const perVid = (monthly / (tier.videos * 4)).toFixed(2);
+  const billedLabel =
+    interval === "QUARTERLY"
+      ? `billed $${Math.round(tier.price * mult * 3)}/qtr`
+      : interval === "ANNUAL"
+        ? `billed $${Math.round(tier.price * mult * 12)}/yr`
+        : "";
 
   return (
-    <motion.div
-      className={cn(
-        "relative rounded-lg p-6 md:p-8 flex flex-col bg-bg-secondary",
-        popular && "md:scale-105 md:-my-2"
-      )}
+    <div
+      className="card"
       style={{
-        borderTop: "3px solid " + tierColor,
+        borderTop: `3px solid ${tier.color}`,
+        transform: tier.popular ? "translateY(-8px)" : "none",
+        boxShadow: tier.popular ? `0 30px 80px -30px ${tier.color}55` : "none",
+        display: "flex",
+        flexDirection: "column",
       }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
-      {popular && (
+      {tier.popular && (
         <div
-          className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-bg-primary"
-          style={{ backgroundColor: tierColor }}
+          style={{
+            position: "absolute",
+            top: -12,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: tier.color,
+            color: "#0a0a0f",
+            padding: "4px 14px",
+            borderRadius: 999,
+            fontSize: 10,
+            fontFamily: "var(--font-mono)",
+            letterSpacing: "0.2em",
+            fontWeight: 700,
+          }}
         >
-          Most Popular
+          MOST POPULAR
         </div>
       )}
-
-      <h3 className="text-xl font-bold font-heading" style={{ color: tierColor }}>
-        {name}
-      </h3>
-
-      <div className="mt-4 flex items-baseline gap-1">
-        {showDiscount && (
-          <span className="line-through text-text-secondary text-lg mr-2">
-            {formatPrice(monthlyBase, currency)}
+      <div className="row gap-3">
+        <Sigil
+          size="sm"
+          style={{
+            background: `radial-gradient(circle at 30% 30%, ${tier.color}, ${tier.color}aa 50%, ${tier.color}44 100%)`,
+          }}
+        />
+        <h3 className="h3" style={{ color: tier.color, fontStyle: "italic" }}>
+          {tier.name}
+        </h3>
+      </div>
+      <div className="mt-6" style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+        {interval !== "MONTHLY" && (
+          <span className="text-3" style={{ textDecoration: "line-through", fontSize: 16 }}>
+            ${tier.price}
           </span>
         )}
-        <span className="text-4xl font-bold text-text-primary">
-          {formatPrice(effectiveMonthly, currency)}
+        <span className="h-display" style={{ fontSize: "3rem" }}>
+          ${monthly}
         </span>
-        <span className="text-text-secondary text-sm">/mo</span>
+        <span className="text-2" style={{ fontSize: 14 }}>
+          /mo
+        </span>
       </div>
-
-      {showDiscount && (
-        <p className="text-xs text-accent-fire mt-1">
-          {formatPrice(totalPrice, currency)}{INTERVAL_LABEL[billingInterval]} billed
-        </p>
-      )}
-
-      <p className="text-xs text-text-secondary mt-1">
-        {currencySymbol}{perVideo}/video &middot; {videosPerMonth} videos/mo
+      <div className="mono mt-2" style={{ fontSize: 11, color: "var(--text-3)" }}>
+        ${perVid}/video · {tier.videos * 4} videos/mo
+        {billedLabel && <> · {billedLabel}</>}
+      </div>
+      <p className="text-2 mt-4" style={{ fontSize: 14 }}>
+        {tier.desc}
       </p>
-
-      <p className="mt-2 text-sm text-text-secondary">{description}</p>
-
-      <ul className="mt-6 space-y-3 flex-1">
-        {features.map((feature) => (
-          <li key={feature} className="flex items-start gap-2 text-sm">
-            <svg
-              className="mt-0.5 h-4 w-4 shrink-0"
-              style={{ color: tierColor }}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={3}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            <span className="text-text-primary">{feature}</span>
+      <ul className="stack gap-3 mt-6" style={{ flex: 1 }}>
+        {tier.features.map((f) => (
+          <li key={f} className="row gap-3" style={{ fontSize: 13 }}>
+            <span style={{ color: tier.color, fontFamily: "var(--font-mono)" }}>✓</span>
+            {f}
           </li>
         ))}
       </ul>
-
-      <Link href="/signup" className="mt-8 block">
-        <Button
-          className="w-full"
-          style={{
-            backgroundColor: tierColor,
-            color: "#0a0a0f",
-          }}
-        >
-          {ctaText}
-        </Button>
+      <Link
+        href="/signup"
+        className="btn btn-lg mt-8"
+        style={{ background: tier.color, color: "#0a0a0f", fontWeight: 700 }}
+      >
+        {CTA_COPY[tier.key]}
       </Link>
-
-      <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-text-secondary">
-        <svg
-          className="w-3.5 h-3.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-          />
-        </svg>
-        14-day money-back guarantee
+      <div
+        className="mono mt-4"
+        style={{
+          fontSize: 10,
+          color: "var(--text-3)",
+          textAlign: "center",
+          letterSpacing: "0.2em",
+        }}
+      >
+        CANCEL ANYTIME
       </div>
-    </motion.div>
+    </div>
   );
 }
