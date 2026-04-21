@@ -6,7 +6,7 @@ import { NicheMarquee } from "@/components/marketing/NicheMarquee";
 import { ChapterProblem } from "@/components/marketing/ChapterProblem";
 import HowItWorksSection from "@/components/marketing/HowItWorksSection";
 import { FeaturesSection } from "@/components/marketing/FeaturesSection";
-import { Testimonials } from "@/components/marketing/Testimonials";
+import { FoundersCaseStudy } from "@/components/marketing/FoundersCaseStudy";
 import { PricingSection } from "@/components/marketing/PricingSection";
 import { CTASection } from "@/components/marketing/CTASection";
 
@@ -22,7 +22,7 @@ export function HomepageScene() {
       </div>
       <HowItWorksSection />
       <FeaturesSection />
-      <Testimonials />
+      <FoundersCaseStudy />
       <PricingSection />
       <CTASection />
     </div>

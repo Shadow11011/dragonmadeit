@@ -4,10 +4,10 @@ import { Counter } from "@/components/marketing/primitives/Counter";
 
 export function StatRibbon() {
   const stats = [
-    { to: 847321, suffix: "", label: "VIDEOS POSTED" },
-    { to: 2400, suffix: "M", label: "VIEWS GENERATED" },
-    { to: 12400, suffix: "+", label: "HOURS SAVED" },
     { to: 66, suffix: "", label: "CONTENT STYLES", fire: true },
+    { to: 14, suffix: "×/wk", label: "MAX FREQUENCY" },
+    { to: 24, suffix: "/7", label: "AUTOPILOT" },
+    { to: 0, suffix: "", label: "HOURS FILMING" },
   ];
 
   return (

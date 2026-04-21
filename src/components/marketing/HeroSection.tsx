@@ -23,7 +23,7 @@ export function HeroSection() {
             Launch my channel · $15/mo
           </Link>
           <a href="#how-it-works" className="btn btn-ghost btn-lg">
-            ▶ Watch 60-sec demo
+            See how it works ↓
           </a>
         </div>
         <div className="row gap-6 mt-8" style={{ justifyContent: "center", fontSize: 12, color: "var(--text-3)", flexWrap: "wrap" }}>
