@@ -15,7 +15,8 @@ const INTERVALS: { value: Interval; label: string }[] = [
 ];
 
 const COMPARE_ROWS: [string, string, string, string][] = [
-  ["Starting price", "$15/mo", "$19/mo", "$29/mo"],
+  ["Free tier with posting", "✓ (4/mo)", "–", "–"],
+  ["Starting price (paid)", "$15/mo", "$19/mo", "$29/mo"],
   ["Creates videos", "✓", "✓", "✓"],
   ["Posts to TikTok", "✓", "✓", "–"],
   ["Content styles", "66", "Limited", "Limited"],
@@ -26,12 +27,16 @@ const COMPARE_ROWS: [string, string, string, string][] = [
 
 const FAQS: [string, string][] = [
   [
+    "What's in the free tier?",
+    "4 videos per month (1 per week), gameplay-only content, auto-posted to your TikTok. Videos include a small \"dragonmadeit.app\" watermark and a 2-second end card. No credit card required. AI-image niches stay locked until you upgrade.",
+  ],
+  [
     "Can I switch plans later?",
-    "Yes. Upgrade or downgrade anytime. Upgrades are prorated; downgrades take effect at the end of the current cycle.",
+    "Yes. Upgrade or downgrade anytime. Upgrades are prorated; downgrades take effect at the end of the current cycle. Free users can upgrade to remove the watermark and unlock the full 66 content styles.",
   ],
   [
     "What's the difference between plans?",
-    "Every paid plan includes 1 TikTok account. The difference is videos-per-week: 3 on Hatchling, 7 on Drake, 14 on Elder Dragon. Elder also gets custom content generation.",
+    "Free gives you 4 watermarked gameplay videos/month. Every paid plan removes the watermark, unlocks all 66 niches, and includes 1 TikTok account. The difference between paid tiers is videos-per-week: 3 on Hatchling, 7 on Drake, 14 on Elder Dragon. Elder also gets custom content generation.",
   ],
   [
     "Do you offer discounts for longer commitments?",
@@ -179,10 +184,15 @@ export function PricingPageContent() {
           <h2 className="h1">
             Ready to <span style={{ color: "var(--fire)", fontStyle: "italic" }}>light the forge?</span>
           </h2>
-          <p className="text-2 mt-4">Your first AI video could be live tonight.</p>
-          <Link href="/signup" className="btn btn-primary btn-lg mt-8">
-            Launch my channel · $15/mo
-          </Link>
+          <p className="text-2 mt-4">Your first AI video could be live tonight. No card needed.</p>
+          <div className="row gap-4 mt-8" style={{ justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
+              Start free — no card
+            </Link>
+            <Link href="/signup" className="btn btn-ghost btn-lg">
+              Pick a paid tier →
+            </Link>
+          </div>
         </div>
       </section>
     </>

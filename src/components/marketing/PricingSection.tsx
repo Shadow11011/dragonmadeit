@@ -16,20 +16,23 @@ export function PricingSection() {
         >
           <Reveal>
             <h2 className="h1">
-              Three dragons.
+              Free to start.
               <br />
-              Three appetites.
+              Paid to scale.
             </h2>
           </Reveal>
           <Reveal delay={100}>
             <p className="text-2" style={{ fontSize: 16, maxWidth: 440 }}>
-              From Hatchling to Elder. Every plan includes full AI pipeline + 1 TikTok account. Only
-              the posting cadence scales.
+              Four watermarked gameplay videos per month, free — no card. Upgrade to remove the
+              watermark, unlock all 66 niches, and post up to 14× per week.
             </p>
           </Reveal>
         </div>
-        <div className="mt-12" style={{ textAlign: "center" }}>
-          <Link href="/pricing" className="btn btn-primary btn-lg">
+        <div className="row gap-4 mt-12" style={{ justifyContent: "center", flexWrap: "wrap" }}>
+          <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
+            Start free — no card
+          </Link>
+          <Link href="/pricing" className="btn btn-ghost btn-lg">
             See full pricing →
           </Link>
         </div>

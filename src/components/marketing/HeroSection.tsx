@@ -19,17 +19,17 @@ export function HeroSection() {
           styles. Zero filming. You collect the views.
         </p>
         <div className="row gap-4 mt-8" style={{ justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/signup" className="btn btn-primary btn-lg">
-            Launch my channel · $15/mo
+          <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
+            Start free — no card
           </Link>
-          <a href="#how-it-works" className="btn btn-ghost btn-lg">
-            See how it works ↓
-          </a>
+          <Link href="/pricing" className="btn btn-ghost btn-lg">
+            See paid tiers →
+          </Link>
         </div>
         <div className="row gap-6 mt-8" style={{ justifyContent: "center", fontSize: 12, color: "var(--text-3)", flexWrap: "wrap" }}>
-          <span>◆ Cancel anytime</span>
+          <span>◆ 4 videos free, forever</span>
           <span>◆ No camera needed</span>
-          <span>◆ No editing software</span>
+          <span>◆ Cancel anytime</span>
         </div>
       </div>
       <div className="phones-stage mt-16">

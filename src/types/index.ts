@@ -72,10 +72,16 @@ export interface TierConfig {
 export const TIER_CONFIG: Record<Tier, TierConfig> = {
   FREE: {
     name: "Free",
-    videosPerWeek: 0,
+    videosPerWeek: 1,
     monthlyPrice: 0,
-    description: "Sign up and explore the platform",
-    features: [],
+    description: "Try the engine, no card. Gameplay videos only — watermarked.",
+    features: [
+      "1 video per week · 4 per month",
+      "Gameplay-only content (AI-image niches locked)",
+      "Watermark on video + end card",
+      "Auto-posted to TikTok",
+      "No credit card required",
+    ],
     hasAnalytics: false,
     hasApiAccess: false,
     hasPrioritySupport: false,

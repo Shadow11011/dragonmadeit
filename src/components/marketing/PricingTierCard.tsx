@@ -6,7 +6,7 @@ import { Sigil } from "@/components/marketing/primitives/Sigil";
 export type Interval = "MONTHLY" | "QUARTERLY" | "ANNUAL";
 
 export interface TierSpec {
-  key: "HATCHLING" | "DRAKE" | "ELDER_DRAGON";
+  key: "FREE" | "HATCHLING" | "DRAKE" | "ELDER_DRAGON";
   name: string;
   color: string;
   price: number;
@@ -14,9 +14,29 @@ export interface TierSpec {
   popular: boolean;
   desc: string;
   features: string[];
+  /** per-month video quota (defaults to videos × 4 weeks for paid tiers) */
+  monthlyCap?: number;
 }
 
 export const TIERS: TierSpec[] = [
+  {
+    key: "FREE",
+    name: "Free",
+    color: "#71717a",
+    price: 0,
+    videos: 1,
+    monthlyCap: 4,
+    popular: false,
+    desc: "Try the engine, no card. See the output before you pay.",
+    features: [
+      "1 video per week · 4/month",
+      "Gameplay content only",
+      "Watermark on video + end card",
+      "Auto-posted to TikTok",
+      "AI-image niches locked",
+      "No credit card required",
+    ],
+  },
   {
     key: "HATCHLING",
     name: "Hatchling",
@@ -74,21 +94,24 @@ export const TIERS: TierSpec[] = [
 ];
 
 const CTA_COPY: Record<TierSpec["key"], string> = {
+  FREE: "Start free — no card",
   HATCHLING: "Hatch my channel",
   DRAKE: "Go daily with Drake",
   ELDER_DRAGON: "Unleash the Elder",
 };
 
 export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: Interval }) {
-  const mult = { MONTHLY: 1, QUARTERLY: 0.85, ANNUAL: 0.7 }[interval];
+  const isFree = tier.key === "FREE";
+  const mult = isFree ? 1 : { MONTHLY: 1, QUARTERLY: 0.85, ANNUAL: 0.7 }[interval];
   const monthly = Math.round(tier.price * mult);
-  const perVid = (monthly / (tier.videos * 4)).toFixed(2);
+  const monthlyVideos = tier.monthlyCap ?? tier.videos * 4;
+  const perVid = isFree ? "0.00" : (monthly / monthlyVideos).toFixed(2);
   const billedLabel =
-    interval === "QUARTERLY"
-      ? `billed $${Math.round(tier.price * mult * 3)}/qtr`
-      : interval === "ANNUAL"
-        ? `billed $${Math.round(tier.price * mult * 12)}/yr`
-        : "";
+    isFree || interval === "MONTHLY"
+      ? ""
+      : interval === "QUARTERLY"
+        ? `billed $${Math.round(tier.price * mult * 3)}/qtr`
+        : `billed $${Math.round(tier.price * mult * 12)}/yr`;
 
   return (
     <div
@@ -146,8 +169,14 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
         </span>
       </div>
       <div className="mono mt-2" style={{ fontSize: 11, color: "var(--text-3)" }}>
-        ${perVid}/video · {tier.videos * 4} videos/mo
-        {billedLabel && <> · {billedLabel}</>}
+        {isFree ? (
+          <>Forever free · {monthlyVideos} videos/mo</>
+        ) : (
+          <>
+            ${perVid}/video · {monthlyVideos} videos/mo
+            {billedLabel && <> · {billedLabel}</>}
+          </>
+        )}
       </div>
       <p className="text-2 mt-4" style={{ fontSize: 14 }}>
         {tier.desc}
@@ -161,7 +190,7 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
         ))}
       </ul>
       <Link
-        href="/signup"
+        href={isFree ? "/signup?tier=free" : "/signup"}
         className="btn btn-lg mt-8"
         style={{ background: tier.color, color: "#0a0a0f", fontWeight: 700 }}
       >
@@ -176,7 +205,7 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
           letterSpacing: "0.2em",
         }}
       >
-        CANCEL ANYTIME
+        {isFree ? "NO CARD REQUIRED" : "CANCEL ANYTIME"}
       </div>
     </div>
   );
