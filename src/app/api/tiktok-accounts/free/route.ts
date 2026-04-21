@@ -4,6 +4,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TIER_CONFIG } from "@/types";
+import { getServerFingerprint } from "@/lib/server-fingerprint";
 
 const scheduleShape = z.object({
   days: z.array(z.number().int().min(0).max(6)).min(1).max(7),
@@ -21,6 +22,9 @@ const contentConfigShape = z.object({
 const bodySchema = z.object({
   schedule: scheduleShape.optional(),
   contentConfig: contentConfigShape,
+  // SHA-256 hex (64 chars). Required — clients must submit a fingerprint
+  // to activate a free account.
+  deviceFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
 });
 
 export async function POST(request: NextRequest) {
@@ -42,9 +46,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { schedule, contentConfig } = parsed.data;
+    const { schedule, contentConfig, deviceFingerprint } = parsed.data;
+    const { ipHash, uaHash } = getServerFingerprint(request);
 
-    // Abuse control: one FREE account per user, ever.
+    // Abuse control layer 1: one FREE account per user, ever.
     const existingFree = await prisma.tikTokAccount.findFirst({
       where: { userId: session.user.id, tier: "FREE" },
       select: { id: true },
@@ -57,6 +62,27 @@ export async function POST(request: NextRequest) {
             "You already have a free account. Upgrade to a paid tier to add another channel.",
         },
         { status: 409 }
+      );
+    }
+
+    // Abuse control layer 2: one FREE account per device fingerprint.
+    // A device that has already minted a free account (under any user) is
+    // locked out. Legitimate edge cases (shared family device) are the
+    // tradeoff we accept — they can upgrade to a paid tier from either
+    // device.
+    const existingDevice = await prisma.deviceFingerprint.findFirst({
+      where: { clientHash: deviceFingerprint, tier: "FREE" },
+      select: { id: true, userId: true },
+    });
+    if (existingDevice) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "This device has already claimed a free account. Sign in with that account, or upgrade to a paid tier to add a new channel.",
+          code: "DEVICE_ALREADY_CLAIMED",
+        },
+        { status: 429 }
       );
     }
 
@@ -81,6 +107,24 @@ export async function POST(request: NextRequest) {
       },
       select: { id: true },
     });
+
+    // Record the fingerprint. Best-effort — if this write fails (e.g. race)
+    // we still keep the account; the next free attempt from the same device
+    // will catch it via the user-level 409.
+    await prisma.deviceFingerprint
+      .create({
+        data: {
+          clientHash: deviceFingerprint,
+          ipHash,
+          uaHash,
+          tier: "FREE",
+          userId: session.user.id,
+          accountId: account.id,
+        },
+      })
+      .catch((err) => {
+        console.error("DeviceFingerprint write failed (non-fatal):", err);
+      });
 
     return NextResponse.json({ success: true, accountId: account.id });
   } catch (error) {

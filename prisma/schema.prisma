@@ -91,6 +91,24 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// Device fingerprint log for abuse control on the FREE tier.
+// One row per free-account activation. We index clientHash so duplicate-device
+// checks are O(1). ipHash/uaHash are soft signals, logged but not unique.
+model DeviceFingerprint {
+  id          String   @id @default(cuid())
+  clientHash  String   // SHA-256 from browser signals (canvas/webgl/screen/etc.)
+  ipHash      String   // SHA-256 of the request IP (salted)
+  uaHash      String   // SHA-256 of UA + accept-language + sec-ch-ua
+  tier        Tier
+  userId      String
+  accountId   String?  // optional: TikTokAccount.id this fingerprint activated
+  createdAt   DateTime @default(now())
+
+  @@index([clientHash])
+  @@index([ipHash])
+  @@index([userId])
+}
+
 model TikTokAccount {
   id                   String        @id @default(cuid())
   username             String

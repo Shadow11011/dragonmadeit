@@ -19,6 +19,7 @@ import {
 } from "@/types";
 import { useCurrency } from "@/lib/geo";
 import { STORY_TYPE_CATALOGUE } from "@/lib/content-config";
+import { collectDeviceFingerprint } from "@/lib/device-fingerprint";
 
 type Step = "tier" | "content" | "schedule" | "payment";
 
@@ -574,17 +575,34 @@ function PaymentStep({
           : undefined;
 
       if (isFree) {
-        // FREE tier: no Paystack, create account directly.
+        // FREE tier: no Paystack, create account directly. Collect a device
+        // fingerprint first — server uses it to prevent a single device from
+        // minting multiple free accounts.
+        let deviceFingerprint: string;
+        try {
+          deviceFingerprint = await collectDeviceFingerprint();
+        } catch {
+          setError("Could not verify your browser. Please reload and try again.");
+          setIsRedirecting(false);
+          return;
+        }
+
         const res = await fetch("/api/tiktok-accounts/free", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contentConfig,
             schedule: normalizedSchedule,
+            deviceFingerprint,
           }),
         });
         const data: unknown = await res.json();
-        const result = data as { success?: boolean; accountId?: string; error?: string };
+        const result = data as {
+          success?: boolean;
+          accountId?: string;
+          error?: string;
+          code?: string;
+        };
         if (res.ok && result.success) {
           window.location.href = "/dashboard/accounts?activated=free";
           return;
