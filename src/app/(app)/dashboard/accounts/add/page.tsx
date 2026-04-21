@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
@@ -9,7 +10,7 @@ import { ContentConfigStep } from "@/components/dashboard/ContentConfigStep";
 import { cn } from "@/lib/utils";
 import {
   TIER_CONFIG,
-  type PaidTier,
+  type Tier,
   type BillingInterval,
   type ContentConfig,
   getTierPrice,
@@ -26,15 +27,17 @@ interface ScheduleConfig {
   times: string[];
 }
 
-const PAID_TIERS: PaidTier[] = ["HATCHLING", "DRAKE", "ELDER_DRAGON"];
+const WIZARD_TIERS: Tier[] = ["FREE", "HATCHLING", "DRAKE", "ELDER_DRAGON"];
 
-const TIER_BORDER_COLORS: Record<PaidTier, string> = {
+const TIER_BORDER_COLORS: Record<Tier, string> = {
+  FREE: "border-text-secondary/30 hover:border-text-secondary/60",
   HATCHLING: "border-[#c87533]/40 hover:border-[#c87533]/70",
   DRAKE: "border-accent-ember/40 hover:border-accent-ember/70",
   ELDER_DRAGON: "border-accent-gold/40 hover:border-accent-gold/70",
 };
 
-const TIER_SELECTED_BORDER: Record<PaidTier, string> = {
+const TIER_SELECTED_BORDER: Record<Tier, string> = {
+  FREE: "border-text-secondary ring-2 ring-text-secondary/25",
   HATCHLING: "border-[#c87533] ring-2 ring-[#c87533]/20",
   DRAKE: "border-accent-ember ring-2 ring-accent-ember/20",
   ELDER_DRAGON: "border-accent-gold ring-2 ring-accent-gold/20",
@@ -88,12 +91,19 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
-function StepIndicator({ currentStep }: { currentStep: Step }) {
+function StepIndicator({
+  currentStep,
+  selectedTier,
+}: {
+  currentStep: Step;
+  selectedTier: Tier | null;
+}) {
+  const lastLabel = selectedTier === "FREE" ? "Activate" : "Payment";
   const steps: { key: Step; label: string; number: number }[] = [
     { key: "tier", label: "Choose Tier", number: 1 },
     { key: "content", label: "Content Config", number: 2 },
     { key: "schedule", label: "Set Schedule", number: 3 },
-    { key: "payment", label: "Payment", number: 4 },
+    { key: "payment", label: lastLabel, number: 4 },
   ];
 
   const currentIndex = steps.findIndex((s) => s.key === currentStep);
@@ -159,49 +169,56 @@ function TierSelectionStep({
   onContinue,
   currency,
 }: {
-  selectedTier: PaidTier | null;
+  selectedTier: Tier | null;
   billingInterval: BillingInterval;
   onBillingIntervalChange: (interval: BillingInterval) => void;
-  onSelect: (tier: PaidTier) => void;
+  onSelect: (tier: Tier) => void;
   onContinue: () => void;
   currency: "NGN" | "USD";
 }) {
+  const isFreeSelected = selectedTier === "FREE";
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold">Choose Your Tier</h2>
         <p className="text-text-secondary text-sm mt-1">
-          Each TikTok account gets its own subscription and posting schedule.
+          Start free with 4 watermarked gameplay videos a month, or pick a paid
+          tier to unlock all 66 niches and remove the watermark.
         </p>
       </div>
 
-      {/* Billing interval toggle */}
-      <div className="flex items-center justify-center gap-1 bg-bg-secondary rounded-lg p-1 w-fit mx-auto">
-        {BILLING_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => onBillingIntervalChange(option.value)}
-            className={cn(
-              "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-              billingInterval === option.value
-                ? "bg-bg-tertiary text-text-primary shadow-sm"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-          >
-            {option.label}
-            {option.badge && (
-              <span className="ml-1 text-xs text-accent-fire">{option.badge}</span>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Billing interval toggle — hidden for FREE since it doesn't apply */}
+      {!isFreeSelected && (
+        <div className="flex items-center justify-center gap-1 bg-bg-secondary rounded-lg p-1 w-fit mx-auto">
+          {BILLING_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onBillingIntervalChange(option.value)}
+              className={cn(
+                "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                billingInterval === option.value
+                  ? "bg-bg-tertiary text-text-primary shadow-sm"
+                  : "text-text-secondary hover:text-text-primary"
+              )}
+            >
+              {option.label}
+              {option.badge && (
+                <span className="ml-1 text-xs text-accent-fire">{option.badge}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {PAID_TIERS.map((tierKey) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {WIZARD_TIERS.map((tierKey) => {
           const config = TIER_CONFIG[tierKey];
           const isSelected = selectedTier === tierKey;
-          const effectiveMonthly = getEffectiveMonthlyPrice(tierKey, billingInterval, currency);
+          const isFreeTier = tierKey === "FREE";
+          const effectiveMonthly = isFreeTier
+            ? 0
+            : getEffectiveMonthlyPrice(tierKey, billingInterval, currency);
 
           return (
             <button
@@ -215,6 +232,13 @@ function TierSelectionStep({
                   : TIER_BORDER_COLORS[tierKey]
               )}
             >
+              {isFreeTier && (
+                <span
+                  className="absolute -top-2 left-4 rounded-full bg-text-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-text-secondary"
+                >
+                  No card
+                </span>
+              )}
               {isSelected && (
                 <div className="absolute top-3 right-3">
                   <div
@@ -234,11 +258,13 @@ function TierSelectionStep({
               </h3>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-3xl font-bold fire-text">
-                  {formatPrice(effectiveMonthly, currency)}
+                  {isFreeTier ? "$0" : formatPrice(effectiveMonthly, currency)}
                 </span>
-                <span className="text-text-secondary text-sm">/mo</span>
+                <span className="text-text-secondary text-sm">
+                  {isFreeTier ? "forever" : "/mo"}
+                </span>
               </div>
-              {billingInterval !== "MONTHLY" && (
+              {!isFreeTier && billingInterval !== "MONTHLY" && (
                 <p className="text-xs text-accent-fire mt-1">
                   {formatPrice(getTierPrice(tierKey, billingInterval, currency), currency)} billed {billingInterval === "QUARTERLY" ? "quarterly" : "annually"}
                 </p>
@@ -290,7 +316,7 @@ function ScheduleStep({
   onBack,
   onContinue,
 }: {
-  tier: PaidTier;
+  tier: Tier;
   billingInterval: BillingInterval;
   currency: "NGN" | "USD";
   schedule: ScheduleConfig;
@@ -366,8 +392,8 @@ function ScheduleStep({
           />
         </svg>
         <span>
-          This schedule is <strong>locked after purchase</strong> and cannot be
-          changed. Choose carefully!
+          This schedule is <strong>locked after {tier === "FREE" ? "activation" : "purchase"}</strong> and
+          cannot be changed. Choose carefully!
         </span>
       </div>
 
@@ -381,7 +407,9 @@ function ScheduleStep({
           </span>
         </div>
         <span className="text-sm font-medium fire-text">
-          {formatPrice(getEffectiveMonthlyPrice(tier, billingInterval, currency), currency)}/mo
+          {tier === "FREE"
+            ? "$0 forever"
+            : `${formatPrice(getEffectiveMonthlyPrice(tier, billingInterval, currency), currency)}/mo`}
         </span>
       </div>
 
@@ -492,7 +520,7 @@ function ScheduleStep({
           className="fire-gradient text-white"
           size="lg"
         >
-          Continue to Payment
+          {tier === "FREE" ? "Continue to Activate" : "Continue to Payment"}
         </Button>
       </div>
     </div>
@@ -507,7 +535,7 @@ function PaymentStep({
   currency,
   onBack,
 }: {
-  tier: PaidTier;
+  tier: Tier;
   billingInterval: BillingInterval;
   schedule: ScheduleConfig;
   contentConfig: ContentConfig;
@@ -515,6 +543,7 @@ function PaymentStep({
   onBack: () => void;
 }) {
   const config = TIER_CONFIG[tier];
+  const isFree = tier === "FREE";
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -523,8 +552,10 @@ function PaymentStep({
       ? WEEKDAYS.map((d) => d.key)
       : schedule.days;
 
-  const totalPrice = getTierPrice(tier, billingInterval, currency);
-  const effectiveMonthly = getEffectiveMonthlyPrice(tier, billingInterval, currency);
+  const totalPrice = isFree ? 0 : getTierPrice(tier as Exclude<Tier, "FREE">, billingInterval, currency);
+  const effectiveMonthly = isFree
+    ? 0
+    : getEffectiveMonthlyPrice(tier as Exclude<Tier, "FREE">, billingInterval, currency);
 
   async function handleCheckout() {
     setIsRedirecting(true);
@@ -537,6 +568,31 @@ function PaymentStep({
         .filter((n): n is number => typeof n === "number")
         .sort();
       const cleanTimes = schedule.times.filter((t) => /^\d{2}:\d{2}$/.test(t));
+      const normalizedSchedule =
+        dayNums.length > 0 && cleanTimes.length > 0
+          ? { days: dayNums, times: cleanTimes, timezone: "UTC" }
+          : undefined;
+
+      if (isFree) {
+        // FREE tier: no Paystack, create account directly.
+        const res = await fetch("/api/tiktok-accounts/free", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contentConfig,
+            schedule: normalizedSchedule,
+          }),
+        });
+        const data: unknown = await res.json();
+        const result = data as { success?: boolean; accountId?: string; error?: string };
+        if (res.ok && result.success) {
+          window.location.href = "/dashboard/accounts?activated=free";
+          return;
+        }
+        setError(result.error ?? "Could not activate free tier. Please try again.");
+        setIsRedirecting(false);
+        return;
+      }
 
       const res = await fetch("/api/paystack/initialize", {
         method: "POST",
@@ -544,10 +600,8 @@ function PaymentStep({
         body: JSON.stringify({
           tier,
           billingInterval,
-          schedule:
-            dayNums.length > 0 && cleanTimes.length > 0
-              ? { days: dayNums, times: cleanTimes, timezone: "UTC" }
-              : undefined,
+          contentConfig,
+          schedule: normalizedSchedule,
         }),
       });
 
@@ -570,11 +624,27 @@ function PaymentStep({
   return (
     <div className="space-y-6 max-w-lg mx-auto">
       <div className="text-center">
-        <h2 className="text-2xl font-bold">Review & Pay</h2>
+        <h2 className="text-2xl font-bold">
+          {isFree ? "Activate Your Free Plan" : "Review & Pay"}
+        </h2>
         <p className="text-text-secondary text-sm mt-1">
-          Confirm your subscription details before proceeding to payment.
+          {isFree
+            ? "Confirm your setup. No payment — we'll activate your free account and link your TikTok next."
+            : "Confirm your subscription details before proceeding to payment."}
         </p>
       </div>
+
+      {isFree && (
+        <div className="rounded-lg border border-text-secondary/30 bg-bg-tertiary/40 px-4 py-3 text-xs text-text-secondary space-y-2">
+          <p className="font-semibold text-text-primary text-sm">Free tier limits</p>
+          <ul className="space-y-1">
+            <li>• 4 videos per month (1 per week, posted on your schedule)</li>
+            <li>• Gameplay overlay content only — AI-image niches locked</li>
+            <li>• "dragonmadeit.app" watermark on every video + 2-sec end card</li>
+            <li>• Upgrade anytime to remove the watermark and unlock everything</li>
+          </ul>
+        </div>
+      )}
 
       {/* Order summary */}
       <div className="rounded-xl bg-bg-secondary border border-border overflow-hidden">
@@ -585,7 +655,7 @@ function PaymentStep({
               <span className="font-semibold">{config.name}</span>
             </div>
             <span className="text-lg font-bold fire-text">
-              {formatPrice(effectiveMonthly, currency)}/mo
+              {isFree ? "$0 forever" : `${formatPrice(effectiveMonthly, currency)}/mo`}
             </span>
           </div>
         </div>
@@ -665,13 +735,19 @@ function PaymentStep({
         <div className="p-5 border-t border-border bg-bg-tertiary/30">
           <div className="flex items-center justify-between">
             <span className="text-sm text-text-secondary">
-              {billingInterval === "MONTHLY" ? "Monthly total" : billingInterval === "QUARTERLY" ? "Quarterly total" : "Annual total"}
+              {isFree
+                ? "Total"
+                : billingInterval === "MONTHLY"
+                  ? "Monthly total"
+                  : billingInterval === "QUARTERLY"
+                    ? "Quarterly total"
+                    : "Annual total"}
             </span>
             <div className="text-right">
               <span className="text-xl font-bold fire-text">
-                {formatPrice(totalPrice, currency)}
+                {isFree ? "$0" : formatPrice(totalPrice, currency)}
               </span>
-              {billingInterval !== "MONTHLY" && (
+              {!isFree && billingInterval !== "MONTHLY" && (
                 <p className="text-xs text-text-secondary">
                   {formatPrice(effectiveMonthly, currency)}/mo effective
                 </p>
@@ -683,7 +759,7 @@ function PaymentStep({
 
       {/* Schedule lock reminder */}
       <div className="rounded-lg bg-bg-tertiary border border-border px-4 py-3 text-xs text-text-secondary">
-        Your posting schedule is locked after purchase. After payment, you will
+        Your posting schedule is locked after {isFree ? "activation" : "purchase"}. Next, you&apos;ll
         be asked to link your TikTok account.
       </div>
 
@@ -726,8 +802,10 @@ function PaymentStep({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              Redirecting to payment...
+              {isFree ? "Activating..." : "Redirecting to payment..."}
             </span>
+          ) : isFree ? (
+            "Activate free account"
           ) : (
             "Proceed to Payment"
           )}
@@ -738,8 +816,9 @@ function PaymentStep({
 }
 
 export default function AddAccountPage() {
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("tier");
-  const [selectedTier, setSelectedTier] = useState<PaidTier | null>(null);
+  const [selectedTier, setSelectedTier] = useState<Tier | null>(null);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>("MONTHLY");
   const { currency } = useCurrency();
   const [schedule, setSchedule] = useState<ScheduleConfig>({
@@ -753,10 +832,23 @@ export default function AddAccountPage() {
     randomizeStories: true,
   });
 
-  const handleTierSelect = (tier: PaidTier) => {
+  // Pre-select FREE when the user arrives from /signup?tier=free or ?tier=free links.
+  useEffect(() => {
+    if (selectedTier !== null) return;
+    const requested = searchParams?.get("tier")?.toUpperCase();
+    if (requested === "FREE" || requested === "HATCHLING" || requested === "DRAKE" || requested === "ELDER_DRAGON") {
+      setSelectedTier(requested as Tier);
+    }
+  }, [searchParams, selectedTier]);
+
+  const handleTierSelect = (tier: Tier) => {
     setSelectedTier(tier);
     // Reset schedule when tier changes since videosPerWeek differs
     setSchedule({ days: [], times: [] });
+    // FREE can only use gameplay — force videoType to GAMEPLAY if switching down to FREE.
+    if (tier === "FREE" && contentConfig.videoType !== "GAMEPLAY") {
+      setContentConfig({ ...contentConfig, videoType: "GAMEPLAY" });
+    }
   };
 
   return (
@@ -774,7 +866,7 @@ export default function AddAccountPage() {
       </div>
 
       {/* Step indicator */}
-      <StepIndicator currentStep={step} />
+      <StepIndicator currentStep={step} selectedTier={selectedTier} />
 
       {/* Step content */}
       <AnimatePresence mode="wait">
@@ -803,6 +895,7 @@ export default function AddAccountPage() {
               onConfigChange={setContentConfig}
               onBack={() => setStep("tier")}
               onContinue={() => setStep("schedule")}
+              tier={selectedTier ?? undefined}
             />
           )}
 

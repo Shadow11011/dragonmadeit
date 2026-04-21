@@ -76,6 +76,8 @@ interface AccountSummary {
   totalPosts: number;
   processing: number;
   scheduledPosts: number;
+  hasFreeAccount: boolean;
+  hasPaidAccount: boolean;
 }
 
 interface AnalyticsResponse {
@@ -87,6 +89,10 @@ interface AnalyticsResponse {
       failed: number;
     };
   }>;
+}
+
+interface AccountsListResponse {
+  data?: Array<{ tier: "FREE" | "HATCHLING" | "DRAKE" | "ELDER_DRAGON" }>;
 }
 
 function formatNumber(n: number): string {
@@ -102,6 +108,8 @@ export default function DashboardPage() {
     totalPosts: 0,
     processing: 0,
     scheduledPosts: 0,
+    hasFreeAccount: false,
+    hasPaidAccount: false,
   });
   const [loading, setLoading] = useState(true);
   const firstName = getFirstName(user?.name);
@@ -109,15 +117,26 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [countRes, analyticsRes] = await Promise.all([
+        const [countRes, analyticsRes, accountsRes] = await Promise.all([
           fetch("/api/user/accounts/count"),
           fetch("/api/user/analytics?days=30"),
+          fetch("/api/user/accounts"),
         ]);
 
         if (countRes.ok) {
           const countJson: unknown = await countRes.json();
           const countData = countJson as { count: number };
           setSummary((prev) => ({ ...prev, count: countData.count }));
+        }
+
+        if (accountsRes.ok) {
+          const accountsJson = (await accountsRes.json()) as AccountsListResponse;
+          const list = accountsJson.data ?? [];
+          setSummary((prev) => ({
+            ...prev,
+            hasFreeAccount: list.some((a) => a.tier === "FREE"),
+            hasPaidAccount: list.some((a) => a.tier !== "FREE"),
+          }));
         }
 
         if (analyticsRes.ok) {
@@ -210,6 +229,46 @@ export default function DashboardPage() {
 
       {/* Show onboarding checklist if no accounts */}
       {!hasAccounts && <OnboardingChecklist />}
+
+      {/* Free-tier upgrade banner — shown when user has a FREE account and no paid account yet */}
+      {hasAccounts && summary.hasFreeAccount && !summary.hasPaidAccount && (
+        <div className="rounded-xl border border-accent-gold/30 bg-gradient-to-r from-accent-gold/10 via-accent-fire/5 to-transparent p-5">
+          <div className="flex items-start gap-4 flex-wrap">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-gold/15 text-accent-gold">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M10 2L12.5 7L18 8L14 12L15 17L10 14.5L5 17L6 12L2 8L7.5 7L10 2Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-heading text-base text-text-primary">
+                You&apos;re on the free plan
+              </h3>
+              <p className="text-sm text-text-secondary mt-1">
+                1 video/week · gameplay only · watermarked. Upgrade to remove the watermark,
+                unlock all 66 content niches, and post up to 14× per week.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/pricing">
+                <Button size="sm" variant="secondary">
+                  Compare plans
+                </Button>
+              </Link>
+              <Link href="/dashboard/accounts/add">
+                <Button size="sm">
+                  Upgrade now
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Account summary banner — only when user has accounts */}
       {hasAccounts && (

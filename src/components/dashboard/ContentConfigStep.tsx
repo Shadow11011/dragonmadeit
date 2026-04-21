@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
-import type { ContentConfig } from "@/types";
+import type { ContentConfig, Tier } from "@/types";
 import { STORY_TYPE_CATALOGUE, MAX_STORY_TYPES, getFilteredStoryTypes } from "@/lib/content-config";
 
 interface ContentConfigStepProps {
@@ -12,6 +12,8 @@ interface ContentConfigStepProps {
   onConfigChange: (config: ContentConfig) => void;
   onBack: () => void;
   onContinue: () => void;
+  /** When tier is "FREE", AI_IMAGES is locked behind an upgrade gate. */
+  tier?: Tier;
 }
 
 function CheckIcon({ className }: { className?: string }) {
@@ -66,11 +68,21 @@ export function ContentConfigStep({
   onConfigChange,
   onBack,
   onContinue,
+  tier,
 }: ContentConfigStepProps) {
   const [removedWarning, setRemovedWarning] = useState<string | null>(null);
+  const isFree = tier === "FREE";
 
   const filteredStoryTypes = getFilteredStoryTypes(config.voiceType);
   const filteredIds = new Set(filteredStoryTypes.map((s) => s.id));
+
+  // FREE cannot use AI_IMAGES; force-correct the selection if it slips through.
+  useEffect(() => {
+    if (isFree && config.videoType === "AI_IMAGES") {
+      onConfigChange({ ...config, videoType: "GAMEPLAY" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFree]);
 
   // When voice changes, auto-deselect incompatible story types
   useEffect(() => {
@@ -130,25 +142,55 @@ export function ContentConfigStep({
       <div>
         <label className="block text-sm font-medium text-text-primary mb-3">
           Video type
+          {isFree && (
+            <span className="ml-2 text-xs text-text-secondary font-normal">
+              (Free tier — gameplay only)
+            </span>
+          )}
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {VIDEO_TYPES.map((vt) => {
             const isSelected = config.videoType === vt.value;
+            const isLocked = isFree && vt.value === "AI_IMAGES";
             return (
               <button
                 key={vt.value}
                 type="button"
-                onClick={() =>
-                  onConfigChange({ ...config, videoType: vt.value })
-                }
+                disabled={isLocked}
+                onClick={() => {
+                  if (isLocked) return;
+                  onConfigChange({ ...config, videoType: vt.value });
+                }}
                 className={cn(
                   "relative rounded-xl border-2 bg-bg-primary p-5 text-left transition-all",
-                  isSelected
-                    ? "border-accent-fire ring-2 ring-accent-fire/20"
-                    : "border-border hover:border-accent-fire/30"
+                  isLocked
+                    ? "border-border opacity-60 cursor-not-allowed"
+                    : isSelected
+                      ? "border-accent-fire ring-2 ring-accent-fire/20"
+                      : "border-border hover:border-accent-fire/30"
                 )}
               >
-                {isSelected && (
+                {isLocked && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-accent-gold/15 border border-accent-gold/40 px-2 py-0.5">
+                    <svg
+                      className="h-3 w-3 text-accent-gold"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-accent-gold">
+                      Paid
+                    </span>
+                  </div>
+                )}
+                {isSelected && !isLocked && (
                   <div className="absolute top-3 right-3">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-fire">
                       <CheckIcon className="h-3.5 w-3.5 text-bg-primary" />
@@ -161,6 +203,11 @@ export function ContentConfigStep({
                 <p className="text-xs text-text-secondary mt-1">
                   {vt.description}
                 </p>
+                {isLocked && (
+                  <p className="text-xs text-accent-gold mt-2 font-medium">
+                    Upgrade to any paid tier to unlock AI-image niches.
+                  </p>
+                )}
               </button>
             );
           })}
