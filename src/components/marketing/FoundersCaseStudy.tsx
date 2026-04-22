@@ -106,6 +106,87 @@ export function FoundersCaseStudy() {
           </div>
         </Reveal>
 
+        <Reveal delay={350}>
+          <div
+            className="mono mt-16"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.3em",
+              color: "var(--text-3)",
+            }}
+          >
+            THE VIDEOS, START TO FINISH
+          </div>
+          <p
+            className="text-2 mt-4"
+            style={{ fontSize: 16, maxWidth: 560, textWrap: "pretty" }}
+          >
+            Two of them, exactly as the pipeline spit them out &mdash; script, voiceover,
+            visuals, edit. No camera was involved. Tap to watch.
+          </p>
+          <div
+            className="clips-grid mt-8"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(200px, 320px))",
+              gap: 24,
+            }}
+          >
+            <figure style={{ margin: 0 }}>
+              <video
+                src="/videos/proof/clip-1.mp4"
+                poster="/videos/proof/clip-1.jpg"
+                controls
+                playsInline
+                preload="none"
+                style={{
+                  width: "100%",
+                  aspectRatio: "9 / 16",
+                  background: "#000",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                }}
+              />
+              <figcaption
+                className="mono mt-3"
+                style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--text-3)" }}
+              >
+                CLIP 01 &middot; 0:59
+              </figcaption>
+            </figure>
+            <figure style={{ margin: 0 }}>
+              <video
+                src="/videos/proof/clip-2.mp4"
+                poster="/videos/proof/clip-2.jpg"
+                controls
+                playsInline
+                preload="none"
+                style={{
+                  width: "100%",
+                  aspectRatio: "9 / 16",
+                  background: "#000",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                }}
+              />
+              <figcaption
+                className="mono mt-3"
+                style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--text-3)" }}
+              >
+                CLIP 02 &middot; 1:15
+              </figcaption>
+            </figure>
+          </div>
+          <style jsx>{`
+            @media (max-width: 560px) {
+              .clips-grid {
+                grid-template-columns: 1fr !important;
+                max-width: 320px;
+              }
+            }
+          `}</style>
+        </Reveal>
+
         <Reveal delay={400}>
           <p
             className="mt-12"
