@@ -40,7 +40,7 @@ export function FeaturesSection() {
     <section className="sec-pad" style={{ background: "var(--bg-1)", position: "relative", zIndex: 2 }}>
       <div className="wrap">
         <Reveal>
-          <div className="chapter-label">CH.03 · THE ARSENAL</div>
+          <div className="chapter-label">WHAT YOU GET</div>
         </Reveal>
         <div
           className="intro-grid"

@@ -24,7 +24,7 @@ export function ChapterProblem() {
     <section className="sec-pad" style={{ position: "relative", zIndex: 2 }}>
       <div className="wrap">
         <Reveal>
-          <div className="chapter-label">CH.01 · THE BURN</div>
+          <div className="chapter-label">THE PROBLEM</div>
         </Reveal>
         <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 64 }} className="problem-grid">
           <Reveal>

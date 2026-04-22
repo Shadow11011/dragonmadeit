@@ -8,7 +8,7 @@ export function PricingSection() {
     <section className="sec-pad" style={{ background: "var(--bg-1)", position: "relative", zIndex: 2 }}>
       <div className="wrap">
         <Reveal>
-          <div className="chapter-label">CH.05 · CHOOSE YOUR KIN</div>
+          <div className="chapter-label">PRICING</div>
         </Reveal>
         <div
           className="teaser-grid"

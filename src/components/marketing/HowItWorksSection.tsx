@@ -35,7 +35,7 @@ export default function HowItWorksSection() {
     <section className="sec-pad" id="how-it-works" style={{ position: "relative", zIndex: 2 }}>
       <div className="wrap">
         <Reveal>
-          <div className="chapter-label">CH.02 · THE FORGE</div>
+          <div className="chapter-label">HOW IT WORKS</div>
         </Reveal>
         <Reveal>
           <h2 className="h1">

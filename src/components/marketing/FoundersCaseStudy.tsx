@@ -27,7 +27,7 @@ export function FoundersCaseStudy() {
     <section className="sec-pad" style={{ position: "relative", zIndex: 2 }}>
       <div className="wrap">
         <Reveal>
-          <div className="chapter-label">CH.04 · THE FOUNDER&rsquo;S TEST</div>
+          <div className="chapter-label">FOUNDER&rsquo;S LOG</div>
         </Reveal>
 
         <Reveal delay={100}>
