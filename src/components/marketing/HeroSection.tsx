@@ -12,11 +12,12 @@ export function HeroSection() {
           ⌁ SET IT AND FORGET IT
         </div>
         <div style={{ marginTop: 32 }}>
-          <GlitchHeadline text="The faceless content engine for TikTok." />
+          <GlitchHeadline text="A viral TikTok account that runs itself." />
         </div>
         <p className="text-2" style={{ fontSize: 20, maxWidth: 640, margin: "32px auto 0" }}>
-          AI writes your scripts, renders your videos, posts to TikTok on autopilot. 66 content
-          styles. Zero filming. You collect the views.
+          DragonMadeIt writes the scripts, makes the videos with AI, and posts them to your
+          TikTok on a schedule. You pick the niche &mdash; no camera, no editing, no face on
+          screen.
         </p>
         <div className="row gap-4 mt-8" style={{ justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
