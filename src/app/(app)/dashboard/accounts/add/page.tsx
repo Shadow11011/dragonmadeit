@@ -658,7 +658,7 @@ function PaymentStep({
           <ul className="space-y-1">
             <li>• 4 videos per month (1 per week, posted on your schedule)</li>
             <li>• Gameplay overlay content only — AI-image niches locked</li>
-            <li>• "dragonmadeit.app" watermark on every video + 2-sec end card</li>
+            <li>• &ldquo;dragonmadeit.app&rdquo; watermark on every video + 2-sec end card</li>
             <li>• Upgrade anytime to remove the watermark and unlock everything</li>
           </ul>
         </div>
