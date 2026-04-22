@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DragonMark } from "@/components/marketing/primitives/DragonMark";
-import { ThemeToggle } from "@/components/marketing/primitives/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/features", label: "Features" },
@@ -76,7 +75,6 @@ export function Navbar() {
             >
               Sign in
             </Link>
-            <ThemeToggle />
             <Link href="/pricing" className="btn btn-primary btn-sm">
               Summon the dragon
             </Link>
