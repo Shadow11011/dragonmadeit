@@ -23,9 +23,6 @@ export function HeroSection() {
           <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
             Start free — no card
           </Link>
-          <Link href="/pricing" className="btn btn-ghost btn-lg">
-            See paid tiers →
-          </Link>
         </div>
         <div className="row gap-6 mt-8" style={{ justifyContent: "center", fontSize: 12, color: "var(--text-3)", flexWrap: "wrap" }}>
           <span>◆ 4 videos free, forever</span>
