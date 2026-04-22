@@ -1,12 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
 import { Button } from "@/components/ui/Button";
 import { useTypedSession } from "@/hooks/useSession";
+import { getNextPostTime } from "@/lib/schedule-utils";
+import type { TikTokAccountInfo } from "@/types";
+
+function formatCountdownMs(ms: number): string {
+  if (ms <= 0) return "any moment";
+  const totalSeconds = Math.floor(ms / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  if (days > 0) return `in ${days}d ${hours}h`;
+  if (hours > 0) return `in ${hours}h ${minutes}m`;
+  if (minutes > 0) return `in ${minutes}m`;
+  return "any second now";
+}
 
 function FlameIcon() {
   return (
@@ -92,7 +106,7 @@ interface AnalyticsResponse {
 }
 
 interface AccountsListResponse {
-  data?: Array<{ tier: "FREE" | "HATCHLING" | "DRAKE" | "ELDER_DRAGON" }>;
+  data?: TikTokAccountInfo[];
 }
 
 function formatNumber(n: number): string {
@@ -111,6 +125,7 @@ export default function DashboardPage() {
     hasFreeAccount: false,
     hasPaidAccount: false,
   });
+  const [accountsList, setAccountsList] = useState<TikTokAccountInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const firstName = getFirstName(user?.name);
 
@@ -132,6 +147,7 @@ export default function DashboardPage() {
         if (accountsRes.ok) {
           const accountsJson = (await accountsRes.json()) as AccountsListResponse;
           const list = accountsJson.data ?? [];
+          setAccountsList(list);
           setSummary((prev) => ({
             ...prev,
             hasFreeAccount: list.some((a) => a.tier === "FREE"),
@@ -167,6 +183,38 @@ export default function DashboardPage() {
   }, []);
 
   const hasAccounts = summary.count > 0;
+
+  // First-run: the user has created an account but TikTok isn't linked yet.
+  // The Orchestrator won't pick it up until `lateAccountId` gets set by the
+  // /link flow, so surface the missing step before anything else.
+  const pendingAccount = useMemo(
+    () =>
+      accountsList.find((a) =>
+        (a.username ?? "").startsWith("pending-")
+      ) ?? null,
+    [accountsList],
+  );
+
+  // Compute the earliest upcoming post across all linked accounts so the
+  // dashboard can answer "when's my next one?" at a glance.
+  const nextPost = useMemo(() => {
+    let best: { date: Date; account: TikTokAccountInfo } | null = null;
+    for (const a of accountsList) {
+      if ((a.username ?? "").startsWith("pending-")) continue;
+      if (!a.schedule) continue;
+      const d = getNextPostTime(a.schedule);
+      if (!d) continue;
+      if (!best || d < best.date) best = { date: d, account: a };
+    }
+    return best;
+  }, [accountsList]);
+
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    if (!nextPost) return;
+    const t = setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, [nextPost]);
 
   if (loading) {
     return (
@@ -229,6 +277,91 @@ export default function DashboardPage() {
 
       {/* Show onboarding checklist if no accounts */}
       {!hasAccounts && <OnboardingChecklist />}
+
+      {/* Phase E — first-run: pending account needs TikTok connect */}
+      {pendingAccount && (
+        <div className="rounded-xl border border-accent-fire/40 bg-accent-fire/5 p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-fire/15 text-accent-fire">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M10 3v10M4 9l6-6 6 6M5 17h10"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-heading text-lg text-text-primary">
+                One step left &mdash; connect your TikTok
+              </h2>
+              <p className="text-sm text-text-secondary mt-1">
+                Your dragon is set up, but it can&rsquo;t start posting until you
+                link your TikTok account. Takes 30 seconds.
+              </p>
+            </div>
+            <Link href={`/dashboard/accounts/${pendingAccount.id}`}>
+              <Button className="fire-gradient text-white whitespace-nowrap" size="md">
+                Connect TikTok
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Phase D — dragon status hero: next post + recent posts at a glance */}
+      {hasAccounts && !pendingAccount && (
+        <div className="rounded-xl bg-bg-secondary border border-border p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-wider text-text-secondary mb-1">
+                Your dragon
+              </p>
+              {nextPost ? (
+                <>
+                  <h2 className="font-heading text-2xl text-text-primary">
+                    Next post {formatCountdownMs(nextPost.date.getTime() - nowMs)}
+                  </h2>
+                  <p className="text-sm text-text-secondary mt-1">
+                    {nextPost.date.toLocaleDateString(undefined, {
+                      weekday: "long",
+                      month: "short",
+                      day: "numeric",
+                    })}{" "}
+                    at{" "}
+                    {nextPost.date.toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                    {summary.totalPosts > 0 && (
+                      <>
+                        {" "}
+                        &middot; {summary.totalPosts} post
+                        {summary.totalPosts === 1 ? "" : "s"} in the last 30 days
+                      </>
+                    )}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="font-heading text-2xl text-text-primary">
+                    Your dragon is resting
+                  </h2>
+                  <p className="text-sm text-text-secondary mt-1">
+                    No upcoming posts scheduled. Open your account to set a
+                    schedule.
+                  </p>
+                </>
+              )}
+            </div>
+            <div className="h-14 w-14 rounded-full border-4 border-accent-fire/20 flex items-center justify-center shrink-0">
+              <div className="h-9 w-9 rounded-full fire-gradient opacity-80" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Free-tier upgrade banner — shown when user has a FREE account and no paid account yet */}
       {hasAccounts && summary.hasFreeAccount && !summary.hasPaidAccount && (
