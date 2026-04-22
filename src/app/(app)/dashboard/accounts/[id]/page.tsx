@@ -136,6 +136,12 @@ export default function AccountDetailPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [quota, setQuota] = useState<{
+    used: number;
+    limit: number | null;
+    remaining: number | null;
+    resetAt: string;
+  } | null>(null);
 
 
   const isPending = account?.username.startsWith("pending-") ?? false;
@@ -180,6 +186,33 @@ export default function AccountDetailPage() {
   useEffect(() => {
     void fetchAccount();
   }, [fetchAccount]);
+
+  // Monthly quota (FREE = 4/month, paid tiers ignore the limit field).
+  useEffect(() => {
+    if (!account) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/tiktok-accounts/${accountId}/quota`);
+        if (!res.ok) return;
+        const body = (await res.json()) as {
+          success: boolean;
+          data?: {
+            used: number;
+            limit: number | null;
+            remaining: number | null;
+            resetAt: string;
+          };
+        };
+        if (!cancelled && body.success && body.data) setQuota(body.data);
+      } catch {
+        /* non-fatal — quota is a read-only display, don't block the page */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [account, accountId]);
 
   async function handleConnect() {
     setIsConnecting(true);
@@ -584,6 +617,64 @@ export default function AccountDetailPage() {
         )}
       </motion.div>
 
+      {/* FREE quota — monthly counter + branding disclosure */}
+      {account.tier === "FREE" && quota && quota.limit !== null && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.08 }}
+          className="rounded-xl bg-bg-secondary border border-border p-6"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-text-primary">
+              Free videos this month
+            </h2>
+            <span className="text-xs text-text-secondary">
+              Resets{" "}
+              {new Date(quota.resetAt).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className="text-3xl font-bold fire-text">{quota.used}</span>
+            <span className="text-text-secondary text-sm">
+              of {quota.limit} used
+            </span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-bg-tertiary overflow-hidden">
+            <div
+              className="h-full rounded-full fire-gradient transition-all duration-500"
+              style={{
+                width: `${Math.min(100, (quota.used / quota.limit) * 100)}%`,
+              }}
+            />
+          </div>
+          {quota.remaining === 0 ? (
+            <div className="mt-4 rounded-lg bg-accent-fire/10 border border-accent-fire/30 p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-sm text-text-primary">
+                You&rsquo;ve used all 4 free videos this month. Upgrade to keep
+                posting &mdash; no gap in your feed.
+              </p>
+              <Link href="/pricing">
+                <Button
+                  size="sm"
+                  className="fire-gradient text-white whitespace-nowrap"
+                >
+                  Upgrade
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <p className="mt-3 text-xs text-text-secondary">
+              Every free video includes a <strong>dragonmadeit.app</strong>{" "}
+              watermark and a 2-second outro. Upgrade to remove both.
+            </p>
+          )}
+        </motion.div>
+      )}
+
       {/* Content Config */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -705,7 +796,20 @@ export default function AccountDetailPage() {
                   : "Set schedule"}
             </Button>
           )}
+          {account.scheduleLocked && account.tier === "FREE" && (
+            <Link href="/pricing">
+              <Button variant="secondary" size="sm" className="whitespace-nowrap">
+                Upgrade to edit
+              </Button>
+            </Link>
+          )}
         </div>
+        {account.scheduleLocked && account.tier === "FREE" && (
+          <p className="text-xs text-text-secondary">
+            Your free weekly slot is locked to the day and time you picked on
+            signup. Upgrade any time to change it or add more slots.
+          </p>
+        )}
 
         {!showScheduleEditor && account.schedule ? (
           <>
