@@ -160,11 +160,13 @@ export function PhoneMock({
   storyIdx = 0,
   playing = true,
   showProgress = true,
+  thumbnail,
 }: {
   variant?: "a" | "b" | "c";
   storyIdx?: number;
   playing?: boolean;
   showProgress?: boolean;
+  thumbnail?: string;
 }) {
   const story = STORIES[storyIdx % STORIES.length];
   const [progress, setProgress] = useState(0);
@@ -186,18 +188,50 @@ export function PhoneMock({
 
   return (
     <div className={`phone-frame phone-${variant}`}>
-      <div className="phone-screen" style={{ background: story.bg }}>
-        <PhonePattern kind={story.pattern} />
-        <div
-          className="ken-burns"
-          style={{
-            position: "absolute",
-            inset: "-8%",
-            background:
-              "radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.18), transparent 55%), radial-gradient(ellipse at 75% 70%, rgba(0,0,0,0.35), transparent 60%)",
-            mixBlendMode: "screen",
-          }}
-        />
+      <div
+        className="phone-screen"
+        style={{ background: thumbnail ? "#000" : story.bg }}
+      >
+        {thumbnail ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={thumbnail}
+              alt=""
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                zIndex: 1,
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.55) 100%)",
+                zIndex: 1,
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <PhonePattern kind={story.pattern} />
+            <div
+              className="ken-burns"
+              style={{
+                position: "absolute",
+                inset: "-8%",
+                background:
+                  "radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.18), transparent 55%), radial-gradient(ellipse at 75% 70%, rgba(0,0,0,0.35), transparent 60%)",
+                mixBlendMode: "screen",
+              }}
+            />
+          </>
+        )}
         {/* Top status bar */}
         <div
           style={{

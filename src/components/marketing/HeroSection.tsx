@@ -31,9 +31,9 @@ export function HeroSection() {
         </div>
       </div>
       <div className="phones-stage mt-16">
-        <PhoneMock variant="a" storyIdx={0} />
-        <PhoneMock variant="b" storyIdx={1} />
-        <PhoneMock variant="c" storyIdx={2} />
+        <PhoneMock variant="a" storyIdx={0} thumbnail="/videos/proof/clip-1.jpg" />
+        <PhoneMock variant="b" storyIdx={5} thumbnail="/videos/proof/gameplay.jpg" />
+        <PhoneMock variant="c" storyIdx={2} thumbnail="/videos/proof/clip-2.jpg" />
       </div>
     </section>
   );
