@@ -116,6 +116,12 @@ export default function AccountsPage() {
     }
   }, [searchParams, update]);
 
+  const hasFreeAccount = accounts.some((a) => a.tier === "FREE");
+  const hasPaidAccount = accounts.some((a) => a.tier !== "FREE");
+  // Free tier is capped at one channel, period. The "Add another" button only
+  // makes sense for users who have already paid for at least one subscription.
+  const isFreeOnly = hasFreeAccount && !hasPaidAccount;
+
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
@@ -123,16 +129,50 @@ export default function AccountsPage() {
         <div>
           <h1 className="text-3xl font-bold font-heading">TikTok Accounts</h1>
           <p className="text-text-secondary text-sm mt-1">
-            Manage your TikTok accounts. Each account runs on its own subscription and schedule.
+            {isFreeOnly
+              ? "Your free dragon runs one TikTok channel. Upgrade anytime to add more."
+              : "Manage your TikTok accounts. Each account runs on its own subscription and schedule."}
           </p>
         </div>
-        <Link href="/dashboard/accounts/add">
-          <Button className="fire-gradient text-white glow-fire whitespace-nowrap" size="md">
-            <span className="mr-2">+</span>
-            Add New Account
-          </Button>
-        </Link>
+        {isFreeOnly ? (
+          <Link href="/pricing">
+            <Button variant="secondary" size="md" className="whitespace-nowrap">
+              <span className="mr-2">★</span>
+              Upgrade to add channels
+            </Button>
+          </Link>
+        ) : (
+          <Link href="/dashboard/accounts/add">
+            <Button className="fire-gradient text-white glow-fire whitespace-nowrap" size="md">
+              <span className="mr-2">+</span>
+              Add New Account
+            </Button>
+          </Link>
+        )}
       </div>
+
+      {/* FREE-only upgrade nudge */}
+      {isFreeOnly && !isLoading && (
+        <div className="rounded-xl border border-accent-fire/30 bg-accent-fire/5 p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex-1">
+              <h3 className="font-semibold text-text-primary">
+                You&rsquo;re on the free tier &mdash; one channel
+              </h3>
+              <p className="text-sm text-text-secondary mt-1">
+                Free DragonMadeIt is limited to a single TikTok channel, one post a week,
+                and a light watermark. Upgrade to add more channels, post daily, and drop
+                the watermark.
+              </p>
+            </div>
+            <Link href="/pricing">
+              <Button size="sm" className="fire-gradient text-white whitespace-nowrap">
+                See plans
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Linked success banner */}
       <AnimatePresence>

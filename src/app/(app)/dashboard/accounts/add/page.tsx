@@ -368,12 +368,18 @@ function ScheduleStep({
   const isValid =
     effectiveDays.length === requiredDays && filledTimes.length === requiredTimes;
 
+  const isFree = tier === "FREE";
+
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold">Set Your Schedule</h2>
+        <h2 className="text-2xl font-bold">
+          {isFree ? "Pick your weekly slot" : "Set Your Schedule"}
+        </h2>
         <p className="text-text-secondary text-sm mt-1">
-          Choose when your {videosPerWeek} videos per week will be posted.
+          {isFree
+            ? "Your dragon will post once a week. Pick the one day and time below — this is locked until you upgrade, so choose a moment you can trust."
+            : `Choose when your ${videosPerWeek} videos per week will be posted.`}
         </p>
       </div>
 
@@ -393,8 +399,17 @@ function ScheduleStep({
           />
         </svg>
         <span>
-          This schedule is <strong>locked after {tier === "FREE" ? "activation" : "purchase"}</strong> and
-          cannot be changed. Choose carefully!
+          {isFree ? (
+            <>
+              Your free slot is <strong>locked after activation</strong>. To change the
+              day or time later, you&rsquo;ll need to upgrade.
+            </>
+          ) : (
+            <>
+              This schedule is <strong>locked after purchase</strong> and cannot be
+              changed. Choose carefully!
+            </>
+          )}
         </span>
       </div>
 
@@ -419,7 +434,9 @@ function ScheduleStep({
         <label className="block text-sm font-medium text-text-primary mb-3">
           {needsMultiplePerDay
             ? "Posting days (all days — 2 posts per day)"
-            : `Select ${requiredDays} posting day${requiredDays !== 1 ? "s" : ""}`}
+            : isFree
+              ? "Which day each week?"
+              : `Select ${requiredDays} posting day${requiredDays !== 1 ? "s" : ""}`}
           <span className="ml-2 text-text-secondary font-normal">
             ({effectiveDays.length}/{requiredDays} selected)
           </span>
@@ -453,7 +470,11 @@ function ScheduleStep({
       {/* Time picker */}
       <div>
         <label className="block text-sm font-medium text-text-primary mb-3">
-          {needsMultiplePerDay ? "Posting times (2 per day)" : "Posting time"}
+          {needsMultiplePerDay
+            ? "Posting times (2 per day)"
+            : isFree
+              ? "And what time?"
+              : "Posting time"}
         </label>
         <div className={cn(needsMultiplePerDay ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "max-w-xs")}>
           <div>
