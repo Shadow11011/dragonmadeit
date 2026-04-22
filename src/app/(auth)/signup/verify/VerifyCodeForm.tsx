@@ -29,6 +29,7 @@ export default function VerifyCodeForm() {
         email: string;
         password: string;
         name?: string;
+        callbackUrl?: string;
       };
     } catch {
       return null;
@@ -112,6 +113,9 @@ export default function VerifyCodeForm() {
         redirect: false,
       });
 
+      // Snapshot before we clear so the post-login redirect keeps the user's
+      // original intent (e.g. /dashboard/accounts/add?tier=free).
+      const destination = pending.callbackUrl || "/dashboard";
       sessionStorage.removeItem("pendingSignup");
 
       if (result?.error) {
@@ -120,7 +124,7 @@ export default function VerifyCodeForm() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push(destination);
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);

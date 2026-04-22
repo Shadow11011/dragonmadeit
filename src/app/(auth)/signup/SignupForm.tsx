@@ -5,10 +5,24 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
+const VALID_TIER_PARAMS = new Set([
+  "free",
+  "hatchling",
+  "drake",
+  "elder_dragon",
+]);
+
 export default function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  // If the landing page (or pricing page) linked us here with ?tier=<slug>,
+  // take the user straight into the account wizard with that tier preselected
+  // after they verify. Otherwise honour any explicit ?callbackUrl.
+  const tierParam = searchParams.get("tier")?.toLowerCase() ?? null;
+  const callbackUrl =
+    tierParam && VALID_TIER_PARAMS.has(tierParam)
+      ? `/dashboard/accounts/add?tier=${tierParam}`
+      : searchParams.get("callbackUrl") || "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
