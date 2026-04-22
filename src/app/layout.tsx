@@ -58,7 +58,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var t = localStorage.getItem('dmi-theme') || 'dark';
+                  document.documentElement.setAttribute('data-theme', t);
+                } catch(_) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${heading.variable} ${body.variable} ${mono.variable} antialiased`}>
         {children}
         <script src="https://js.paystack.co/v2/inline.js" defer />
