@@ -255,7 +255,8 @@ export function PhoneMock({
             <span>◼◼◼◻</span>
           </span>
         </div>
-        {/* Content */}
+        {/* Content (fabricated chrome — only when no real thumbnail) */}
+        {!thumbnail && (
         <div
           style={{
             position: "absolute",
@@ -367,6 +368,7 @@ export function PhoneMock({
             </div>
           </div>
         </div>
+        )}
         {/* Progress */}
         {showProgress && (
           <div
