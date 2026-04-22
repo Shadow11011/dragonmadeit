@@ -37,7 +37,6 @@ function mapScheduleTime(schedule: PostingSchedule | null): string {
 
 function deriveStatus(account: TikTokAccountInfo): "active" | "pending" | "cancelled" {
   if (!account.isLinked) return "pending";
-  if (account.tier === "FREE") return "cancelled";
   return "active";
 }
 

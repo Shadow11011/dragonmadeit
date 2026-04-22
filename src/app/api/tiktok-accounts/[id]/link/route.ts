@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getNextPostTime } from "@/lib/schedule-utils";
 import { z } from "zod";
 
 const linkSchema = z.object({
@@ -38,6 +39,7 @@ export async function POST(
         id: true,
         username: true,
         userId: true,
+        schedule: true,
       },
     });
 
@@ -81,11 +83,18 @@ export async function POST(
 
     const { username, lateAccountId } = parsed.data;
 
+    // Compute the first scheduled post time so the n8n Orchestrator's SELECT
+    // (nextPostAt <= NOW() AND videoGenStatus='IDLE' AND lateAccountId IS NOT NULL)
+    // starts matching this account on its next 30-min tick. videoGenStatus is
+    // already 'IDLE' by default from account creation.
+    const nextPostAt = getNextPostTime(account.schedule);
+
     const updatedAccount = await prisma.tikTokAccount.update({
       where: { id },
       data: {
         username,
         ...(lateAccountId ? { lateAccountId } : {}),
+        ...(nextPostAt ? { nextPostAt } : {}),
       },
       select: {
         id: true,
@@ -93,6 +102,7 @@ export async function POST(
         tier: true,
         videosPerWeek: true,
         scheduleLocked: true,
+        nextPostAt: true,
       },
     });
 
