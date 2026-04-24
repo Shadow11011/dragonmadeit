@@ -5,6 +5,7 @@ import Link from "next/link";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
+import { ReferralWidget } from "@/components/dashboard/ReferralWidget";
 import { Button } from "@/components/ui/Button";
 import { useTypedSession } from "@/hooks/useSession";
 import { getNextPostTime } from "@/lib/schedule-utils";
@@ -449,6 +450,10 @@ export default function DashboardPage() {
           accentColor="#22c55e"
         />
       </div>
+
+      {/* Referral widget — bottom of the at-a-glance area. Shown for any
+          signed-in user since every user has a shareable code from day one. */}
+      <ReferralWidget />
 
       {/* Quick links section */}
       {hasAccounts && (
