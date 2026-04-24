@@ -21,11 +21,11 @@ export interface SessionUser {
   id: string;
   email: string;
   name: string | null;
-  paystackCustomerCode: string | null;
+  dodoCustomerId: string | null;
 }
 
 export type PaidTier = Exclude<Tier, "FREE">;
-/** Tiers with a self-serve Paystack plan. AGENCY is custom-billed (not self-serve). */
+/** Tiers with a self-serve Dodo product. AGENCY is custom-billed (not self-serve). */
 export type SelfServePaidTier = Exclude<Tier, "FREE" | "AGENCY">;
 
 /** Schedule for a TikTok account's posting times */
@@ -282,9 +282,9 @@ export type Currency = "NGN" | "USD";
 
 /**
  * Monthly base prices per self-serve paid tier in both currencies.
- * NGN values are USD × 1500 (approx.), rounded to clean figures. Don can
- * retune these once the Paystack plans are created. AGENCY is custom-billed
- * and deliberately excluded.
+ * NGN values are USD × 1500 (approx.), rounded to clean figures. Retune
+ * once Dodo products are set to the desired amounts. AGENCY is custom-
+ * billed and deliberately excluded.
  */
 export const TIER_PRICES: Record<SelfServePaidTier, Record<Currency, number>> = {
   SCHEDULER: { NGN: 18000, USD: 12 },

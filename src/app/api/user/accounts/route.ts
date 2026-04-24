@@ -44,9 +44,9 @@ export async function GET() {
   }
 }
 
-// TikTok accounts are now created via Paystack checkout (payment-gated).
+// TikTok accounts are now created via Dodo checkout (payment-gated).
 // Direct account creation is no longer supported.
-// Use POST /api/paystack/initialize to purchase a new account slot.
+// Use POST /api/dodo/checkout to purchase a new account slot.
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -69,7 +69,7 @@ export async function DELETE(request: NextRequest) {
     // Verify account belongs to user
     const account = await prisma.tikTokAccount.findFirst({
       where: { id, userId: session.user.id },
-      select: { id: true, paystackSubscriptionCode: true },
+      select: { id: true, dodoSubscriptionId: true },
     });
 
     if (!account) {
@@ -81,7 +81,7 @@ export async function DELETE(request: NextRequest) {
 
     // Prevent deletion of accounts with active subscriptions
     // User must cancel the subscription first via the account detail page
-    if (account.paystackSubscriptionCode) {
+    if (account.dodoSubscriptionId) {
       return NextResponse.json(
         {
           success: false,

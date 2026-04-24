@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { cancelSubscription } from "@/lib/paystack";
+import { cancelSubscription } from "@/lib/dodo";
 import { disconnectAccount, deleteProfile } from "@/lib/late-api";
 import { z } from "zod";
 
@@ -27,7 +27,7 @@ export async function GET() {
         id: true,
         email: true,
         name: true,
-        paystackCustomerCode: true,
+        dodoCustomerId: true,
         onboardingComplete: true,
         tiktokAccounts: {
           select: {
@@ -103,7 +103,7 @@ export async function PATCH(request: Request) {
         id: true,
         email: true,
         name: true,
-        paystackCustomerCode: true,
+        dodoCustomerId: true,
         onboardingComplete: true,
       },
     });
@@ -132,12 +132,11 @@ export async function DELETE() {
       where: { id: session.user.id },
       select: {
         id: true,
-        paystackCustomerCode: true,
+        dodoCustomerId: true,
         tiktokAccounts: {
           select: {
             id: true,
-            paystackSubscriptionCode: true,
-            paystackEmailToken: true,
+            dodoSubscriptionId: true,
             lateAccountId: true,
             lateProfileId: true,
           },
@@ -154,11 +153,14 @@ export async function DELETE() {
 
     // Clean up each TikTok account: cancel subscription, disconnect Late.dev
     for (const account of user.tiktokAccounts) {
-      if (account.paystackSubscriptionCode && account.paystackEmailToken) {
+      if (account.dodoSubscriptionId) {
         try {
-          await cancelSubscription(account.paystackSubscriptionCode, account.paystackEmailToken);
+          await cancelSubscription(account.dodoSubscriptionId);
         } catch (err) {
-          console.error(`Failed to cancel Paystack subscription ${account.paystackSubscriptionCode}:`, err);
+          console.error(
+            `Failed to cancel Dodo subscription ${account.dodoSubscriptionId}:`,
+            err
+          );
         }
       }
 

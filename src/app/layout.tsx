@@ -75,7 +75,6 @@ export default function RootLayout({
       </head>
       <body className={`${heading.variable} ${body.variable} ${mono.variable} antialiased`}>
         {children}
-        <script src="https://js.paystack.co/v2/inline.js" defer />
       </body>
     </html>
   );

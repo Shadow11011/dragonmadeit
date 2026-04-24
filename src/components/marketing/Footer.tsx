@@ -19,7 +19,7 @@ export function Footer() {
               style={{ fontSize: 12, color: "var(--text-3)", flexWrap: "wrap" }}
             >
               <span>◆ Official TikTok API</span>
-              <span>◆ Secured by Paystack</span>
+              <span>◆ Secured by Dodo Payments</span>
             </div>
           </div>
           <div>

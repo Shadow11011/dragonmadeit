@@ -7,11 +7,15 @@ import { prisma } from "@/lib/prisma";
 const SESSION_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 async function userHasActiveSubscription(userId: string): Promise<boolean> {
+  // An account counts as "active" when the tier is paid AND a Dodo
+  // subscription ID is present. The subscription-cancelled webhook nulls
+  // `dodoSubscriptionId` and downgrades the tier in the same update, so
+  // either check would work — we require both for belt-and-braces.
   const count = await prisma.tikTokAccount.count({
     where: {
       userId,
       tier: { not: "FREE" },
-      paystackSubscriptionCode: { not: null },
+      dodoSubscriptionId: { not: null },
     },
   });
   return count > 0;

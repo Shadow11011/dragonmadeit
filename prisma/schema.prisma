@@ -50,11 +50,9 @@ model User {
   image              String?
   hashedPassword     String?
   emailVerified      DateTime?
-  paystackCustomerCode   String?
-  // Dodo Payments customer ID (test mode during migration). Dodo's checkout
-  // lazily creates a customer on first payment; we persist the returned ID
-  // on `subscription.active` so subsequent checkouts can reuse the same
-  // Dodo customer record.
+  // Dodo Payments customer ID. Dodo's checkout lazily creates a customer on
+  // first payment; we persist the returned ID on `subscription.active` so
+  // subsequent checkouts can reuse the same Dodo customer record.
   dodoCustomerId         String?
   onboardingComplete Boolean         @default(false)
   // Referral program (Task 1.10)
@@ -65,7 +63,7 @@ model User {
   // `referralCredits` is stored in cents (1000 = $10). One-time credits apply
   // on the referrer's next charge.
   // `referralCreditAppliedAt` is an idempotency flag on the REFERRED user so
-  // the Paystack webhook never double-credits on retried deliveries.
+  // the Dodo webhook never double-credits on retried deliveries.
   referralCode           String    @unique
   referredByUserId       String?
   referralCredits        Int       @default(0)
@@ -140,11 +138,9 @@ model TikTokAccount {
   refreshToken         String?
   tier                 Tier            @default(FREE)
   billingInterval      BillingInterval @default(MONTHLY)
-  paystackSubscriptionCode   String?     @unique
-  paystackEmailToken         String?
-  // Dodo Payments subscription ID (test mode during migration). Populated by
-  // the `subscription.active` webhook; cleared on `subscription.cancelled`.
-  // Unique so the webhook handler can dedupe by ID cheaply.
+  // Dodo Payments subscription ID. Populated by the `subscription.active`
+  // webhook; cleared on `subscription.cancelled`. Unique so the webhook
+  // handler can dedupe by ID cheaply.
   dodoSubscriptionId         String?     @unique
   videosPerWeek        Int           @default(0)
   schedule             Json?

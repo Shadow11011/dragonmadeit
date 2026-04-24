@@ -32,8 +32,8 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong className="text-text-primary">Payment information:</strong>{" "}
-                processed securely through Paystack. We do not store your full
-                credit card details.
+                processed securely through Dodo Payments. We do not store your
+                full credit card details.
               </li>
               <li>
                 <strong className="text-text-primary">TikTok account data:</strong>{" "}
@@ -74,8 +74,8 @@ export default function PrivacyPage() {
                 content on your behalf via their API
               </li>
               <li>
-                <strong className="text-text-primary">Paystack:</strong> to process
-                payments securely
+                <strong className="text-text-primary">Dodo Payments:</strong>{" "}
+                to process payments securely
               </li>
               <li>
                 <strong className="text-text-primary">Service providers:</strong>{" "}
