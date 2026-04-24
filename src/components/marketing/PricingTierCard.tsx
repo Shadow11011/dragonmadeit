@@ -68,7 +68,6 @@ export const TIERS: TierSpec[] = [
       "66 content styles",
       "AI scripts + voiceover",
       "Advanced analytics",
-      "Priority support",
       "Content scheduling",
     ],
   },
@@ -85,7 +84,8 @@ export const TIERS: TierSpec[] = [
       "1 TikTok account",
       "66 content styles",
       "AI scripts + voiceover",
-      "White-glove onboarding",
+      "Advanced analytics",
+      "Content scheduling",
     ],
   },
 ];
