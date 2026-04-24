@@ -5,17 +5,26 @@ import { Sigil } from "@/components/marketing/primitives/Sigil";
 
 export type Interval = "MONTHLY" | "QUARTERLY" | "ANNUAL";
 
+export type TierKey =
+  | "FREE"
+  | "SCHEDULER"
+  | "CREATOR"
+  | "CLIPPER"
+  | "STUDIO"
+  | "STUDIO_PRO"
+  | "AGENCY";
+
 export interface TierSpec {
-  key: "FREE" | "HATCHLING" | "DRAKE" | "ELDER_DRAGON";
+  key: TierKey;
   name: string;
   color: string;
-  price: number;
-  videos: number;
+  /** Monthly USD price. null for AGENCY (custom). */
+  price: number | null;
   popular: boolean;
   desc: string;
   features: string[];
-  /** per-month video quota (defaults to videos × 4 weeks for paid tiers) */
-  monthlyCap?: number;
+  /** True for AGENCY: render "Contact us" CTA, hide billing-interval math. */
+  custom?: boolean;
 }
 
 export const TIERS: TierSpec[] = [
@@ -24,91 +33,140 @@ export const TIERS: TierSpec[] = [
     name: "Free",
     color: "#71717a",
     price: 0,
-    videos: 1,
-    monthlyCap: 4,
     popular: false,
-    desc: "Try the engine, no card. See the output before you pay.",
+    desc: "Sample every pillar. Watermarked output, no card required.",
     features: [
-      "1 video per week · 4/month",
-      "Gameplay content only",
-      "Watermark on video + end card",
-      "Auto-posted to TikTok",
-      "AI-image niches locked",
+      "2 AI-generated videos per month (watermarked)",
+      "1 clip per month (watermarked)",
+      "3 scheduled uploads per month",
+      "1 linked social account",
       "No credit card required",
     ],
   },
   {
-    key: "HATCHLING",
-    name: "Hatchling",
-    color: "#c87533",
-    price: 15,
-    videos: 3,
+    key: "SCHEDULER",
+    name: "Scheduler",
+    color: "#4fb0c6",
+    price: 12,
     popular: false,
-    desc: "For the first-time forger. Start the fire.",
+    desc: "Bring your own content. Schedule and publish on autopilot.",
     features: [
-      "3 videos per week",
-      "1 TikTok account",
-      "66 content styles",
-      "AI scripts + voiceover",
+      "100 scheduled uploads per month",
+      "2 linked social accounts",
+      "Bulk CSV upload",
+      "Monthly calendar view",
       "Basic analytics",
-      "Email support",
     ],
   },
   {
-    key: "DRAKE",
-    name: "Drake",
-    color: "#ff8c00",
-    price: 39,
-    videos: 7,
-    popular: true,
-    desc: "Daily fire. The algorithm's favorite.",
-    features: [
-      "7 videos per week (daily)",
-      "1 TikTok account",
-      "66 content styles",
-      "AI scripts + voiceover",
-      "Advanced analytics",
-      "Content scheduling",
-    ],
-  },
-  {
-    key: "ELDER_DRAGON",
-    name: "Elder Dragon",
-    color: "#ffd700",
-    price: 129,
-    videos: 14,
+    key: "CREATOR",
+    name: "Creator",
+    color: "#c87533",
+    price: 19,
     popular: false,
-    desc: "Twice-daily dominance. Scorched-earth growth.",
+    desc: "Fully automated AI video generation. Posted for you.",
     features: [
-      "14 videos per week (2×/day)",
-      "1 TikTok account",
-      "66 content styles",
-      "AI scripts + voiceover",
-      "Advanced analytics",
-      "Content scheduling",
+      "20 AI-generated videos per month",
+      "2 linked social accounts",
+      "All 66 content niches",
+      "AI scripts and voiceover",
+      "Basic analytics",
+    ],
+  },
+  {
+    key: "CLIPPER",
+    name: "Clipper",
+    color: "#ff8c00",
+    price: 19,
+    popular: false,
+    desc: "Turn long-form content into short clips, automatically.",
+    features: [
+      "20 clips per month",
+      "2 linked social accounts",
+      "Auto-detected viral moments",
+      "Vertical reformat for TikTok and Shorts",
+      "Basic analytics",
+    ],
+  },
+  {
+    key: "STUDIO",
+    name: "Studio",
+    color: "#ff6a00",
+    price: 45,
+    popular: true,
+    desc: "All three pillars. Generate, clip, and schedule from one place.",
+    features: [
+      "40 AI-generated videos per month",
+      "40 clips per month",
+      "250 scheduled uploads per month",
+      "5 linked social accounts",
+      "Full analytics dashboard",
+      "Bulk CSV upload",
+    ],
+  },
+  {
+    key: "STUDIO_PRO",
+    name: "Studio Pro",
+    color: "#ffd700",
+    price: 79,
+    popular: false,
+    desc: "Business volume across every pillar.",
+    features: [
+      "100 AI-generated videos per month",
+      "100 clips per month",
+      "700 scheduled uploads per month",
+      "10 linked social accounts",
+      "Full analytics dashboard",
+      "Bulk CSV upload",
+      "Priority support",
+    ],
+  },
+  {
+    key: "AGENCY",
+    name: "Agency",
+    color: "#ffd700",
+    price: null,
+    popular: false,
+    custom: true,
+    desc: "Custom volume and 30+ accounts. Talk to us.",
+    features: [
+      "Custom AI generation volume",
+      "Custom clip volume",
+      "Custom scheduling volume",
+      "30+ linked social accounts",
+      "Dedicated onboarding",
+      "Priority support",
     ],
   },
 ];
 
-const CTA_COPY: Record<TierSpec["key"], string> = {
+const CTA_COPY: Record<TierKey, string> = {
   FREE: "Start free, no card",
-  HATCHLING: "Hatch my channel",
-  DRAKE: "Go daily with Drake",
-  ELDER_DRAGON: "Unleash the Elder",
+  SCHEDULER: "Schedule on autopilot",
+  CREATOR: "Generate on autopilot",
+  CLIPPER: "Start clipping",
+  STUDIO: "Get the full studio",
+  STUDIO_PRO: "Scale with Studio Pro",
+  AGENCY: "Contact us",
 };
 
 export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: Interval }) {
   const isFree = tier.key === "FREE";
-  const mult = isFree ? 1 : { MONTHLY: 1, QUARTERLY: 0.85, ANNUAL: 0.7 }[interval];
-  const monthly = Math.round(tier.price * mult);
-  const monthlyVideos = tier.monthlyCap ?? tier.videos * 4;
-  const perVid = isFree ? "0.00" : (monthly / monthlyVideos).toFixed(2);
+  const isCustom = tier.custom === true;
+  const basePrice = tier.price ?? 0;
+  const mult = isFree || isCustom ? 1 : { MONTHLY: 1, QUARTERLY: 0.85, ANNUAL: 0.7 }[interval];
+  const monthly = Math.round(basePrice * mult);
   const billedLabel =
-    isFree || interval === "MONTHLY"
+    isFree || isCustom || interval === "MONTHLY"
       ? ""
       : interval === "QUARTERLY"
-        ? `billed $${Math.round(tier.price * mult * 3)}/qtr`
-        : `billed $${Math.round(tier.price * mult * 12)}/yr`;
+        ? `billed $${Math.round(basePrice * mult * 3)}/qtr`
+        : `billed $${Math.round(basePrice * mult * 12)}/yr`;
+  const href = isCustom
+    ? "mailto:adonanthony5@gmail.com?subject=DragonMadeIt%20Agency%20enquiry"
+    : isFree
+      ? "/signup?tier=free"
+      : `/signup?tier=${tier.key.toLowerCase()}`;
 
   return (
     <div
@@ -153,26 +211,35 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
         </h3>
       </div>
       <div className="mt-6" style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-        {interval !== "MONTHLY" && (
+        {!isFree && !isCustom && interval !== "MONTHLY" && (
           <span className="text-3" style={{ textDecoration: "line-through", fontSize: 16 }}>
-            ${tier.price}
+            ${basePrice}
           </span>
         )}
-        <span className="h-display" style={{ fontSize: "3rem" }}>
-          ${monthly}
-        </span>
-        <span className="text-2" style={{ fontSize: 14 }}>
-          /mo
-        </span>
+        {isCustom ? (
+          <span className="h-display" style={{ fontSize: "2.4rem" }}>
+            Custom
+          </span>
+        ) : (
+          <>
+            <span className="h-display" style={{ fontSize: "3rem" }}>
+              ${monthly}
+            </span>
+            <span className="text-2" style={{ fontSize: 14 }}>
+              /mo
+            </span>
+          </>
+        )}
       </div>
       <div className="mono mt-2" style={{ fontSize: 11, color: "var(--text-3)" }}>
         {isFree ? (
-          <>Forever free · {monthlyVideos} videos/mo</>
+          <>Forever free</>
+        ) : isCustom ? (
+          <>Priced to your volume</>
+        ) : billedLabel ? (
+          <>{billedLabel}</>
         ) : (
-          <>
-            ${perVid}/video · {monthlyVideos} videos/mo
-            {billedLabel && <> · {billedLabel}</>}
-          </>
+          <>Billed monthly</>
         )}
       </div>
       <p className="text-2 mt-4" style={{ fontSize: 14 }}>
@@ -187,7 +254,7 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
         ))}
       </ul>
       <Link
-        href={isFree ? "/signup?tier=free" : "/signup"}
+        href={href}
         className="btn btn-lg mt-8"
         style={{ background: tier.color, color: "#0a0a0f", fontWeight: 700 }}
       >
@@ -202,7 +269,7 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
           letterSpacing: "0.2em",
         }}
       >
-        {isFree ? "NO CARD REQUIRED" : "CANCEL ANYTIME"}
+        {isFree ? "NO CARD REQUIRED" : isCustom ? "CUSTOM CONTRACT" : "CANCEL ANYTIME"}
       </div>
     </div>
   );

@@ -23,8 +23,8 @@ export function PricingSection() {
           </Reveal>
           <Reveal delay={100}>
             <p className="text-2" style={{ fontSize: 16, maxWidth: 440 }}>
-              Four watermarked gameplay videos per month, free, no card. Upgrade to remove the
-              watermark, unlock all 66 niches, and post across all three platforms.
+              Sample every pillar free, no card. Upgrade to one pillar at $12–$19/month, or
+              bundle all three from $45.
             </p>
           </Reveal>
         </div>

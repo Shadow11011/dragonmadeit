@@ -14,49 +14,42 @@ const INTERVALS: { value: Interval; label: string }[] = [
   { value: "ANNUAL", label: "Annual · 30% off" },
 ];
 
-const COMPARE_ROWS: [string, string, string, string][] = [
-  ["Free tier with posting", "✓ (4/mo)", "–", "–"],
-  ["Starting price (paid)", "$15/mo", "$19/mo", "$29/mo"],
-  ["Creates videos", "✓", "✓", "✓"],
-  ["Posts to TikTok", "✓", "✓", "–"],
-  ["Content styles", "66", "Limited", "Limited"],
-  ["Full automation", "✓", "Partial", "–"],
-  ["Custom voices", "✓", "✓", "–"],
-  ["Cancel anytime", "✓", "✓", "–"],
-];
-
 const FAQS: [string, string][] = [
   [
+    "What are the three pillars?",
+    "Generate creates AI videos from scratch (gameplay or AI-image). Clipper turns your long-form content into short clips. Scheduler publishes your own pre-made content on a set cadence. Each paid tier picks one or bundles all three.",
+  ],
+  [
     "What's in the free tier?",
-    "4 videos per month (1 per week), gameplay-only content, auto-posted to your TikTok. Videos include a small \"dragonmadeit.app\" watermark and a 2-second end card. No credit card required. AI-image niches stay locked until you upgrade.",
+    "A sample of every pillar so you can see the output before you pay: 2 AI-generated videos, 1 clip, and 3 scheduled uploads per month. Videos include a small \"dragonmadeit.app\" watermark on the generated output. No credit card required.",
+  ],
+  [
+    "How do Creator, Clipper, and Scheduler compare?",
+    "Creator is generate-only: 20 AI videos per month at $19. Clipper is clip-only: 20 clips per month at $19. Scheduler is the schedule-only tier for teams that already have content: 100 uploads per month at $12. Pick the pillar that matches the work you actually want to offload.",
+  ],
+  [
+    "When should I pick Studio over a single-pillar tier?",
+    "Studio at $45 bundles all three pillars (40 generate, 40 clips, 250 scheduled uploads) and 5 linked accounts. If you'd otherwise buy two of the $19 tiers, Studio is the better deal and gives you the third pillar for free. Studio Pro ($79) bumps the volume for business use.",
   ],
   [
     "Can I switch plans later?",
-    "Yes. Upgrade or downgrade anytime. Upgrades are prorated; downgrades take effect at the end of the current cycle. Free users can upgrade to remove the watermark and unlock the full 66 content styles.",
-  ],
-  [
-    "What's the difference between plans?",
-    "Free gives you 4 watermarked gameplay videos/month. Every paid plan removes the watermark, unlocks all 66 niches, and includes 1 TikTok account. The difference between paid tiers is videos-per-week: 3 on Hatchling, 7 on Drake, 14 on Elder Dragon.",
+    "Yes. Upgrade or downgrade anytime. Upgrades prorate; downgrades take effect at the end of the current billing cycle. Free users can upgrade to remove the watermark and unlock the full pillar quotas.",
   ],
   [
     "Do you offer discounts for longer commitments?",
-    "Yes. 15% off on quarterly, 30% off on annual billing.",
+    "Yes. 15% off on quarterly billing, 30% off on annual billing. Same on every paid tier.",
   ],
   [
     "Can I cancel anytime?",
-    "Absolutely. No contracts. Cancel from the dashboard and keep access through the end of your billing period.",
+    "Yes. No contracts. Cancel from the dashboard and keep access through the end of your billing period.",
   ],
   [
     "Will my TikTok account get banned?",
-    "No. We post through the official TikTok API via Late. Not bots or scrapers. Fully TOS-compliant.",
+    "No. We post through the official TikTok API. No bots, no scrapers. Fully TOS-compliant.",
   ],
   [
-    "Can I review videos before they post?",
-    "Yes. Videos are queued in the dashboard. Preview, edit the schedule, or skip individual posts.",
-  ],
-  [
-    "What niches work best?",
-    "Reddit stories, true crime, horror, motivation, and dating drama are the top performers. 66 styles total. The AI picks trending angles within your chosen niche.",
+    "What's Agency?",
+    "Custom-volume plan for agencies running 30+ accounts or needing more headroom than Studio Pro. Billed per contract, not self-serve. Email us to talk volume.",
   ],
 ];
 
@@ -70,12 +63,12 @@ export function PricingPageContent() {
         <div className="wrap">
           <div className="eyebrow">CH · PRICING</div>
           <h1 className="h-display mt-6">
-            Pick your <span style={{ color: "var(--fire)", fontStyle: "italic" }}>dragon</span>.
+            One <span style={{ color: "var(--fire)", fontStyle: "italic" }}>pillar</span> or all three.
             <br />
-            Pick your pace.
+            Your call.
           </h1>
           <p className="text-2 mt-6" style={{ fontSize: 18 }}>
-            Cancel anytime. No contracts. No filming.
+            Generate, Clip, or Schedule. Pick the pillar that matches the work you want to offload.
           </p>
           <div
             className="mt-12"
@@ -121,44 +114,6 @@ export function PricingPageContent() {
         </div>
       </section>
 
-      <section className="sec-pad">
-        <div className="wrap">
-          <div className="chapter-label">THE ARENA</div>
-          <h2 className="h1 mt-4">
-            How we burn <span style={{ color: "var(--fire)", fontStyle: "italic" }}>the competition.</span>
-          </h2>
-          <div
-            className="mt-8"
-            style={{
-              overflowX: "auto",
-              border: "1px solid var(--border)",
-              borderRadius: "calc(var(--radius-base) * 2)",
-            }}
-          >
-            <table className="compare-table">
-              <thead>
-                <tr>
-                  <th>FEATURE</th>
-                  <th style={{ color: "var(--fire)" }}>DRAGONMADEIT</th>
-                  <th>AutoShorts</th>
-                  <th>Faceless.so</th>
-                </tr>
-              </thead>
-              <tbody>
-                {COMPARE_ROWS.map((r, i) => (
-                  <tr key={r[0]} style={{ background: i % 2 ? "var(--bg-1)" : "transparent" }}>
-                    <td>{r[0]}</td>
-                    <td className="hl">{r[1]}</td>
-                    <td className="text-3">{r[2]}</td>
-                    <td className="text-3">{r[3]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
       <section className="sec-pad" style={{ background: "var(--bg-1)" }}>
         <div className="wrap-narrow">
           <div className="chapter-label">THE RIDDLES</div>
@@ -184,7 +139,7 @@ export function PricingPageContent() {
           <h2 className="h1">
             Ready to <span style={{ color: "var(--fire)", fontStyle: "italic" }}>get started?</span>
           </h2>
-          <p className="text-2 mt-4">Your first video can be live tonight. No card needed.</p>
+          <p className="text-2 mt-4">Sample every pillar for free. No card needed.</p>
           <div className="row gap-4 mt-8" style={{ justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
               Start free, no card
