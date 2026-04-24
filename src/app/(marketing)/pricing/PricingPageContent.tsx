@@ -36,7 +36,7 @@ const FAQS: [string, string][] = [
   ],
   [
     "What's the difference between plans?",
-    "Free gives you 4 watermarked gameplay videos/month. Every paid plan removes the watermark, unlocks all 66 niches, and includes 1 TikTok account. The difference between paid tiers is videos-per-week: 3 on Hatchling, 7 on Drake, 14 on Elder Dragon. Elder also gets custom content generation.",
+    "Free gives you 4 watermarked gameplay videos/month. Every paid plan removes the watermark, unlocks all 66 niches, and includes 1 TikTok account. The difference between paid tiers is videos-per-week: 3 on Hatchling, 7 on Drake, 14 on Elder Dragon.",
   ],
   [
     "Do you offer discounts for longer commitments?",
