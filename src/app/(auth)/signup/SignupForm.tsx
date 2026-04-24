@@ -23,6 +23,10 @@ export default function SignupForm() {
     tierParam && VALID_TIER_PARAMS.has(tierParam)
       ? `/dashboard/accounts/add?tier=${tierParam}`
       : searchParams.get("callbackUrl") || "/dashboard";
+  // Referral code arriving from a share link (?ref=<code>). Captured here and
+  // carried through sessionStorage to the verify step. Silently ignored on
+  // the server if the code is invalid — never blocks signup.
+  const refParam = searchParams.get("ref") ?? null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -51,7 +55,7 @@ export default function SignupForm() {
       // Store pending data for the verify page
       sessionStorage.setItem(
         "pendingSignup",
-        JSON.stringify({ email, password, name, callbackUrl })
+        JSON.stringify({ email, password, name, callbackUrl, ref: refParam })
       );
 
       router.push("/signup/verify");

@@ -30,6 +30,7 @@ export default function VerifyCodeForm() {
         password: string;
         name?: string;
         callbackUrl?: string;
+        ref?: string | null;
       };
     } catch {
       return null;
@@ -96,7 +97,11 @@ export default function VerifyCodeForm() {
       const res = await fetch("/api/auth/signup/verify-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: pending.email, code }),
+        body: JSON.stringify({
+          email: pending.email,
+          code,
+          ref: pending.ref ?? undefined,
+        }),
       });
 
       const data = await res.json();

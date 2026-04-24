@@ -3,11 +3,17 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendWelcomeEmail } from "@/lib/email";
 import { hashCode, MAX_ATTEMPTS } from "@/lib/verification-code";
-import { generateUniqueReferralCode } from "@/lib/referral";
+import {
+  generateUniqueReferralCode,
+  resolveReferralCode,
+} from "@/lib/referral";
 
 const schema = z.object({
   email: z.string().email(),
   code: z.string().length(6),
+  // Optional referral code from ?ref=<code> on signup. Silently ignored if
+  // absent or invalid — we never block signup on a bad ref.
+  ref: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -22,7 +28,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, code } = result.data;
+    const { email, code, ref } = result.data;
 
     const record = await prisma.emailVerificationCode.findFirst({
       where: { email, type: "SIGNUP", usedAt: null },
@@ -74,6 +80,10 @@ export async function POST(request: Request) {
       );
     }
 
+    // Resolve referral code (if any) to the referrer's user id. Silently
+    // returns null for missing/invalid codes so signup is never blocked.
+    const referredByUserId = await resolveReferralCode(ref);
+
     // Every user owns a unique referral code from day one.
     const referralCode = await generateUniqueReferralCode();
 
@@ -86,6 +96,7 @@ export async function POST(request: Request) {
           name: record.pendingName,
           emailVerified: new Date(),
           referralCode,
+          referredByUserId,
         },
       }),
       prisma.emailVerificationCode.update({

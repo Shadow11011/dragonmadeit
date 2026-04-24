@@ -61,7 +61,12 @@ export async function POST(request: Request) {
         // Find user by email
         const user = await prisma.user.findUnique({
           where: { email },
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+            referredByUserId: true,
+            referralCreditAppliedAt: true,
+          },
         });
 
         if (!user) {
@@ -76,6 +81,42 @@ export async function POST(request: Request) {
         });
         if (existing) {
           break;
+        }
+
+        // Referral credit: first-paid-upgrade trigger.
+        //
+        // Fire exactly once per referred user. Idempotency guard:
+        //   1. `user.referralCreditAppliedAt` must be null (never credited).
+        //   2. Atomic `updateMany` with a null-check in the WHERE clause so a
+        //      concurrent webhook delivery races on the DB, not on our code.
+        //      The update affects 0 rows on the second delivery → we skip
+        //      the increment. That's the watertight check.
+        //   3. The increment and the flag-set are in the same transaction.
+        //
+        // We don't need to look at TikTokAccount history for "first paid"
+        // because the flag handles it: if any prior subscription.create
+        // already credited the referrer, the flag is non-null and the
+        // updateMany returns 0.
+        if (user.referredByUserId && !user.referralCreditAppliedAt) {
+          try {
+            await prisma.$transaction(async (tx) => {
+              const now = new Date();
+              const claimed = await tx.user.updateMany({
+                where: { id: user.id, referralCreditAppliedAt: null },
+                data: { referralCreditAppliedAt: now },
+              });
+              if (claimed.count === 1) {
+                await tx.user.update({
+                  where: { id: user.referredByUserId! },
+                  data: { referralCredits: { increment: 1000 } },
+                });
+              }
+            });
+          } catch (err) {
+            // Never let a referral-credit failure crash the subscription
+            // flow. Log and move on.
+            console.error("paystack webhook: referral credit failed", err);
+          }
         }
 
         // Store customer code on user if not already set
