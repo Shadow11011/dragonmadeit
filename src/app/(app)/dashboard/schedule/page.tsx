@@ -217,6 +217,36 @@ export default function SchedulePage() {
     [accounts]
   );
 
+  /* ---- Reschedule handler (plan mode only) ---- */
+  const handleReschedule = useCallback(
+    async (itemId: string, newStart: Date) => {
+      const res = await fetch(`/api/content-items/${itemId}/reschedule`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scheduledFor: newStart.toISOString() }),
+      });
+      if (!res.ok) {
+        let message = "Failed to reschedule";
+        try {
+          const json = (await res.json()) as { error?: string };
+          if (json?.error) message = json.error;
+        } catch {
+          // ignore JSON parse errors — use default message
+        }
+        throw new Error(message);
+      }
+      // Sync local state with server truth
+      setContentItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId
+            ? { ...item, scheduledAt: newStart.toISOString() }
+            : item,
+        ),
+      );
+    },
+    [],
+  );
+
   const tableItems = useMemo(
     () =>
       contentItems
@@ -362,6 +392,7 @@ export default function SchedulePage() {
           items={calendarItems}
           accounts={accountsProp}
           planMode={planMode}
+          onReschedule={handleReschedule}
         />
       </section>
 
