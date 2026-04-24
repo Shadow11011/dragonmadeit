@@ -349,7 +349,7 @@ function ScheduleStep({
   const needsMultiplePerDay = videosPerWeek > 7;
 
   // For tiers with <= 7 videos/week, pick exactly that many days
-  // For Elder Dragon (14/week), all 7 days are auto-selected (2x daily)
+  // For higher-volume tiers (>7/week), all 7 days are auto-selected with multiple posts per day
   const requiredDays = needsMultiplePerDay ? 7 : videosPerWeek;
 
   const requiredTimes = needsMultiplePerDay ? 2 : 1;
@@ -378,7 +378,7 @@ function ScheduleStep({
     onScheduleChange({ ...schedule, times: newTimes });
   };
 
-  // Auto-select all days for Elder Dragon
+  // Auto-select all days when cadence exceeds 7 posts/week (multiple posts per day)
   const effectiveDays = needsMultiplePerDay
     ? WEEKDAYS.map((d) => d.key)
     : schedule.days;

@@ -130,7 +130,7 @@ dragonmadeit/
 --bg-tertiary: #1a1a2e         (hover states, active items)
 --accent-fire: #ff4500          (primary action, dragon fire orange-red)
 --accent-ember: #ff8c00         (secondary accent, warm amber)
---accent-gold: #ffd700          (premium highlights, Elder Dragon tier)
+--accent-gold: #ffd700          (premium highlights, Studio Pro tier)
 --text-primary: #e4e4e7         (main text, off-white)
 --text-secondary: #71717a       (muted text)
 --border: #27272a               (subtle borders)

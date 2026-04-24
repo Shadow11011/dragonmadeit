@@ -34,10 +34,12 @@ export default function TermsPage() {
               2. Description of Service
             </h2>
             <p>
-              DragonMadeIt is a TikTok content automation platform that provides
-              AI-powered content generation, scheduling, and automated posting
-              services. The Service is provided on a subscription basis across
-              multiple tiers (Hatchling, Drake, and Elder Dragon).
+              DragonMadeIt is a content automation platform that provides
+              AI-powered content generation, repurposing, scheduling, and automated
+              posting services across TikTok, Instagram Reels, and YouTube Shorts.
+              The Service is provided on a subscription basis across multiple tiers
+              (Scheduler, Creator, Clipper, Studio, Studio Pro, and Agency), plus a
+              free sampling tier.
             </p>
           </section>
 
