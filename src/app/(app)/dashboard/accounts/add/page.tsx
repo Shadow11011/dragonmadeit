@@ -28,20 +28,36 @@ interface ScheduleConfig {
   times: string[];
 }
 
-const WIZARD_TIERS: Tier[] = ["FREE", "HATCHLING", "DRAKE", "ELDER_DRAGON"];
+// Self-serve wizard tiers. AGENCY is custom-billed and not shown in the
+// self-serve flow — enterprise leads come through the contact path.
+type WizardTier = Exclude<Tier, "AGENCY">;
+const WIZARD_TIERS: WizardTier[] = [
+  "FREE",
+  "SCHEDULER",
+  "CREATOR",
+  "CLIPPER",
+  "STUDIO",
+  "STUDIO_PRO",
+];
 
 const TIER_BORDER_COLORS: Record<Tier, string> = {
   FREE: "border-text-secondary/30 hover:border-text-secondary/60",
-  HATCHLING: "border-[#c87533]/40 hover:border-[#c87533]/70",
-  DRAKE: "border-accent-ember/40 hover:border-accent-ember/70",
-  ELDER_DRAGON: "border-accent-gold/40 hover:border-accent-gold/70",
+  SCHEDULER: "border-[#4fb0c6]/40 hover:border-[#4fb0c6]/70",
+  CREATOR: "border-[#c87533]/40 hover:border-[#c87533]/70",
+  CLIPPER: "border-[#ff8c00]/40 hover:border-[#ff8c00]/70",
+  STUDIO: "border-accent-ember/40 hover:border-accent-ember/70",
+  STUDIO_PRO: "border-accent-gold/40 hover:border-accent-gold/70",
+  AGENCY: "border-accent-gold/40 hover:border-accent-gold/70",
 };
 
 const TIER_SELECTED_BORDER: Record<Tier, string> = {
   FREE: "border-text-secondary ring-2 ring-text-secondary/25",
-  HATCHLING: "border-[#c87533] ring-2 ring-[#c87533]/20",
-  DRAKE: "border-accent-ember ring-2 ring-accent-ember/20",
-  ELDER_DRAGON: "border-accent-gold ring-2 ring-accent-gold/20",
+  SCHEDULER: "border-[#4fb0c6] ring-2 ring-[#4fb0c6]/20",
+  CREATOR: "border-[#c87533] ring-2 ring-[#c87533]/20",
+  CLIPPER: "border-[#ff8c00] ring-2 ring-[#ff8c00]/20",
+  STUDIO: "border-accent-ember ring-2 ring-accent-ember/20",
+  STUDIO_PRO: "border-accent-gold ring-2 ring-accent-gold/20",
+  AGENCY: "border-accent-gold ring-2 ring-accent-gold/20",
 };
 
 const WEEKDAYS = [
@@ -217,9 +233,12 @@ function TierSelectionStep({
           const config = TIER_CONFIG[tierKey];
           const isSelected = selectedTier === tierKey;
           const isFreeTier = tierKey === "FREE";
+          // tierKey is WizardTier (Tier minus AGENCY). When not FREE, it's
+          // automatically a SelfServePaidTier.
+          const paidKey = tierKey as Exclude<WizardTier, "FREE">;
           const effectiveMonthly = isFreeTier
             ? 0
-            : getEffectiveMonthlyPrice(tierKey, billingInterval, currency);
+            : getEffectiveMonthlyPrice(paidKey, billingInterval, currency);
 
           return (
             <button
@@ -267,7 +286,7 @@ function TierSelectionStep({
               </div>
               {!isFreeTier && billingInterval !== "MONTHLY" && (
                 <p className="text-xs text-accent-fire mt-1">
-                  {formatPrice(getTierPrice(tierKey, billingInterval, currency), currency)} billed {billingInterval === "QUARTERLY" ? "quarterly" : "annually"}
+                  {formatPrice(getTierPrice(paidKey, billingInterval, currency), currency)} billed {billingInterval === "QUARTERLY" ? "quarterly" : "annually"}
                 </p>
               )}
               <p className="text-xs text-text-secondary mt-2">
@@ -423,8 +442,10 @@ function ScheduleStep({
           </span>
         </div>
         <span className="text-sm font-medium fire-text">
-          {tier === "FREE"
-            ? "$0 forever"
+          {tier === "FREE" || tier === "AGENCY"
+            ? tier === "AGENCY"
+              ? "Custom"
+              : "$0 forever"
             : `${formatPrice(getEffectiveMonthlyPrice(tier, billingInterval, currency), currency)}/mo`}
         </span>
       </div>
@@ -574,10 +595,15 @@ function PaymentStep({
       ? WEEKDAYS.map((d) => d.key)
       : schedule.days;
 
-  const totalPrice = isFree ? 0 : getTierPrice(tier as Exclude<Tier, "FREE">, billingInterval, currency);
-  const effectiveMonthly = isFree
-    ? 0
-    : getEffectiveMonthlyPrice(tier as Exclude<Tier, "FREE">, billingInterval, currency);
+  // AGENCY is custom-billed and never reaches this step via the wizard, but
+  // we guard anyway so the pricing maths are total.
+  const isPaidSelfServe = tier !== "FREE" && tier !== "AGENCY";
+  const totalPrice = isPaidSelfServe
+    ? getTierPrice(tier as Exclude<Tier, "FREE" | "AGENCY">, billingInterval, currency)
+    : 0;
+  const effectiveMonthly = isPaidSelfServe
+    ? getEffectiveMonthlyPrice(tier as Exclude<Tier, "FREE" | "AGENCY">, billingInterval, currency)
+    : 0;
 
   async function handleCheckout() {
     setIsRedirecting(true);
@@ -875,7 +901,14 @@ export default function AddAccountPage() {
   useEffect(() => {
     if (selectedTier !== null) return;
     const requested = searchParams?.get("tier")?.toUpperCase();
-    if (requested === "FREE" || requested === "HATCHLING" || requested === "DRAKE" || requested === "ELDER_DRAGON") {
+    if (
+      requested === "FREE" ||
+      requested === "SCHEDULER" ||
+      requested === "CREATOR" ||
+      requested === "CLIPPER" ||
+      requested === "STUDIO" ||
+      requested === "STUDIO_PRO"
+    ) {
       setSelectedTier(requested as Tier);
     }
   }, [searchParams, selectedTier]);

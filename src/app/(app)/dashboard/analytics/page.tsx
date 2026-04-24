@@ -34,7 +34,7 @@ interface AccountBlock {
   id: string;
   username: string;
   displayName: string | null;
-  tier: "FREE" | "HATCHLING" | "DRAKE" | "ELDER_DRAGON";
+  tier: "FREE" | "SCHEDULER" | "CREATOR" | "CLIPPER" | "STUDIO" | "STUDIO_PRO" | "AGENCY";
   videosPerWeek: number;
   videoType: string;
   isLinked: boolean;

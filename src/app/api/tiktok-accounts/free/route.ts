@@ -49,17 +49,18 @@ export async function POST(request: NextRequest) {
     const { schedule, contentConfig, deviceFingerprint } = parsed.data;
     const { ipHash, uaHash } = getServerFingerprint(request);
 
-    // Abuse control layer 1: one FREE account per user, ever.
-    const existingFree = await prisma.tikTokAccount.findFirst({
+    // Abuse control layer 1: enforce TIER_CONFIG.FREE.maxAccounts per user.
+    // Current value is 1, so effectively "one FREE account per user, ever".
+    const freeMaxAccounts = TIER_CONFIG.FREE.maxAccounts;
+    const existingFreeCount = await prisma.tikTokAccount.count({
       where: { userId: session.user.id, tier: "FREE" },
-      select: { id: true },
     });
-    if (existingFree) {
+    if (existingFreeCount >= freeMaxAccounts) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "You already have a free account. Upgrade to a paid tier to add another channel.",
+            "You have reached the free-tier account limit. Upgrade to a paid tier to add another channel.",
         },
         { status: 409 }
       );

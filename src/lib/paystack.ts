@@ -1,69 +1,106 @@
 import { Tier, BillingInterval } from "@prisma/client";
 import crypto from "crypto";
+import type { SelfServePaidTier } from "@/types";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!;
 
+/**
+ * Legacy per-week video cadence per paid tier. Preserved for the Paystack
+ * webhook which still writes TikTokAccount.videosPerWeek at subscription
+ * create time so the n8n orchestrator's scheduling maths stay consistent.
+ *
+ * Derived from TIER_CONFIG[tier].generateQuotaPerMonth / 4. Tiers without
+ * the Generate pillar (SCHEDULER, CLIPPER) are set to 0. AGENCY is 0 as a
+ * placeholder; enterprise onboarding will set this per account.
+ */
 export const TIER_VIDEOS_PER_WEEK: Record<Exclude<Tier, "FREE">, number> = {
-  HATCHLING: 3,
-  DRAKE: 7,
-  ELDER_DRAGON: 14,
+  SCHEDULER: 0,
+  CREATOR: 5,
+  CLIPPER: 0,
+  STUDIO: 10,
+  STUDIO_PRO: 25,
+  AGENCY: 0,
 };
 
-type PaidTier = Exclude<Tier, "FREE">;
-
-/** Plan amounts in kobo (NGN smallest unit) for each tier + billing interval */
+/** Plan amounts in kobo (NGN smallest unit) for each self-serve paid tier + billing interval */
 export const PAYSTACK_PLAN_AMOUNTS: Record<
-  PaidTier,
+  SelfServePaidTier,
   Record<BillingInterval, number>
 > = {
-  HATCHLING: {
-    MONTHLY: 2300000,    // ₦23,000
-    QUARTERLY: 5865000,  // ₦58,650
-    ANNUAL: 19320000,    // ₦193,200
+  SCHEDULER: {
+    MONTHLY: 1800000,    // ₦18,000
+    QUARTERLY: 4590000,  // ₦18,000 × 3 × 0.85
+    ANNUAL: 15120000,    // ₦18,000 × 12 × 0.70
   },
-  DRAKE: {
-    MONTHLY: 6000000,    // ₦60,000
-    QUARTERLY: 15300000, // ₦153,000
-    ANNUAL: 50400000,    // ₦504,000
+  CREATOR: {
+    MONTHLY: 2900000,    // ₦29,000
+    QUARTERLY: 7395000,  // ₦29,000 × 3 × 0.85
+    ANNUAL: 24360000,    // ₦29,000 × 12 × 0.70
   },
-  ELDER_DRAGON: {
-    MONTHLY: 20000000,   // ₦200,000
-    QUARTERLY: 51000000, // ₦510,000
-    ANNUAL: 168000000,   // ₦1,680,000
+  CLIPPER: {
+    MONTHLY: 2900000,    // ₦29,000
+    QUARTERLY: 7395000,  // ₦29,000 × 3 × 0.85
+    ANNUAL: 24360000,    // ₦29,000 × 12 × 0.70
+  },
+  STUDIO: {
+    MONTHLY: 6800000,    // ₦68,000
+    QUARTERLY: 17340000, // ₦68,000 × 3 × 0.85
+    ANNUAL: 57120000,    // ₦68,000 × 12 × 0.70
+  },
+  STUDIO_PRO: {
+    MONTHLY: 12000000,   // ₦120,000
+    QUARTERLY: 30600000, // ₦120,000 × 3 × 0.85
+    ANNUAL: 100800000,   // ₦120,000 × 12 × 0.70
   },
 };
 
-/** Paystack plan codes for each tier + billing interval */
+/**
+ * Paystack plan codes for each self-serve paid tier + billing interval. The
+ * env vars are populated by Don after he creates the 15 new plans in the
+ * Paystack dashboard; until then they're empty strings and the webhook will
+ * skip-map any plan code that doesn't match. AGENCY has no self-serve plan.
+ */
 export const PAYSTACK_PLAN_CODES: Record<
-  PaidTier,
+  SelfServePaidTier,
   Record<BillingInterval, string>
 > = {
-  HATCHLING: {
-    MONTHLY: process.env.PAYSTACK_HATCHLING_MONTHLY_PLAN_CODE!,
-    QUARTERLY: process.env.PAYSTACK_HATCHLING_QUARTERLY_PLAN_CODE!,
-    ANNUAL: process.env.PAYSTACK_HATCHLING_ANNUAL_PLAN_CODE!,
+  SCHEDULER: {
+    MONTHLY: process.env.PAYSTACK_SCHEDULER_MONTHLY_PLAN_CODE ?? "",
+    QUARTERLY: process.env.PAYSTACK_SCHEDULER_QUARTERLY_PLAN_CODE ?? "",
+    ANNUAL: process.env.PAYSTACK_SCHEDULER_ANNUAL_PLAN_CODE ?? "",
   },
-  DRAKE: {
-    MONTHLY: process.env.PAYSTACK_DRAKE_MONTHLY_PLAN_CODE!,
-    QUARTERLY: process.env.PAYSTACK_DRAKE_QUARTERLY_PLAN_CODE!,
-    ANNUAL: process.env.PAYSTACK_DRAKE_ANNUAL_PLAN_CODE!,
+  CREATOR: {
+    MONTHLY: process.env.PAYSTACK_CREATOR_MONTHLY_PLAN_CODE ?? "",
+    QUARTERLY: process.env.PAYSTACK_CREATOR_QUARTERLY_PLAN_CODE ?? "",
+    ANNUAL: process.env.PAYSTACK_CREATOR_ANNUAL_PLAN_CODE ?? "",
   },
-  ELDER_DRAGON: {
-    MONTHLY: process.env.PAYSTACK_ELDER_DRAGON_MONTHLY_PLAN_CODE!,
-    QUARTERLY: process.env.PAYSTACK_ELDER_DRAGON_QUARTERLY_PLAN_CODE!,
-    ANNUAL: process.env.PAYSTACK_ELDER_DRAGON_ANNUAL_PLAN_CODE!,
+  CLIPPER: {
+    MONTHLY: process.env.PAYSTACK_CLIPPER_MONTHLY_PLAN_CODE ?? "",
+    QUARTERLY: process.env.PAYSTACK_CLIPPER_QUARTERLY_PLAN_CODE ?? "",
+    ANNUAL: process.env.PAYSTACK_CLIPPER_ANNUAL_PLAN_CODE ?? "",
+  },
+  STUDIO: {
+    MONTHLY: process.env.PAYSTACK_STUDIO_MONTHLY_PLAN_CODE ?? "",
+    QUARTERLY: process.env.PAYSTACK_STUDIO_QUARTERLY_PLAN_CODE ?? "",
+    ANNUAL: process.env.PAYSTACK_STUDIO_ANNUAL_PLAN_CODE ?? "",
+  },
+  STUDIO_PRO: {
+    MONTHLY: process.env.PAYSTACK_STUDIO_PRO_MONTHLY_PLAN_CODE ?? "",
+    QUARTERLY: process.env.PAYSTACK_STUDIO_PRO_QUARTERLY_PLAN_CODE ?? "",
+    ANNUAL: process.env.PAYSTACK_STUDIO_PRO_ANNUAL_PLAN_CODE ?? "",
   },
 };
 
 /** Reverse lookup: plan code → { tier, interval } */
 export function mapPlanCodeToTier(
   planCode: string
-): { tier: PaidTier; interval: BillingInterval } | null {
+): { tier: SelfServePaidTier; interval: BillingInterval } | null {
+  if (!planCode) return null;
   for (const [tier, intervals] of Object.entries(PAYSTACK_PLAN_CODES)) {
     for (const [interval, code] of Object.entries(intervals)) {
-      if (code === planCode) {
+      if (code && code === planCode) {
         return {
-          tier: tier as PaidTier,
+          tier: tier as SelfServePaidTier,
           interval: interval as BillingInterval,
         };
       }

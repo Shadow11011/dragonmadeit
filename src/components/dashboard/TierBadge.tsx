@@ -6,16 +6,22 @@ interface TierBadgeProps {
 
 const TIER_STYLES: Record<string, string> = {
   FREE: "bg-text-secondary/10 text-text-secondary",
-  HATCHLING: "bg-[#c87533]/10 text-[#c87533]",
-  DRAKE: "bg-accent-ember/10 text-accent-ember",
-  ELDER_DRAGON: "bg-accent-gold/10 text-accent-gold",
+  SCHEDULER: "bg-[#4fb0c6]/10 text-[#4fb0c6]",
+  CREATOR: "bg-[#c87533]/10 text-[#c87533]",
+  CLIPPER: "bg-[#ff8c00]/10 text-[#ff8c00]",
+  STUDIO: "bg-accent-ember/10 text-accent-ember",
+  STUDIO_PRO: "bg-accent-gold/10 text-accent-gold",
+  AGENCY: "bg-accent-gold/10 text-accent-gold",
 };
 
 const TIER_LABELS: Record<string, string> = {
   FREE: "Free",
-  HATCHLING: "Hatchling",
-  DRAKE: "Drake",
-  ELDER_DRAGON: "Elder Dragon",
+  SCHEDULER: "Scheduler",
+  CREATOR: "Creator",
+  CLIPPER: "Clipper",
+  STUDIO: "Studio",
+  STUDIO_PRO: "Studio Pro",
+  AGENCY: "Agency",
 };
 
 export function TierBadge({ tier }: TierBadgeProps) {

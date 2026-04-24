@@ -4,10 +4,16 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TIER_CONFIG } from "@/types";
 
-// Monthly quota for FREE accounts. Paid tiers return limit: null (uncapped
-// by calendar month — they're only rate-limited by videosPerWeek via the
-// orchestrator scheduling maths).
-const FREE_MONTHLY_LIMIT = 4;
+// Monthly quota is now driven by TIER_CONFIG[tier].generateQuotaPerMonth for
+// the Generate pillar. Clipper / Scheduler pillars aren't shipped yet — when
+// they are, they'll have their own quota endpoints or a combined one.
+//
+// Quota semantics:
+//   - canGenerate:false tiers (SCHEDULER, CLIPPER) -> limit: 0 (pillar locked)
+//   - canGenerate:true tiers -> limit: generateQuotaPerMonth
+//   - AGENCY has generateQuotaPerMonth: 0 as a placeholder for "custom" -
+//     until we store per-account AGENCY quotas, report null (uncapped) so
+//     the UI doesn't mislead enterprise users.
 
 export async function GET(
   _request: Request,
@@ -59,14 +65,17 @@ export async function GET(
       },
     });
 
-    const limit = account.tier === "FREE" ? FREE_MONTHLY_LIMIT : null;
+    const config = TIER_CONFIG[account.tier];
+    // AGENCY: report null (uncapped) until per-account custom quotas are stored.
+    const limit =
+      account.tier === "AGENCY" ? null : config.generateQuotaPerMonth;
     const remaining = limit === null ? null : Math.max(0, limit - used);
 
     return NextResponse.json({
       success: true,
       data: {
         tier: account.tier,
-        videosPerWeek: TIER_CONFIG[account.tier].videosPerWeek,
+        videosPerWeek: config.videosPerWeek,
         used,
         limit,
         remaining,
