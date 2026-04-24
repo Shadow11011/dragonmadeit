@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendWelcomeEmail } from "@/lib/email";
 import { hashCode, MAX_ATTEMPTS } from "@/lib/verification-code";
+import { generateUniqueReferralCode } from "@/lib/referral";
 
 const schema = z.object({
   email: z.string().email(),
@@ -73,6 +74,9 @@ export async function POST(request: Request) {
       );
     }
 
+    // Every user owns a unique referral code from day one.
+    const referralCode = await generateUniqueReferralCode();
+
     // Create user and mark code as used
     const [user] = await Promise.all([
       prisma.user.create({
@@ -81,6 +85,7 @@ export async function POST(request: Request) {
           hashedPassword: record.pendingPasswordHash,
           name: record.pendingName,
           emailVerified: new Date(),
+          referralCode,
         },
       }),
       prisma.emailVerificationCode.update({

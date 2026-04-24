@@ -52,12 +52,27 @@ model User {
   emailVerified      DateTime?
   paystackCustomerCode   String?
   onboardingComplete Boolean         @default(false)
+  // Referral program (Task 1.10)
+  // `referralCode` is an 8-char opaque slug every user owns; backfilled for
+  // all existing users in migration `add_referral_program`. New users get one
+  // assigned in code at User create time (see src/lib/referral.ts).
+  // `referredByUserId` is set at signup if ?ref=<code> captured a valid code.
+  // `referralCredits` is stored in cents (1000 = $10). One-time credits apply
+  // on the referrer's next charge.
+  // `referralCreditAppliedAt` is an idempotency flag on the REFERRED user so
+  // the Paystack webhook never double-credits on retried deliveries.
+  referralCode           String    @unique
+  referredByUserId       String?
+  referralCredits        Int       @default(0)
+  referralCreditAppliedAt DateTime?
   tiktokAccounts     TikTokAccount[]
   contentItems       ContentItem[]
   accounts           Account[]
   sessions           Session[]
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
+
+  @@index([referredByUserId])
 }
 
 model Account {
