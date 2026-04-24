@@ -622,9 +622,9 @@ function PaymentStep({
           : undefined;
 
       if (isFree) {
-        // FREE tier: no Paystack, create account directly. Collect a device
-        // fingerprint first — server uses it to prevent a single device from
-        // minting multiple free accounts.
+        // FREE tier: no payment provider call, create account directly.
+        // Collect a device fingerprint first — server uses it to prevent a
+        // single device from minting multiple free accounts.
         let deviceFingerprint: string;
         try {
           deviceFingerprint = await collectDeviceFingerprint();
@@ -659,23 +659,26 @@ function PaymentStep({
         return;
       }
 
-      const res = await fetch("/api/paystack/initialize", {
+      const res = await fetch("/api/dodo/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tier,
           billingInterval,
-          contentConfig,
           schedule: normalizedSchedule,
         }),
       });
 
       const data: unknown = await res.json();
-      const urlData = data as { success?: boolean; data?: { authorization_url?: string }; error?: string };
+      const urlData = data as {
+        success?: boolean;
+        data?: { checkoutUrl?: string };
+        error?: string;
+      };
 
-      if (res.ok && urlData.data?.authorization_url) {
-        // Redirect to Paystack checkout page
-        window.location.href = urlData.data.authorization_url;
+      if (res.ok && urlData.data?.checkoutUrl) {
+        // Redirect to Dodo hosted checkout
+        window.location.href = urlData.data.checkoutUrl;
       } else {
         setError(urlData.error ?? "Failed to start checkout. Please try again.");
         setIsRedirecting(false);
