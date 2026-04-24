@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { ScheduleCalendar } from "@/components/dashboard/ScheduleCalendar";
+import { ContentCalendar, type ContentItemCalendarItem } from "@/components/dashboard/ContentCalendar";
 import { ContentTable } from "@/components/dashboard/ContentTable";
 import { DragonMascot } from "@/components/dashboard/DragonMascot";
 import { normalizeSchedule, getNextPostTime, formatCountdown } from "@/lib/schedule-utils";
 import type { TikTokAccountInfo, PostingSchedule } from "@/types";
 import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -109,13 +110,14 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [countdownText, setCountdownText] = useState<string>("");
+  const [planMode, setPlanMode] = useState<boolean>(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const [contentRes, accountsRes] = await Promise.all([
-        fetch("/api/user/content?page=1&limit=50"),
+        fetch("/api/user/content?page=1&limit=200"),
         fetch("/api/tiktok-accounts"),
       ]);
 
@@ -180,17 +182,39 @@ export default function SchedulePage() {
   }, [nextPost]);
 
   /* ---- Map API items to component props ---- */
-  const calendarItems = useMemo(
+  // Build a quick lookup: username → account id, so calendar items can be
+  // color-coded per account without a schema change.
+  const usernameToAccountId = useMemo<Map<string, string>>(() => {
+    const m = new Map<string, string>();
+    for (const acc of accounts) {
+      m.set(acc.username, acc.id);
+    }
+    return m;
+  }, [accounts]);
+
+  const calendarItems = useMemo<ContentItemCalendarItem[]>(
     () =>
-      contentItems.map((item) => ({
-        id: item.id,
-        title: item.title,
-        status: item.status,
-        scheduledAt: item.scheduledAt,
-        postedAt: item.postedAt,
-        createdAt: item.createdAt,
-      })),
-    [contentItems]
+      contentItems.map((item) => {
+        const username = item.tiktokAccountUsername ?? "unassigned";
+        const accountId =
+          (item.tiktokAccountUsername &&
+            usernameToAccountId.get(item.tiktokAccountUsername)) ||
+          `unassigned:${username}`;
+        return {
+          id: item.id,
+          title: item.title,
+          status: item.status,
+          scheduledAt: item.scheduledAt,
+          accountId,
+          accountUsername: username,
+        };
+      }),
+    [contentItems, usernameToAccountId]
+  );
+
+  const accountsProp = useMemo(
+    () => accounts.map((a) => ({ id: a.id, username: a.username })),
+    [accounts]
   );
 
   const tableItems = useMemo(
@@ -304,10 +328,41 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {/* Week Overview */}
+      {/* Calendar */}
       <section>
-        <h2 className="text-lg font-semibold font-heading mb-3">Week Overview</h2>
-        <ScheduleCalendar items={calendarItems} />
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
+          <h2 className="text-lg font-semibold font-heading">Calendar</h2>
+          <button
+            type="button"
+            onClick={() => setPlanMode((v) => !v)}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+              planMode
+                ? "border-accent-fire bg-accent-fire/10 text-accent-fire"
+                : "border-border bg-bg-secondary text-text-secondary hover:text-text-primary"
+            )}
+            aria-pressed={planMode}
+          >
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                planMode ? "bg-accent-fire" : "bg-text-secondary"
+              )}
+              aria-hidden="true"
+            />
+            Plan mode: {planMode ? "on" : "off"}
+          </button>
+        </div>
+        {planMode && (
+          <div className="mb-3 rounded-lg border border-accent-fire/30 bg-accent-fire/5 px-3 py-2 text-xs text-accent-ember">
+            Drag events to reschedule — changes save on drop.
+          </div>
+        )}
+        <ContentCalendar
+          items={calendarItems}
+          accounts={accountsProp}
+          planMode={planMode}
+        />
       </section>
 
       {/* Content Table */}
