@@ -373,6 +373,7 @@ export function ContentCalendar({
 
   return (
     <div className={calendarClass}>
+      <DarkThemeStyles />
       {dragEnabled ? (
         <DnDCalendar
           {...commonProps}
@@ -390,5 +391,135 @@ export function ContentCalendar({
         <EventPopover state={popover} onClose={() => setPopover(null)} />
       )}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dark theme CSS (scoped to .rbc-dragon wrapper)                     */
+/* ------------------------------------------------------------------ */
+
+function DarkThemeStyles() {
+  return (
+    <style>{`
+      .rbc-dragon .rbc-toolbar {
+        color: #ece9e5;
+        font-family: var(--font-body, system-ui, sans-serif);
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.75rem;
+      }
+      .rbc-dragon .rbc-toolbar .rbc-toolbar-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .rbc-dragon .rbc-toolbar button {
+        background: transparent;
+        color: #807a73;
+        border: 1px solid #302c27;
+        border-radius: 8px;
+        padding: 4px 10px;
+        transition: color 0.15s, background 0.15s, border-color 0.15s;
+      }
+      .rbc-dragon .rbc-toolbar button:hover {
+        color: #ece9e5;
+        background: #201c18;
+      }
+      .rbc-dragon .rbc-toolbar button.rbc-active,
+      .rbc-dragon .rbc-toolbar button.rbc-active:hover,
+      .rbc-dragon .rbc-toolbar button.rbc-active:focus {
+        background: rgba(255, 69, 0, 0.12);
+        color: #ff8c00;
+        border-color: rgba(255, 69, 0, 0.4);
+        box-shadow: none;
+      }
+      .rbc-dragon .rbc-month-view,
+      .rbc-dragon .rbc-time-view {
+        border: 1px solid #302c27;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #0f0d0b;
+      }
+      .rbc-dragon .rbc-header {
+        background: #171412;
+        color: #807a73;
+        border-bottom: 1px solid #302c27;
+        padding: 6px 4px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .rbc-dragon .rbc-month-row + .rbc-month-row,
+      .rbc-dragon .rbc-day-bg + .rbc-day-bg,
+      .rbc-dragon .rbc-header + .rbc-header,
+      .rbc-dragon .rbc-time-header-content,
+      .rbc-dragon .rbc-time-content,
+      .rbc-dragon .rbc-time-content > * + * > *,
+      .rbc-dragon .rbc-timeslot-group {
+        border-color: #27231f;
+      }
+      .rbc-dragon .rbc-off-range-bg {
+        background: rgba(15, 13, 11, 0.6);
+      }
+      .rbc-dragon .rbc-off-range {
+        color: #4a4540;
+      }
+      .rbc-dragon .rbc-date-cell {
+        padding: 4px 6px;
+        color: #ece9e5;
+        font-size: 0.8rem;
+      }
+      .rbc-dragon .rbc-today {
+        background: rgba(255, 69, 0, 0.06);
+      }
+      .rbc-dragon .rbc-now .rbc-button-link {
+        color: #ff4500;
+        font-weight: 700;
+      }
+      .rbc-dragon .rbc-button-link {
+        color: inherit;
+      }
+      .rbc-dragon .rbc-show-more {
+        background: transparent;
+        color: #ff8c00;
+        font-weight: 600;
+        font-size: 0.7rem;
+      }
+      .rbc-dragon .rbc-event {
+        border: none;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+      }
+      .rbc-dragon .rbc-event.rbc-selected {
+        outline: 2px solid rgba(255, 255, 255, 0.35);
+        outline-offset: 1px;
+      }
+      .rbc-dragon .rbc-current-time-indicator {
+        background: #ff4500;
+        height: 2px;
+      }
+      .rbc-dragon .rbc-time-gutter,
+      .rbc-dragon .rbc-label {
+        color: #807a73;
+        font-size: 0.7rem;
+      }
+      .rbc-dragon .rbc-allday-cell,
+      .rbc-dragon .rbc-time-header-gutter {
+        background: #0f0d0b;
+      }
+      .rbc-dragon .rbc-overlay {
+        background: #171412;
+        border: 1px solid #302c27;
+        color: #ece9e5;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      }
+      .rbc-dragon .rbc-overlay-header {
+        border-bottom: 1px solid #302c27;
+        color: #ece9e5;
+      }
+      .rbc-dragon .rbc-addons-dnd .rbc-addons-dnd-drag-row,
+      .rbc-dragon .rbc-addons-dnd-over {
+        background: rgba(255, 140, 0, 0.08);
+      }
+    `}</style>
   );
 }
