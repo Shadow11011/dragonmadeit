@@ -9,24 +9,24 @@ export function HeroSection() {
     <section className="hero" style={{ textAlign: "center", paddingBottom: 0 }}>
       <div className="wrap-narrow">
         <div className="badge" style={{ marginTop: 16 }}>
-          ⌁ SET IT AND FORGET IT
+          ⌁ SET IT AND LEAVE
         </div>
         <div style={{ marginTop: 32 }}>
-          <GlitchHeadline text="A viral TikTok account that runs itself." />
+          <GlitchHeadline text="A content engine that runs itself." />
         </div>
         <p className="text-2" style={{ fontSize: 20, maxWidth: 640, margin: "32px auto 0" }}>
-          DragonMadeIt writes the scripts, makes the videos with AI, and posts them to your
-          TikTok on a schedule. You pick the niche &mdash; no camera, no editing, no face on
-          screen.
+          Generate faceless videos from scratch, repurpose your long-form content, or schedule
+          what you already make. Posts to TikTok, Instagram Reels, and YouTube Shorts on the
+          cadence you set. Configure once, then focus on everything else.
         </p>
         <div className="row gap-4 mt-8" style={{ justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
-            Start free — no card
+            Start free, no card
           </Link>
         </div>
         <div className="row gap-6 mt-8" style={{ justifyContent: "center", fontSize: 12, color: "var(--text-3)", flexWrap: "wrap" }}>
           <span>◆ 4 videos free, forever</span>
-          <span>◆ No camera needed</span>
+          <span>◆ Official platform APIs</span>
           <span>◆ Cancel anytime</span>
         </div>
       </div>

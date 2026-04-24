@@ -1,7 +1,9 @@
 "use client";
 
 import { Reveal } from "@/components/marketing/primitives/Reveal";
-import { FEATURES } from "@/components/marketing/FeaturesSection";
+import { PILLARS } from "@/components/marketing/FeaturesSection";
+
+const FEATURES = PILLARS.map((p) => ({ n: p.n, t: p.t, d: p.outcome }));
 
 const DEEP_FEATURES = [
   {

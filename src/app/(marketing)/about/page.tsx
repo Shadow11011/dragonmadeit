@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { AboutPageContent } from "./AboutPageContent";
 
 export const metadata: Metadata = {
-  title: "About — The Story Behind DragonMadeIt | Faceless TikTok Automation",
-  description: "One dev, one dragon, one mission: automate faceless TikTok content creation. Learn how DragonMadeIt builds and posts AI videos on autopilot.",
+  title: "About · DragonMadeIt",
+  description:
+    "DragonMadeIt is a three-path content engine: generate faceless videos, repurpose long-form content, or schedule your own. Built for small operators who need consistent output across TikTok, Instagram Reels, and YouTube Shorts.",
   alternates: { canonical: "/about" },
 };
 

@@ -2,36 +2,50 @@
 
 import { Reveal } from "@/components/marketing/primitives/Reveal";
 
-export const FEATURES = [
+type Pillar = {
+  n: string;
+  t: string;
+  outcome: string;
+  bullets: string[];
+  status?: "shipping" | "coming-soon";
+};
+
+export const PILLARS: Pillar[] = [
   {
-    t: "66 viral niches",
-    d: "Reddit, true crime, horror, motivation, dating drama. Our AI writes scripts that hook viewers in the first 3 seconds.",
     n: "01",
+    t: "Generate",
+    outcome:
+      "We write, voice, and render faceless videos from scratch, then post them on the cadence you set.",
+    bullets: [
+      "66 niches and story formats, from Reddit to true crime to motivation",
+      "AI script, AI voiceover, AI visuals, assembled end-to-end",
+      "Posted automatically on your schedule",
+    ],
+    status: "shipping",
   },
   {
-    t: "Studio-quality video",
-    d: "AI-generated visuals, pro voiceover, polished editing. Full TikToks without a camera, mic, or software.",
     n: "02",
+    t: "Repurpose",
+    outcome:
+      "Drop a YouTube or podcast URL. The platform finds the moments worth clipping and ships them as shorts.",
+    bullets: [
+      "Paste a long-form link, pick a clip count",
+      "Captions and vertical reframing handled",
+      "Queued into the same posting schedule as everything else",
+    ],
+    status: "coming-soon",
   },
   {
-    t: "Script to screen",
-    d: "Script, voice, visuals, cut, post. The entire pipeline runs without you lifting a finger.",
     n: "03",
-  },
-  {
-    t: "Post every day (or twice)",
-    d: "3×, 7×, or 14× per week. The algorithm rewards consistency. Your dragon never misses a scheduled post.",
-    n: "04",
-  },
-  {
-    t: "See what's working",
-    d: "Track views, likes, shares, engagement. Know which niches and styles perform so you double down.",
-    n: "05",
-  },
-  {
-    t: "No face. No filming.",
-    d: "Join the faceless wave. Your audience cares about content, not your camera.",
-    n: "06",
+    t: "Schedule",
+    outcome:
+      "Already making your own shorts? Bring your own content and let the platform handle posting.",
+    bullets: [
+      "Bring your vertical videos, we queue them up",
+      "Pick cadence per account, set and leave",
+      "One schedule across every connected platform",
+    ],
+    status: "shipping",
   },
 ];
 
@@ -40,7 +54,7 @@ export function FeaturesSection() {
     <section className="sec-pad" style={{ background: "var(--bg-1)", position: "relative", zIndex: 2 }}>
       <div className="wrap">
         <Reveal>
-          <div className="chapter-label">WHAT YOU GET</div>
+          <div className="chapter-label">THREE PATHS, ONE ENGINE</div>
         </Reveal>
         <div
           className="intro-grid"
@@ -48,33 +62,90 @@ export function FeaturesSection() {
         >
           <Reveal>
             <h2 className="h1">
-              Your entire content team,
+              Pick your path.
               <br />
               <span style={{ color: "var(--ember)", fontStyle: "italic" }}>
-                bound to one sigil.
+                Set it and leave.
               </span>
             </h2>
           </Reveal>
           <Reveal delay={100}>
             <p className="text-2" style={{ fontSize: 16 }}>
-              Writer. Voice actor. Video editor. Posting manager. Analyst. Replaced by one dragon
-              that doesn&apos;t sleep, complain, or miss a deadline.
+              Whether you have no content, long-form content you want clipped, or shorts you
+              already make, DragonMadeIt takes it from there. Posts land on TikTok, Instagram
+              Reels, and YouTube Shorts on the schedule you set.
             </p>
           </Reveal>
         </div>
         <div className="features-grid mt-16">
-          {FEATURES.map((f, i) => (
-            <Reveal key={f.t} delay={i * 80}>
+          {PILLARS.map((p, i) => (
+            <Reveal key={p.t} delay={i * 80}>
               <div
-                className="mono"
-                style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                className="row"
+                style={{ justifyContent: "space-between", alignItems: "center" }}
               >
-                {f.n}
+                <div
+                  className="mono"
+                  style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                >
+                  {p.n}
+                </div>
+                {p.status === "coming-soon" && (
+                  <span
+                    className="mono"
+                    style={{
+                      fontSize: 10,
+                      letterSpacing: "0.2em",
+                      color: "var(--text-3)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 999,
+                      padding: "4px 10px",
+                    }}
+                  >
+                    COMING SOON
+                  </span>
+                )}
               </div>
-              <div className="h3 mt-4">{f.t}</div>
+              <div className="h3 mt-4">{p.t}</div>
               <p className="text-2 mt-4" style={{ fontSize: 14, lineHeight: 1.65 }}>
-                {f.d}
+                {p.outcome}
               </p>
+              <ul
+                className="mt-6"
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
+              >
+                {p.bullets.map((b) => (
+                  <li
+                    key={b}
+                    className="text-2"
+                    style={{
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      paddingLeft: 18,
+                      position: "relative",
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: 0,
+                        color: "var(--fire)",
+                      }}
+                    >
+                      ◆
+                    </span>
+                    {b}
+                  </li>
+                ))}
+              </ul>
             </Reveal>
           ))}
         </div>
