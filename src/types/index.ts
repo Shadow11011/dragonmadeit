@@ -62,9 +62,6 @@ export interface TierConfig {
   description: string;
   features: string[];
   hasAnalytics: boolean;
-  hasApiAccess: boolean;
-  hasPrioritySupport: boolean;
-  hasCustomContentGen: boolean;
   color: string;
   fireColor: string;
 }
@@ -83,9 +80,6 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
       "No credit card required",
     ],
     hasAnalytics: false,
-    hasApiAccess: false,
-    hasPrioritySupport: false,
-    hasCustomContentGen: false,
     color: "text-text-secondary",
     fireColor: "#71717a",
   },
@@ -101,9 +95,6 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
       "Basic analytics",
     ],
     hasAnalytics: false,
-    hasApiAccess: false,
-    hasPrioritySupport: false,
-    hasCustomContentGen: false,
     color: "text-[#c87533]",
     fireColor: "#c87533",
   },
@@ -119,9 +110,6 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
       "Priority support",
     ],
     hasAnalytics: true,
-    hasApiAccess: false,
-    hasPrioritySupport: false,
-    hasCustomContentGen: false,
     color: "text-accent-ember",
     fireColor: "#ff8c00",
   },
@@ -138,9 +126,6 @@ export const TIER_CONFIG: Record<Tier, TierConfig> = {
       "Dedicated support",
     ],
     hasAnalytics: true,
-    hasApiAccess: true,
-    hasPrioritySupport: true,
-    hasCustomContentGen: true,
     color: "text-accent-gold",
     fireColor: "#ffd700",
   },
