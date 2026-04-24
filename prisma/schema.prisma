@@ -51,6 +51,11 @@ model User {
   hashedPassword     String?
   emailVerified      DateTime?
   paystackCustomerCode   String?
+  // Dodo Payments customer ID (test mode during migration). Dodo's checkout
+  // lazily creates a customer on first payment; we persist the returned ID
+  // on `subscription.active` so subsequent checkouts can reuse the same
+  // Dodo customer record.
+  dodoCustomerId         String?
   onboardingComplete Boolean         @default(false)
   // Referral program (Task 1.10)
   // `referralCode` is an 8-char opaque slug every user owns; backfilled for
@@ -137,6 +142,10 @@ model TikTokAccount {
   billingInterval      BillingInterval @default(MONTHLY)
   paystackSubscriptionCode   String?     @unique
   paystackEmailToken         String?
+  // Dodo Payments subscription ID (test mode during migration). Populated by
+  // the `subscription.active` webhook; cleared on `subscription.cancelled`.
+  // Unique so the webhook handler can dedupe by ID cheaply.
+  dodoSubscriptionId         String?     @unique
   videosPerWeek        Int           @default(0)
   schedule             Json?
   scheduleLocked       Boolean       @default(false)
