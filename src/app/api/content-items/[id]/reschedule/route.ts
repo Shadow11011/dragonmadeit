@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const rescheduleSchema = z.object({
-  scheduledFor: z.string().datetime({ message: "Invalid ISO timestamp" }),
+  scheduledAt: z.string().datetime({ message: "Invalid ISO timestamp" }),
 });
 
 export async function PATCH(
@@ -35,7 +35,7 @@ export async function PATCH(
       );
     }
 
-    const newDate = new Date(parsed.data.scheduledFor);
+    const newDate = new Date(parsed.data.scheduledAt);
     if (Number.isNaN(newDate.getTime())) {
       return NextResponse.json(
         { success: false, error: "Invalid timestamp" },
@@ -50,36 +50,36 @@ export async function PATCH(
       );
     }
 
-    const item = await prisma.contentItem.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        status: true,
-        userId: true,
-        tiktokAccount: {
-          select: { userId: true },
-        },
+    // Single atomic conditional update: enforces ownership (via ContentItem.userId)
+    // AND reschedulable status in the same query, preventing TOCTOU races where
+    // a posting job flips the status between a read and the write.
+    const result = await prisma.contentItem.updateMany({
+      where: {
+        id,
+        userId: session.user.id,
+        status: { in: ["SCHEDULED", "PROCESSING"] },
       },
+      data: { scheduledAt: newDate },
     });
 
-    if (!item) {
-      return NextResponse.json(
-        { success: false, error: "Content item not found" },
-        { status: 404 },
-      );
-    }
-
-    // Ownership check: direct userId OR via TikTokAccount.userId
-    const ownedDirectly = item.userId === session.user.id;
-    const ownedViaAccount = item.tiktokAccount?.userId === session.user.id;
-    if (!ownedDirectly && !ownedViaAccount) {
-      return NextResponse.json(
-        { success: false, error: "Forbidden" },
-        { status: 403 },
-      );
-    }
-
-    if (item.status !== "SCHEDULED" && item.status !== "PROCESSING") {
+    if (result.count === 0) {
+      // The update matched nothing. Disambiguate: does the item exist at all?
+      const exists = await prisma.contentItem.findUnique({
+        where: { id },
+        select: { userId: true, status: true },
+      });
+      if (!exists) {
+        return NextResponse.json(
+          { success: false, error: "Content item not found" },
+          { status: 404 },
+        );
+      }
+      if (exists.userId !== session.user.id) {
+        return NextResponse.json(
+          { success: false, error: "Forbidden" },
+          { status: 403 },
+        );
+      }
       return NextResponse.json(
         {
           success: false,
@@ -89,9 +89,8 @@ export async function PATCH(
       );
     }
 
-    const updated = await prisma.contentItem.update({
+    const updated = await prisma.contentItem.findUnique({
       where: { id },
-      data: { scheduledAt: newDate },
       select: {
         id: true,
         title: true,
@@ -106,12 +105,24 @@ export async function PATCH(
       },
     });
 
+    if (!updated) {
+      return NextResponse.json(
+        { success: false, error: "Content item not found" },
+        { status: 404 },
+      );
+    }
+
     return NextResponse.json({
       success: true,
       data: {
-        ...updated,
+        id: updated.id,
+        title: updated.title,
+        status: updated.status,
+        scheduledAt: updated.scheduledAt,
+        postedAt: updated.postedAt,
+        tiktokPostId: updated.tiktokPostId,
+        createdAt: updated.createdAt,
         tiktokAccountUsername: updated.tiktokAccount?.username ?? null,
-        tiktokAccount: undefined,
       },
     });
   } catch (error) {

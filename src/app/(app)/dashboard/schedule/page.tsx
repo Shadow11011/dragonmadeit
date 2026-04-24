@@ -223,7 +223,7 @@ export default function SchedulePage() {
       const res = await fetch(`/api/content-items/${itemId}/reschedule`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scheduledFor: newStart.toISOString() }),
+        body: JSON.stringify({ scheduledAt: newStart.toISOString() }),
       });
       if (!res.ok) {
         let message = "Failed to reschedule";

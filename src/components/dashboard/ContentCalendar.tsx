@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Calendar,
@@ -250,6 +250,14 @@ export function ContentCalendar({
   const [optimisticOverrides, setOptimisticOverrides] = useState<
     Record<string, Date>
   >({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Auto-dismiss error banner after 5 seconds
+  useEffect(() => {
+    if (!errorMessage) return;
+    const t = window.setTimeout(() => setErrorMessage(null), 5000);
+    return () => window.clearTimeout(t);
+  }, [errorMessage]);
 
   const dragEnabled = planMode && typeof onReschedule === "function";
 
@@ -325,10 +333,7 @@ export function ContentCalendar({
       });
       const message =
         err instanceof Error ? err.message : "Failed to reschedule";
-      // Minimal user feedback without adding a toast library
-      if (typeof window !== "undefined") {
-        window.alert(message);
-      }
+      setErrorMessage(message);
     }
   };
 
@@ -374,6 +379,24 @@ export function ContentCalendar({
   return (
     <div className={calendarClass}>
       <DarkThemeStyles />
+
+      {errorMessage && (
+        <div
+          role="alert"
+          className="mb-3 flex items-center justify-between rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error"
+        >
+          <span>{errorMessage}</span>
+          <button
+            type="button"
+            onClick={() => setErrorMessage(null)}
+            className="ml-3 text-xs text-error/70 hover:text-error"
+            aria-label="Dismiss error"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {dragEnabled ? (
         <DnDCalendar
           {...commonProps}
