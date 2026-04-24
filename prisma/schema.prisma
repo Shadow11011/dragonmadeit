@@ -10,9 +10,12 @@ datasource db {
 
 enum Tier {
   FREE
-  HATCHLING
-  DRAKE
-  ELDER_DRAGON
+  SCHEDULER
+  CREATOR
+  CLIPPER
+  STUDIO
+  STUDIO_PRO
+  AGENCY
 }
 
 enum ContentStatus {
