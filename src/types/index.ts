@@ -25,6 +25,8 @@ export interface SessionUser {
 }
 
 export type PaidTier = Exclude<Tier, "FREE">;
+/** Tiers with a self-serve Paystack plan. AGENCY is custom-billed (not self-serve). */
+export type SelfServePaidTier = Exclude<Tier, "FREE" | "AGENCY">;
 
 /** Schedule for a TikTok account's posting times */
 export interface PostingSchedule {
@@ -55,75 +57,219 @@ export interface TikTokAccountInfo {
   createdAt: string;
 }
 
+/**
+ * Mode-Based TierConfig. Each tier maps to one or more of three pillars:
+ *
+ *   - Generate: AI-produced videos (gameplay / AI images)
+ *   - Clip: repurpose existing long-form content into short clips
+ *   - Schedule Uploads: schedule the user's own pre-made content
+ *
+ * A quota of 0 means the pillar is locked for that tier. All tiers share
+ * Analytics as a surface feature (gated by `hasAnalytics` on paid plans).
+ */
 export interface TierConfig {
   name: string;
-  videosPerWeek: number;
-  monthlyPrice: number;
+  tierKey: Tier;
+  /** Monthly price in USD. "custom" for AGENCY. */
+  priceUSD: number | "custom";
+  /** One-line positioning description. Short, no em-dashes. */
   description: string;
+  // Per-pillar capability booleans
+  canGenerate: boolean;
+  canClip: boolean;
+  canScheduleUploads: boolean;
+  // Per-pillar monthly quotas. 0 = pillar locked.
+  generateQuotaPerMonth: number;
+  clipsQuotaPerMonth: number;
+  scheduleUploadsPerMonth: number;
+  /** Max linked social accounts. Agency is "custom" - we use 0 to signal contact-us. */
+  maxAccounts: number;
+  /** Surface feature strings rendered in pricing cards and wizards. */
   features: string[];
   hasAnalytics: boolean;
   color: string;
   fireColor: string;
+  /**
+   * Legacy per-week generation cadence. Preserved for scheduling UIs that
+   * still drive the weekly cadence picker. Derived as roughly
+   * `generateQuotaPerMonth / 4`, rounded to a schedule-friendly integer.
+   * 0 for tiers that can't generate.
+   */
+  videosPerWeek: number;
 }
 
 export const TIER_CONFIG: Record<Tier, TierConfig> = {
   FREE: {
     name: "Free",
-    videosPerWeek: 1,
-    monthlyPrice: 0,
-    description: "Try the engine, no card. Gameplay videos only — watermarked.",
+    tierKey: "FREE",
+    priceUSD: 0,
+    description: "Sample every pillar. Watermarked output, no card required.",
+    canGenerate: true,
+    canClip: true,
+    canScheduleUploads: true,
+    generateQuotaPerMonth: 2,
+    clipsQuotaPerMonth: 1,
+    scheduleUploadsPerMonth: 3,
+    maxAccounts: 1,
     features: [
-      "1 video per week · 4 per month",
-      "Gameplay-only content (AI-image niches locked)",
-      "Watermark on video + end card",
-      "Auto-posted to TikTok",
+      "2 AI-generated videos per month (watermarked)",
+      "1 clip per month (watermarked)",
+      "3 scheduled uploads per month",
+      "1 linked social account",
       "No credit card required",
     ],
     hasAnalytics: false,
     color: "text-text-secondary",
     fireColor: "#71717a",
+    videosPerWeek: 1,
   },
-  HATCHLING: {
-    name: "Hatchling",
-    videosPerWeek: 3,
-    monthlyPrice: 15,
-    description: "Test the waters. 3 videos/week, fully automated.",
+  SCHEDULER: {
+    name: "Scheduler",
+    tierKey: "SCHEDULER",
+    priceUSD: 12,
+    description: "Bring your own content. Schedule and publish on autopilot.",
+    canGenerate: false,
+    canClip: false,
+    canScheduleUploads: true,
+    generateQuotaPerMonth: 0,
+    clipsQuotaPerMonth: 0,
+    scheduleUploadsPerMonth: 100,
+    maxAccounts: 2,
     features: [
-      "3 AI-generated videos/week",
-      "Auto-posted to TikTok",
-      "66 content styles",
+      "100 scheduled uploads per month",
+      "2 linked social accounts",
+      "Bulk CSV upload",
+      "Monthly calendar view",
       "Basic analytics",
     ],
-    hasAnalytics: false,
+    hasAnalytics: true,
+    color: "text-[#4fb0c6]",
+    fireColor: "#4fb0c6",
+    videosPerWeek: 0,
+  },
+  CREATOR: {
+    name: "Creator",
+    tierKey: "CREATOR",
+    priceUSD: 19,
+    description: "Fully automated AI video generation. Posted for you.",
+    canGenerate: true,
+    canClip: false,
+    canScheduleUploads: false,
+    generateQuotaPerMonth: 20,
+    clipsQuotaPerMonth: 0,
+    scheduleUploadsPerMonth: 0,
+    maxAccounts: 2,
+    features: [
+      "20 AI-generated videos per month",
+      "2 linked social accounts",
+      "All 66 content niches",
+      "AI scripts and voiceover",
+      "Basic analytics",
+    ],
+    hasAnalytics: true,
     color: "text-[#c87533]",
     fireColor: "#c87533",
+    videosPerWeek: 5,
   },
-  DRAKE: {
-    name: "Drake",
-    videosPerWeek: 7,
-    monthlyPrice: 39,
-    description: "Post every day. The algorithm rewards consistency — this tier delivers it.",
+  CLIPPER: {
+    name: "Clipper",
+    tierKey: "CLIPPER",
+    priceUSD: 19,
+    description: "Turn long-form content into short clips, automatically.",
+    canGenerate: false,
+    canClip: true,
+    canScheduleUploads: false,
+    generateQuotaPerMonth: 0,
+    clipsQuotaPerMonth: 20,
+    scheduleUploadsPerMonth: 0,
+    maxAccounts: 2,
     features: [
-      "7 AI-generated videos/week (daily)",
-      "Everything in Hatchling",
+      "20 clips per month",
+      "2 linked social accounts",
+      "Auto-detected viral moments",
+      "Vertical reformat for TikTok and Shorts",
+      "Basic analytics",
+    ],
+    hasAnalytics: true,
+    color: "text-[#ff8c00]",
+    fireColor: "#ff8c00",
+    videosPerWeek: 0,
+  },
+  STUDIO: {
+    name: "Studio",
+    tierKey: "STUDIO",
+    priceUSD: 45,
+    description: "All three pillars. Generate, clip, and schedule from one place.",
+    canGenerate: true,
+    canClip: true,
+    canScheduleUploads: true,
+    generateQuotaPerMonth: 40,
+    clipsQuotaPerMonth: 40,
+    scheduleUploadsPerMonth: 250,
+    maxAccounts: 5,
+    features: [
+      "40 AI-generated videos per month",
+      "40 clips per month",
+      "250 scheduled uploads per month",
+      "5 linked social accounts",
       "Full analytics dashboard",
+      "Bulk CSV upload",
     ],
     hasAnalytics: true,
     color: "text-accent-ember",
-    fireColor: "#ff8c00",
+    fireColor: "#ff6a00",
+    videosPerWeek: 10,
   },
-  ELDER_DRAGON: {
-    name: "Elder Dragon",
-    videosPerWeek: 14,
-    monthlyPrice: 129,
-    description: "Dominate your niche. 2 videos/day, fully automated.",
+  STUDIO_PRO: {
+    name: "Studio Pro",
+    tierKey: "STUDIO_PRO",
+    priceUSD: 79,
+    description: "Business volume across every pillar.",
+    canGenerate: true,
+    canClip: true,
+    canScheduleUploads: true,
+    generateQuotaPerMonth: 100,
+    clipsQuotaPerMonth: 100,
+    scheduleUploadsPerMonth: 700,
+    maxAccounts: 10,
     features: [
-      "14 AI-generated videos/week (2x daily)",
-      "Everything in Drake",
+      "100 AI-generated videos per month",
+      "100 clips per month",
+      "700 scheduled uploads per month",
+      "10 linked social accounts",
+      "Full analytics dashboard",
+      "Bulk CSV upload",
+      "Priority support",
     ],
     hasAnalytics: true,
     color: "text-accent-gold",
     fireColor: "#ffd700",
+    videosPerWeek: 25,
+  },
+  AGENCY: {
+    name: "Agency",
+    tierKey: "AGENCY",
+    priceUSD: "custom",
+    description: "Custom volume and 30+ accounts. Talk to us.",
+    canGenerate: true,
+    canClip: true,
+    canScheduleUploads: true,
+    generateQuotaPerMonth: 0,
+    clipsQuotaPerMonth: 0,
+    scheduleUploadsPerMonth: 0,
+    maxAccounts: 0,
+    features: [
+      "Custom AI generation volume",
+      "Custom clip volume",
+      "Custom scheduling volume",
+      "30+ linked social accounts",
+      "Dedicated onboarding",
+      "Priority support",
+    ],
+    hasAnalytics: true,
+    color: "text-accent-gold",
+    fireColor: "#ffd700",
+    videosPerWeek: 0,
   },
 };
 
@@ -134,16 +280,23 @@ export const BILLING_DISCOUNTS = {
 
 export type Currency = "NGN" | "USD";
 
-/** Monthly base prices per tier in both currencies */
-export const TIER_PRICES: Record<PaidTier, Record<Currency, number>> = {
-  HATCHLING: { NGN: 23000, USD: 15 },
-  DRAKE: { NGN: 60000, USD: 39 },
-  ELDER_DRAGON: { NGN: 200000, USD: 129 },
+/**
+ * Monthly base prices per self-serve paid tier in both currencies.
+ * NGN values are USD × 1500 (approx.), rounded to clean figures. Don can
+ * retune these once the Paystack plans are created. AGENCY is custom-billed
+ * and deliberately excluded.
+ */
+export const TIER_PRICES: Record<SelfServePaidTier, Record<Currency, number>> = {
+  SCHEDULER: { NGN: 18000, USD: 12 },
+  CREATOR: { NGN: 29000, USD: 19 },
+  CLIPPER: { NGN: 29000, USD: 19 },
+  STUDIO: { NGN: 68000, USD: 45 },
+  STUDIO_PRO: { NGN: 120000, USD: 79 },
 };
 
 /** Get the price for a tier + interval + currency */
 export function getTierPrice(
-  tier: PaidTier,
+  tier: SelfServePaidTier,
   interval: BillingInterval,
   currency: Currency
 ): number {
@@ -160,7 +313,7 @@ export function getTierPrice(
 
 /** Get the effective monthly price for display */
 export function getEffectiveMonthlyPrice(
-  tier: PaidTier,
+  tier: SelfServePaidTier,
   interval: BillingInterval,
   currency: Currency
 ): number {

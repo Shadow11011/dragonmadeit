@@ -959,7 +959,7 @@ export default function AccountDetailPage() {
               {tierConfig.name} Plan
             </p>
             <p className="text-xs text-text-secondary mt-0.5">
-              ${tierConfig.monthlyPrice}/month &middot; {tierConfig.videosPerWeek} videos/week
+              {tierConfig.priceUSD === "custom" ? "Custom pricing" : `$${tierConfig.priceUSD}/month`} &middot; {tierConfig.videosPerWeek} videos/week
               {account?.billingInterval && account.billingInterval !== "MONTHLY" && (
                 <span> &middot; Billed {account.billingInterval.toLowerCase()}</span>
               )}
