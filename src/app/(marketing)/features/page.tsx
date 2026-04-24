@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { FeaturesPageContent } from "./FeaturesPageContent";
 
 export const metadata: Metadata = {
-  title: "Features — Faceless TikTok Automation | DragonMadeIt",
-  description: "AI content generation, automated posting, 66 viral niches, and growth analytics. The full faceless TikTok pipeline from script to screen.",
+  title: "Features · A content engine that runs itself | DragonMadeIt",
+  description: "Generate faceless videos, repurpose long-form content, or schedule what you already make. Posts to TikTok, Instagram Reels, and YouTube Shorts.",
   alternates: { canonical: "/features" },
 };
 

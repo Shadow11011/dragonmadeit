@@ -91,7 +91,7 @@ export const TIERS: TierSpec[] = [
 ];
 
 const CTA_COPY: Record<TierSpec["key"], string> = {
-  FREE: "Start free — no card",
+  FREE: "Start free, no card",
   HATCHLING: "Hatch my channel",
   DRAKE: "Go daily with Drake",
   ELDER_DRAGON: "Unleash the Elder",

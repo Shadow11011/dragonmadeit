@@ -26,7 +26,7 @@ export function HeroSection() {
         </div>
         <div className="row gap-6 mt-8" style={{ justifyContent: "center", fontSize: 12, color: "var(--text-3)", flexWrap: "wrap" }}>
           <span>◆ 4 videos free, forever</span>
-          <span>◆ Official platform APIs</span>
+          <span>◆ No camera needed</span>
           <span>◆ Cancel anytime</span>
         </div>
       </div>

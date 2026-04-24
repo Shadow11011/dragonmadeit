@@ -23,17 +23,17 @@ export function PricingSection() {
           </Reveal>
           <Reveal delay={100}>
             <p className="text-2" style={{ fontSize: 16, maxWidth: 440 }}>
-              Four watermarked gameplay videos per month, free — no card. Upgrade to remove the
-              watermark, unlock all 66 niches, and post up to 14× per week.
+              Four watermarked gameplay videos per month, free, no card. Upgrade to remove the
+              watermark, unlock all 66 niches, and post across all three platforms.
             </p>
           </Reveal>
         </div>
         <div className="row gap-4 mt-12" style={{ justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
-            Start free — no card
+            Start free, no card
           </Link>
           <Link href="/pricing" className="btn btn-ghost btn-lg">
-            See full pricing →
+            See full pricing
           </Link>
         </div>
       </div>

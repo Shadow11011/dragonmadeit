@@ -7,36 +7,36 @@ const FEATURES = PILLARS.map((p) => ({ n: p.n, t: p.t, d: p.outcome }));
 
 const DEEP_FEATURES = [
   {
-    t: "AI content generation",
-    d: "Flux-powered visuals, Edge TTS + KokoroTTS voiceover, FFmpeg assembly. Every step of the pipeline lives here.",
+    t: "Generate",
+    d: "Faceless AI videos, built from a niche and a cadence. Scripts, voice, visuals, and cuts happen without you touching a timeline.",
     sub: [
-      "AI scripts tuned to trending hooks",
-      "Flux image generation",
-      "KokoroTTS / Edge TTS narration",
-      "Automatic FFmpeg assembly",
-      "66 content styles",
+      "66 niche story patterns, pre-curated",
+      "Flux-generated visuals or gameplay overlays",
+      "Edge TTS and Kokoro TTS narration",
+      "FFmpeg assembly at render time",
+      "Auto-posts across TikTok, Instagram Reels, and YouTube Shorts",
     ],
   },
   {
-    t: "Smart scheduling",
-    d: "Set the cadence once. The dragon queues, generates, and posts. Timezone-aware, batch-planned, resumable.",
+    t: "Repurpose",
+    d: "Drop a YouTube URL or podcast feed. The platform transcribes, finds the moments worth clipping, and ships them as shorts.",
     sub: [
-      "Automated posting on your schedule",
-      "Queue-based pipeline",
-      "Timezone-aware",
-      "Pause & resume single-click",
-      "Batch weeks ahead",
+      "Groq Whisper transcription at 200x realtime",
+      "AI picks the highlights by default",
+      "Guided mode: describe what to extract in plain text",
+      "Parallel FFmpeg cuts, usually in under five minutes",
+      "Coming soon",
     ],
   },
   {
-    t: "Performance analytics",
-    d: "Know what burns and what fizzles. Track every metric. Double down on what works.",
+    t: "Schedule",
+    d: "Already making your own shorts? Bring your own content. The platform handles queueing and cross-platform posting.",
     sub: [
-      "Real-time view & engagement",
-      "Cross-style comparison",
-      "Growth visualization",
-      "Best-performer surfacing",
-      "Data-driven optimization",
+      "Monthly calendar view across every connected account",
+      "Drag to reschedule, or keep it hands-off",
+      "Bulk upload via CSV",
+      "Timezone-aware posting windows",
+      "One upload, posts to any combination of the three platforms",
     ],
   },
 ];
@@ -48,10 +48,10 @@ export function FeaturesPageContent() {
         <div className="wrap">
           <div className="eyebrow">CH · FEATURES</div>
           <h1 className="h-display mt-6">
-            One tool. <span style={{ fontStyle: "italic", color: "var(--fire)" }}>Full pipeline.</span>
+            One engine. <span style={{ fontStyle: "italic", color: "var(--fire)" }}>Three paths.</span>
           </h1>
           <p className="text-2 mt-6" style={{ fontSize: 18, maxWidth: 620, margin: "24px auto 0" }}>
-            Script → voice → visuals → cut → post. Every step forged by the dragon, not you.
+            Generate faceless videos, repurpose long-form content, or schedule what you already make. Posts to TikTok, Instagram Reels, and YouTube Shorts.
           </p>
         </div>
       </section>

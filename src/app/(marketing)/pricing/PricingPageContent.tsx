@@ -182,15 +182,15 @@ export function PricingPageContent() {
       <section className="sec-pad" style={{ textAlign: "center" }}>
         <div className="wrap-narrow">
           <h2 className="h1">
-            Ready to <span style={{ color: "var(--fire)", fontStyle: "italic" }}>light the forge?</span>
+            Ready to <span style={{ color: "var(--fire)", fontStyle: "italic" }}>get started?</span>
           </h2>
-          <p className="text-2 mt-4">Your first AI video could be live tonight. No card needed.</p>
+          <p className="text-2 mt-4">Your first video can be live tonight. No card needed.</p>
           <div className="row gap-4 mt-8" style={{ justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
-              Start free — no card
+              Start free, no card
             </Link>
             <Link href="/signup" className="btn btn-ghost btn-lg">
-              Pick a paid tier →
+              Pick a paid tier
             </Link>
           </div>
         </div>

@@ -11,19 +11,19 @@ export function CTASection() {
         <Reveal>
           <Sigil style={{ margin: "0 auto" }} />
           <h2 className="h1 mt-8">
-            Your first AI video
+            Your first video
             <br />
-            <span style={{ color: "var(--fire)", fontStyle: "italic" }}>could be live tonight.</span>
+            <span style={{ color: "var(--fire)", fontStyle: "italic" }}>can be live tonight.</span>
           </h2>
           <p className="text-2 mt-6" style={{ fontSize: 17 }}>
-            Pick a niche. The dragon handles the rest. Start free — no card required.
+            Set a niche and a cadence. We handle the rest. Start free, no card.
           </p>
           <div className="row gap-4 mt-8" style={{ justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
-              Start free — no card
+              Start free, no card
             </Link>
             <Link href="/pricing" className="btn btn-ghost btn-lg">
-              See paid tiers →
+              See paid tiers
             </Link>
           </div>
           <div
