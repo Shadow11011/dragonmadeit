@@ -36,15 +36,19 @@ The site has two distinct zones:
 - Focus: speed, clarity, usability
 - Must work perfectly on mobile Chrome and mid-range Android devices
 
-## Subscription Tiers
+## Subscription Tiers (Mode-Based)
 
-| Tier | Name | Price | Target |
-|------|------|-------|--------|
-| 1 | Hatchling | $15/mo | Entry -- 1 TikTok account, 3 videos/week |
-| 2 | Drake | $39/mo | Mid -- 1 TikTok account, 7 videos/week (daily) |
-| 3 | Elder Dragon | $129/mo | Premium -- 1 TikTok account, 14 videos/week |
+| Tier | Prisma enum | Price | Generate | Clipper | Scheduler | Max accts |
+|------|-------------|-------|----------|---------|-----------|-----------|
+| Free | FREE | $0 | 2 watermarked | 1 watermarked | 3 | 1 |
+| Scheduler | SCHEDULER | $12 | 0 | 0 | 100 | 2 |
+| Creator | CREATOR | $19 | 20 | 0 | 0 | 2 |
+| Clipper | CLIPPER | $19 | 0 | 20 | 0 | 2 |
+| Studio | STUDIO | $45 | 40 | 40 | 250 | 5 |
+| Studio Pro | STUDIO_PRO | $79 | 100 | 100 | 700 | 10 |
+| Agency | AGENCY | custom | custom | custom | custom | 30+ |
 
-All paid tiers get exactly 1 TikTok account. The differentiator is `videosPerWeek`. Billing discounts: 15% quarterly, 30% annual.
+Billing discounts: 15% quarterly, 30% annual. Each $19 tier does ONE pillar; Studio bundles all three; Agency is custom (not self-serve). Source of truth for quotas + capabilities: `src/types/index.ts` (`TIER_CONFIG`).
 
 ## Project Structure
 
@@ -147,7 +151,7 @@ dragonmadeit/
 - Prisma with PostgreSQL
 - All models: `id` (cuid), `createdAt`, `updatedAt`
 - User -> Paystack: `paystackCustomerCode`, TikTokAccount -> `paystackSubscriptionCode`, `paystackEmailToken`
-- Tier enum: `FREE`, `HATCHLING`, `DRAKE`, `ELDER_DRAGON`
+- Tier enum: `FREE`, `SCHEDULER`, `CREATOR`, `CLIPPER`, `STUDIO`, `STUDIO_PRO`, `AGENCY`
 - TikTok accounts linked to users with Late API credentials
 - Content queue: video metadata, posting schedule, status
 
@@ -228,14 +232,20 @@ NEXTAUTH_SECRET=
 NEXTAUTH_URL=http://localhost:3000
 PAYSTACK_SECRET_KEY=
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=
-PAYSTACK_HATCHLING_MONTHLY_PLAN_CODE=
-PAYSTACK_HATCHLING_QUARTERLY_PLAN_CODE=
-PAYSTACK_HATCHLING_ANNUAL_PLAN_CODE=
-PAYSTACK_DRAKE_MONTHLY_PLAN_CODE=
-PAYSTACK_DRAKE_QUARTERLY_PLAN_CODE=
-PAYSTACK_DRAKE_ANNUAL_PLAN_CODE=
-PAYSTACK_ELDER_DRAGON_MONTHLY_PLAN_CODE=
-PAYSTACK_ELDER_DRAGON_QUARTERLY_PLAN_CODE=
-PAYSTACK_ELDER_DRAGON_ANNUAL_PLAN_CODE=
+PAYSTACK_SCHEDULER_MONTHLY_PLAN_CODE=
+PAYSTACK_SCHEDULER_QUARTERLY_PLAN_CODE=
+PAYSTACK_SCHEDULER_ANNUAL_PLAN_CODE=
+PAYSTACK_CREATOR_MONTHLY_PLAN_CODE=
+PAYSTACK_CREATOR_QUARTERLY_PLAN_CODE=
+PAYSTACK_CREATOR_ANNUAL_PLAN_CODE=
+PAYSTACK_CLIPPER_MONTHLY_PLAN_CODE=
+PAYSTACK_CLIPPER_QUARTERLY_PLAN_CODE=
+PAYSTACK_CLIPPER_ANNUAL_PLAN_CODE=
+PAYSTACK_STUDIO_MONTHLY_PLAN_CODE=
+PAYSTACK_STUDIO_QUARTERLY_PLAN_CODE=
+PAYSTACK_STUDIO_ANNUAL_PLAN_CODE=
+PAYSTACK_STUDIO_PRO_MONTHLY_PLAN_CODE=
+PAYSTACK_STUDIO_PRO_QUARTERLY_PLAN_CODE=
+PAYSTACK_STUDIO_PRO_ANNUAL_PLAN_CODE=
 LATE_API_KEY=
 ```
