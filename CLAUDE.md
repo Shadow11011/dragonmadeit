@@ -42,7 +42,7 @@ The site has two distinct zones:
 |------|------|-------|--------|
 | 1 | Hatchling | $15/mo | Entry -- 1 TikTok account, 3 videos/week |
 | 2 | Drake | $39/mo | Mid -- 1 TikTok account, 7 videos/week (daily) |
-| 3 | Elder Dragon | $129/mo | Premium -- 1 TikTok account, 14 videos/week, custom content gen |
+| 3 | Elder Dragon | $129/mo | Premium -- 1 TikTok account, 14 videos/week |
 
 All paid tiers get exactly 1 TikTok account. The differentiator is `videosPerWeek`. Billing discounts: 15% quarterly, 30% annual.
 
