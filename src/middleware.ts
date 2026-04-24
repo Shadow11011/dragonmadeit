@@ -35,6 +35,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/dashboard" ||
     pathname.startsWith("/api/user/") ||
     pathname.startsWith("/api/paystack/") ||
+    pathname.startsWith("/api/dodo/") ||
     pathname.startsWith("/api/tiktok-accounts/");
 
   if (needsAuth) {
