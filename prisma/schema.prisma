@@ -158,7 +158,7 @@ model TikTokAccount {
   lateAccountId      String?
   // n8n pipeline coordination
   nextPostAt         DateTime?
-  videoGenStatus     String?         @default("IDLE")
+  videoGenStatus     String          @default("IDLE")
   // Routing flag: 'v1' = legacy orchestrator (mt5BR1Jn3F4oFpON), 'v2' = hardened
   // pipeline (n8n/workflows/v2/orchestrator-v2.json). Default is v1; rows are
   // flipped to v2 one-by-one as the new pipeline proves out per-account.
