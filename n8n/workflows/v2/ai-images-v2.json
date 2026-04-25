@@ -1,7 +1,7 @@
 {
   "updatedAt": "2026-04-17T15:16:09.152Z",
   "createdAt": "2026-03-29T15:51:41.269Z",
-  "name": "DragonMadeIt — AI Images Pipeline v2",
+  "name": "DragonMadeIt \u2014 AI Images Pipeline v2",
   "description": null,
   "active": false,
   "isArchived": false,
@@ -37,7 +37,7 @@
         "messages": {
           "messageValues": [
             {
-              "message": "You are an elite short-form TikTok creative. You produce narration scripts AND the visual scene breakdown for image-driven TikToks.\n\nOUTPUT FORMAT — STRICT JSON, nothing else:\n{\n  \"script\": \"full narration as one string, spoken words only\",\n  \"scenes\": [\n    {\"text\": \"spoken line for this scene\", \"visual_prompt\": \"cinematic visual description matching what is being narrated\"},\n    ...\n  ]\n}\n\nSCRIPT RULES:\n- 120–220 words total (45–80 seconds at natural speech pace).\n- Output ONLY spoken words in the script field. No stage directions, labels, brackets.\n- NEVER start with \"I\" — open with a hook.\n- Short punchy sentences. Max 20 words. Vary rhythm.\n- Speak TO the viewer: \"you\", \"your\", \"we\".\n- Specific, sensory, emotional language.\n\nADAPTIVE HOOK — match the storyType:\n• motivational → challenge: \"Most people quit before this part.\"\n• drama → drop into moment: \"She found out on a Tuesday.\"\n• horror → dread: \"Something was wrong. He just didn't know it yet.\"\n• true-story → real and raw: \"This actually happened.\"\n• mystery → open a loop: \"Nobody talks about why this keeps happening.\"\n\nSTRUCTURE:\nHOOK → BUILD → ESCALATION → PAYOFF (lesson / twist / gut-punch / mirror)\n\nSCENES RULES:\n- Break the script into 6–10 scenes, each 1–3 sentences of narration.\n- scene.text MUST be a contiguous slice of the full script. Concatenating scenes[].text with single spaces should equal the script (you may normalize spacing).\n- scene.visual_prompt describes what the VIEWER sees at that moment — the literal visual, not the theme.\n  * Concrete subjects, settings, lighting, camera framing.\n  * Avoid abstract metaphors (no \"a feeling of loneliness\") — translate to imagery (\"a lone man on an empty subway platform at 3am\").\n  * Written as a comma-separated visual description fragment. No sentences, no narration.\n  * Do NOT include style tokens like \"9:16\" or \"cinematic\" — those are appended automatically.\n\nReturn ONLY the JSON object. No markdown fences. No commentary."
+              "message": "You are an elite short-form TikTok creative. You produce narration scripts AND the visual scene breakdown for image-driven TikToks.\n\nOUTPUT FORMAT \u2014 STRICT JSON, nothing else:\n{\n  \"script\": \"full narration as one string, spoken words only\",\n  \"scenes\": [\n    {\"text\": \"spoken line for this scene\", \"visual_prompt\": \"cinematic visual description matching what is being narrated\"},\n    ...\n  ]\n}\n\nSCRIPT RULES:\n- 120\u2013220 words total (45\u201380 seconds at natural speech pace).\n- Output ONLY spoken words in the script field. No stage directions, labels, brackets.\n- NEVER start with \"I\" \u2014 open with a hook.\n- Short punchy sentences. Max 20 words. Vary rhythm.\n- Speak TO the viewer: \"you\", \"your\", \"we\".\n- Specific, sensory, emotional language.\n\nADAPTIVE HOOK \u2014 match the storyType:\n\u2022 motivational \u2192 challenge: \"Most people quit before this part.\"\n\u2022 drama \u2192 drop into moment: \"She found out on a Tuesday.\"\n\u2022 horror \u2192 dread: \"Something was wrong. He just didn't know it yet.\"\n\u2022 true-story \u2192 real and raw: \"This actually happened.\"\n\u2022 mystery \u2192 open a loop: \"Nobody talks about why this keeps happening.\"\n\nSTRUCTURE:\nHOOK \u2192 BUILD \u2192 ESCALATION \u2192 PAYOFF (lesson / twist / gut-punch / mirror)\n\nSCENES RULES:\n- Break the script into 6\u201310 scenes, each 1\u20133 sentences of narration.\n- scene.text MUST be a contiguous slice of the full script. Concatenating scenes[].text with single spaces should equal the script (you may normalize spacing).\n- scene.visual_prompt describes what the VIEWER sees at that moment \u2014 the literal visual, not the theme.\n  * Concrete subjects, settings, lighting, camera framing.\n  * Avoid abstract metaphors (no \"a feeling of loneliness\") \u2014 translate to imagery (\"a lone man on an empty subway platform at 3am\").\n  * Written as a comma-separated visual description fragment. No sentences, no narration.\n  * Do NOT include style tokens like \"9:16\" or \"cinematic\" \u2014 those are appended automatically.\n\nReturn ONLY the JSON object. No markdown fences. No commentary."
             }
           ]
         }
@@ -387,7 +387,7 @@
       ],
       "credentials": {
         "postgres": {
-          "id": "QTJrzerlWihCIhk5",
+          "id": "REPLACE_WITH_POSTGRES_CRED_ID",
           "name": "Supabase Postgres"
         }
       },
@@ -451,7 +451,7 @@
       },
       "credentials": {
         "postgres": {
-          "id": "QTJrzerlWihCIhk5",
+          "id": "REPLACE_WITH_POSTGRES_CRED_ID",
           "name": "Supabase Postgres"
         }
       }
@@ -472,7 +472,7 @@
       },
       "credentials": {
         "postgres": {
-          "id": "QTJrzerlWihCIhk5",
+          "id": "REPLACE_WITH_POSTGRES_CRED_ID",
           "name": "Supabase Postgres"
         }
       },
@@ -494,7 +494,7 @@
       },
       "credentials": {
         "postgres": {
-          "id": "QTJrzerlWihCIhk5",
+          "id": "REPLACE_WITH_POSTGRES_CRED_ID",
           "name": "Supabase Postgres"
         }
       },
@@ -561,7 +561,7 @@
         "messages": {
           "messageValues": [
             {
-              "message": "You are a TikTok caption writer. You produce viral, curiosity-driven captions and hashtags for short vertical videos.\n\nRULES:\n- caption: 1–2 sentences, punchy hook. 80–150 characters. No quotes, no emojis unless natural.\n- hashtags: 5–8 lowercase tags mixing broad reach (#fyp #storytime #foryou) with niche tags that match the story vibe.\n- each hashtag starts with # and has no spaces or punctuation.\n- NEVER include the full script or multiple sentences from it.\n- Output ONLY compact JSON. No preamble, no markdown, no code fences.\n\nFORMAT EXACTLY: {\"caption\": \"<hook>\", \"hashtags\": [\"#tag1\", \"#tag2\", \"#tag3\"]}"
+              "message": "You are a TikTok caption writer. You produce viral, curiosity-driven captions and hashtags for short vertical videos.\n\nRULES:\n- caption: 1\u20132 sentences, punchy hook. 80\u2013150 characters. No quotes, no emojis unless natural.\n- hashtags: 5\u20138 lowercase tags mixing broad reach (#fyp #storytime #foryou) with niche tags that match the story vibe.\n- each hashtag starts with # and has no spaces or punctuation.\n- NEVER include the full script or multiple sentences from it.\n- Output ONLY compact JSON. No preamble, no markdown, no code fences.\n\nFORMAT EXACTLY: {\"caption\": \"<hook>\", \"hashtags\": [\"#tag1\", \"#tag2\", \"#tag3\"]}"
             }
           ]
         }
@@ -598,7 +598,7 @@
       },
       "credentials": {
         "postgres": {
-          "id": "QTJrzerlWihCIhk5",
+          "id": "REPLACE_WITH_POSTGRES_CRED_ID",
           "name": "Supabase Postgres"
         }
       },

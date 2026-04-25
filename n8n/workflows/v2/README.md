@@ -48,13 +48,18 @@ If you skip this step, v1 will silently double-process canary accounts using its
 2. **Import workflows into n8n** (one-time):
    - Open n8n at https://n8n.shadow11011.theworkpc.com
    - Workflows → Import from File → pick each of the three JSONs
-   - Re-link the Postgres credential on each (replace `REPLACE_WITH_POSTGRES_CRED_ID`)
-   - In `orchestrator-v2`, edit the two `executeWorkflow` nodes to point at the imported gameplay-v2 + ai-images-v2 IDs (n8n assigned them at import; copy the IDs from the URL bar of each sub-workflow page)
+   - Re-link the Postgres credential in all THREE workflows (search for `REPLACE_WITH_POSTGRES_CRED_ID` — it appears in orchestrator-v2 + both sub-workflows after this commit's credential cleanup) — either re-select the Supabase Postgres credential via n8n's UI on each Postgres node, or search-and-replace the placeholder string with your real credential ID before import.
+   - In `orchestrator-v2`, search for `REPLACE_WITH_GAMEPLAY_V2_WORKFLOW_ID` and `REPLACE_WITH_AI_IMAGES_V2_WORKFLOW_ID` and replace each with the n8n-assigned workflow ID of the matching sub-workflow (visible in the URL bar of each sub-workflow page after import). A search-and-replace before import is faster than clicking through n8n's UI for each.
    - Leave the orchestrator-v2 in **inactive** state until you're ready to canary
 
 3. **Deactivate v1 (per the prerequisite above).**
 
 4. **Canary one account**:
+   ```sql
+   -- Verify the target before flipping (avoid fat-fingering the wrong UUID):
+   SELECT id, tier, "pipelineVersion", "videoGenStatus", username
+   FROM "TikTokAccount" WHERE id = '<test-account-id>';
+   ```
    ```sql
    -- Pick a personal test account (Don's own FREE account is the natural pick)
    UPDATE "TikTokAccount" SET "pipelineVersion" = 'v2'
@@ -63,15 +68,47 @@ If you skip this step, v1 will silently double-process canary accounts using its
    Activate `Orchestrator v2` in n8n. The next 30-min tick will pick up the v2 account. v1 is deactivated, so v2 has the row to itself.
 
 5. **Verify the canary worked**:
-   - `ContentItem` row appears with `status = 'PROCESSING'` shortly after the orchestrator tick (this is the early-create from Task 5/6 — it lands BEFORE generation starts)
+
+   **Database checks (psql, observable immediately):**
+   - `ContentItem` row appears with `status = 'PROCESSING'` shortly after the orchestrator tick (early-create from gameplay-v2/ai-images-v2 lands BEFORE generation starts)
    - Mid-pipeline, `Update ContentItem Title` writes the real script title onto that row (no more "Auto-generated (in progress)" placeholder)
    - Status flips to `'POSTED'` (or `'FAILED'` with `errorMessage` populated) within 20 minutes
    - `videoGenStatus` returns to `'IDLE'`, `videoGenStartedAt` is NULL, `nextPostAt` advances by `1 week / videosPerWeek`, `lastPostedAt = NOW()`
+
+   **Visual check (manual, requires opening the post on TikTok):**
    - For FREE tier specifically: open the posted video, confirm the `dragonmadeit.app` watermark is visible near the bottom and the end card plays after the main video. The media-api at `/home/dragon/services/media-api/server.py` already implements both — v2 just sends the `watermark: true` and `end_card: true` flags v1 never did.
 
 6. **Watch for failure modes**:
    - If `Create ContentItem` ever fails (DB blip), `onError: continueErrorOutput` routes to `Reset Account On Error`, the account exits `GENERATING` immediately, and the run aborts cleanly. Look for `videoGenStatus = 'IDLE'` with no `ContentItem.status = 'POSTED'` row in the next minute.
    - If a sub-pipeline gets stuck mid-flight, the Reaper unsticks accounts >20min old at the next orchestrator tick, plus marks any orphan `PROCESSING` ContentItems as `FAILED` with `errorMessage = 'reaped: pipeline did not finish within 20 minutes'`.
+
+**If no `ContentItem` row appears after 30 min:**
+
+The orchestrator may not have ticked, or the claim found no eligible row. Check:
+
+```sql
+-- Did the canary account actually flip to v2?
+SELECT id, "pipelineVersion", "videoGenStatus", "nextPostAt", "videoGenStartedAt"
+FROM "TikTokAccount" WHERE id = '<canary-id>';
+
+-- Is the row eligible for the v2 claim right now?
+SELECT a.id, a."nextPostAt" <= NOW() AS due, a."videoGenStatus", a."videosPerWeek",
+       a."lateAccountId" IS NOT NULL AS has_late_account,
+       COALESCE(u.posted_this_month, 0) AS used,
+       dragonmadeit_tier_monthly_quota(a.tier::TEXT) AS cap
+FROM "TikTokAccount" a
+LEFT JOIN account_monthly_usage u ON u."tiktokAccountId" = a.id
+WHERE a.id = '<canary-id>';
+```
+
+If `due = false`, push `nextPostAt` to NOW() to trigger the next tick:
+`UPDATE "TikTokAccount" SET "nextPostAt" = NOW() WHERE id = '<canary-id>';`
+
+If `has_late_account = false`, the account isn't fully linked — claim's WHERE clause requires `lateAccountId` to be set.
+
+If `used >= cap`, the account already exhausted its monthly quota.
+
+Otherwise, check n8n's "Executions" tab for the v2 orchestrator — the cron may not have run, the workflow may not be activated, or the Postgres credential may be misconfigured.
 
 7. **Backfill all rows once confident** (typically after ≥4 generations on the canary, ideally a full month):
    ```sql
@@ -91,6 +128,12 @@ If v2 misbehaves on the canary:
 UPDATE "TikTokAccount" SET "pipelineVersion" = 'v1' WHERE "pipelineVersion" = 'v2';
 ```
 
+To roll back ONLY one misbehaving account (leaving the rest of the canary on v2):
+
+```sql
+UPDATE "TikTokAccount" SET "pipelineVersion" = 'v1' WHERE id = '<bad-account-id>';
+```
+
 Deactivate v2 orchestrator in n8n. Reactivate v1 orchestrator. v1 picks the account back up on its next tick.
 
 The only artifact is whatever in-flight ContentItem v2 may have created (status = `PROCESSING`). The v2 reaper would catch this within 20 min, but with v2 deactivated nothing is reaping. Manually mark it FAILED:
@@ -107,6 +150,14 @@ WHERE status = 'PROCESSING'
 ## Full Postgres rollback (worst case — undo migration)
 
 If the Phase 1 migration `20260425_pipeline_v2_routing` itself needs to be undone (e.g., upstream schema rollback):
+
+**Before running these DROPs**, Preserve forensics if you may need them later:
+
+```bash
+pg_dump --table='"ContentItem"' "$DATABASE_URL" > pre-rollback-contentitem.sql
+```
+
+The DROPs will permanently destroy any `errorMessage` text written by v2 — that's often the most valuable signal for diagnosing why you needed to roll back.
 
 ```sql
 -- Drop in reverse-creation order. SAFE if no v2 row exists; destructive if any do.
