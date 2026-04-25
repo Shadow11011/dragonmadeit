@@ -516,17 +516,17 @@ section { position: relative; }
 }
 
 /* -------- Pricing grid -------- */
+/* auto-fit + justify-content centers any number of cards (handles 7-tier layout cleanly,
+   so partial rows don't look left-shifted as they did with repeat(4, 1fr)). */
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, 260px);
   gap: 20px;
   align-items: start;
-}
-@media (max-width: 1200px) {
-  .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+  justify-content: center;
 }
 @media (max-width: 640px) {
-  .pricing-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: minmax(0, 320px); }
 }
 
 /* -------- Features grid -------- */
