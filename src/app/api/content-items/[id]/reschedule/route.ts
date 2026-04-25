@@ -50,6 +50,21 @@ export async function PATCH(
       );
     }
 
+    // Schedule horizon cap: posts cannot be scheduled more than 30 days out.
+    // Keeps the planning surface short and prevents stale scheduled-but-unverified
+    // jobs accumulating in the DB.
+    const MAX_SCHEDULE_HORIZON_DAYS = 30;
+    const horizonMs = MAX_SCHEDULE_HORIZON_DAYS * 24 * 60 * 60 * 1000;
+    if (newDate.getTime() > Date.now() + horizonMs) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Scheduled time cannot be more than ${MAX_SCHEDULE_HORIZON_DAYS} days from now`,
+        },
+        { status: 400 },
+      );
+    }
+
     // Single atomic conditional update: enforces ownership (via ContentItem.userId)
     // AND reschedulable status in the same query, preventing TOCTOU races where
     // a posting job flips the status between a read and the write.
