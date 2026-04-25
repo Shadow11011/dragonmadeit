@@ -106,7 +106,7 @@ export function AccountList({ accounts, isLoading }: AccountListProps) {
     return (
       <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
         <div className="flex justify-center mb-4">
-          <DragonMascot size={64} color="#ff4500" />
+          <DragonMascot size={64} />
         </div>
         <h3 className="text-lg font-semibold text-text-primary mb-2">
           No accounts yet

@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
       {!isLoading && !error && linkedAccounts.length === 0 && (
         <div className="rounded-xl bg-bg-secondary border border-border p-10 text-center">
           <div className="flex justify-center mb-4">
-            <DragonMascot size={48} color="#ff4500" />
+            <DragonMascot size={48} />
           </div>
           <h2 className="text-lg font-semibold font-heading">
             No linked TikTok accounts

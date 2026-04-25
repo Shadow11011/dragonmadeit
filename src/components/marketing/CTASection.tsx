@@ -13,7 +13,7 @@ export function CTASection() {
           <h2 className="h1 mt-8">
             Your first video
             <br />
-            <span style={{ color: "var(--fire)", fontStyle: "italic" }}>can be live tonight.</span>
+            can be live tonight.
           </h2>
           <p className="text-2 mt-6" style={{ fontSize: 17 }}>
             Set a niche and a cadence. We handle the rest. Start free, no card.

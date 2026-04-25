@@ -27,7 +27,7 @@ export function FoundersCaseStudy() {
     <section className="sec-pad" style={{ position: "relative", zIndex: 2 }}>
       <div className="wrap">
         <Reveal>
-          <div className="chapter-label">FOUNDER&rsquo;S LOG</div>
+          <div className="chapter-label">FOUNDER&rsquo;S NOTE</div>
         </Reveal>
 
         <Reveal delay={100}>
@@ -42,7 +42,7 @@ export function FoundersCaseStudy() {
             style={{ fontSize: 18, maxWidth: 640, textWrap: "pretty" }}
           >
             Signed up. Paid like every other customer. Picked {niches.length} niches from the{" "}
-            <span style={{ color: "var(--fire)" }}>bro-story</span> cluster. Set the schedule.
+            <span style={{ color: "var(--accent)" }}>bro-story</span> cluster. Set the schedule.
             Walked away.
           </p>
         </Reveal>
@@ -102,7 +102,7 @@ export function FoundersCaseStudy() {
             <span>◆ {likes} LIKES</span>
             <span>◆ {profileViews} PROFILE VIEWS</span>
             <span>◆ {shares} SHARE</span>
-            <span style={{ color: "var(--gold)" }}>◆ STILL RUNNING</span>
+            <span style={{ color: "var(--accent)" }}>◆ STILL RUNNING</span>
           </div>
         </Reveal>
 
@@ -216,13 +216,14 @@ function CaseStat({
 }: {
   to: number;
   label: string;
+  /** Renamed semantically: "highlight". Param name kept for callsite compat. */
   fire?: boolean;
 }) {
   return (
     <div>
       <div
         className="counter"
-        style={{ color: fire ? "var(--fire)" : "var(--text-1)" }}
+        style={{ color: fire ? "var(--accent)" : "var(--text-1)" }}
       >
         <Counter to={to} />
       </div>

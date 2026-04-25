@@ -12,7 +12,7 @@ export function Footer() {
               <span className="h3">DragonMadeIt</span>
             </div>
             <p className="text-2 mt-4" style={{ maxWidth: 320, fontSize: 14 }}>
-              AI-forged faceless TikTok. Your dragon writes, renders and posts while you sleep.
+              A content engine that runs itself. Generate, repurpose, or schedule short-form across TikTok, Reels, and Shorts.
             </p>
             <div
               className="row gap-3 mt-6"
@@ -73,8 +73,8 @@ export function Footer() {
           className="footer-bottom row mt-8"
           style={{ justifyContent: "space-between", fontSize: 12, color: "var(--text-3)" }}
         >
-          <span>© 2026 DragonMadeIt. Forged in code, fed on views.</span>
-          <span className="mono">v2.0 · THE REFORGE</span>
+          <span>© 2026 DragonMadeIt. Built for short-form operators.</span>
+          <span className="mono">v2.0</span>
         </div>
       </div>
       <style>{`

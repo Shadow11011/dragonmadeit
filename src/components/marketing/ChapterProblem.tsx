@@ -15,8 +15,8 @@ const WINS = [
   "0 hours · fully automated",
   "Daily posts on autopilot",
   "Algorithm rewards consistency",
-  "Starts at $15/mo",
-  "Set once · forge forever",
+  "Starts at $12/mo",
+  "Set once · runs forever",
 ];
 
 export function ChapterProblem() {
@@ -29,7 +29,7 @@ export function ChapterProblem() {
         <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 64 }} className="problem-grid">
           <Reveal>
             <h2 className="h1">
-              Every week you don&apos;t automate, the algorithm forgets your name.
+              Every week you don&apos;t ship, the algorithm forgets your name.
             </h2>
             <ul className="stack gap-3 mt-8" style={{ fontSize: 16 }}>
               {PAINS.map((p) => (
@@ -46,20 +46,20 @@ export function ChapterProblem() {
             <div
               className="card"
               style={{
-                background: "oklch(from var(--fire) l c h / 0.06)",
-                borderColor: "oklch(from var(--fire) l c h / 0.3)",
+                background: "oklch(from var(--accent) l c h / 0.05)",
+                borderColor: "oklch(from var(--accent) l c h / 0.25)",
               }}
             >
               <div className="row gap-3">
                 <Sigil size="sm" />
-                <div className="h3" style={{ color: "var(--fire)" }}>
+                <div className="h3" style={{ color: "var(--accent)" }}>
                   With DragonMadeIt
                 </div>
               </div>
               <ul className="stack gap-3 mt-6">
                 {WINS.map((w) => (
                   <li key={w} className="row gap-3" style={{ fontSize: 14 }}>
-                    <span style={{ color: "var(--fire)", fontFamily: "var(--font-mono)" }}>✓</span>
+                    <span style={{ color: "var(--accent)", fontFamily: "var(--font-mono)" }}>✓</span>
                     {w}
                   </li>
                 ))}

@@ -11,7 +11,7 @@ const STEPS = [
   },
   {
     n: "02",
-    t: "The dragon forges",
+    t: "The engine builds it",
     d: "Scripts, visuals, voiceover, editing. Full TikTok videos assembled without a camera, mic, or editor software.",
   },
   {
@@ -41,7 +41,7 @@ export default function HowItWorksSection() {
           <h2 className="h1">
             From zero to posting
             <br />
-            <span style={{ color: "var(--fire)", fontStyle: "italic" }}>in under two minutes.</span>
+            in under two minutes.
           </h2>
         </Reveal>
 
@@ -54,7 +54,7 @@ export default function HowItWorksSection() {
               <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20 }}>
                 <div
                   className="mono"
-                  style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                  style={{ fontSize: 11, color: "var(--accent)", letterSpacing: "0.3em" }}
                 >
                   {s.n}
                 </div>
@@ -86,7 +86,7 @@ export default function HowItWorksSection() {
                   <div className={"pipe-node" + (i <= active ? " live" : "")}>
                     <div
                       className="mono"
-                      style={{ fontSize: 10, letterSpacing: "0.2em", color: "var(--fire)" }}
+                      style={{ fontSize: 10, letterSpacing: "0.2em", color: "var(--accent)" }}
                     >
                       {String(i + 1).padStart(2, "0")}
                     </div>

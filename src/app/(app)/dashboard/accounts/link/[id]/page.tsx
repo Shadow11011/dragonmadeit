@@ -64,7 +64,7 @@ export default function LinkAccountPage() {
         {/* Header with mascot */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <DragonMascot size={56} color="#ff4500" />
+            <DragonMascot size={56} />
           </div>
           <h1 className="text-2xl font-bold">Connect Your TikTok Account</h1>
           <p className="text-text-secondary text-sm mt-2">

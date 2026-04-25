@@ -79,16 +79,7 @@ export default function TikTokOAuthCallbackPage() {
         className="w-full max-w-md rounded-xl border border-border bg-bg-secondary p-8 text-center"
       >
         <div className="mb-6 flex justify-center">
-          <DragonMascot
-            size={56}
-            color={
-              status === "success"
-                ? "#22c55e"
-                : status === "error"
-                  ? "#ef4444"
-                  : "#ff4500"
-            }
-          />
+          <DragonMascot size={56} />
         </div>
 
         {status === "loading" && (

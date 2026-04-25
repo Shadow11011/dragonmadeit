@@ -24,7 +24,7 @@ export default function DashboardError({ error, reset }: ErrorProps) {
       </svg>
       <h2 className="text-xl font-bold">Something went wrong</h2>
       <p className="text-text-secondary max-w-md">
-        {error.message || "An unexpected error occurred. The dragon stumbled, but we can try again."}
+        {error.message || "An unexpected error occurred. We can try again."}
       </p>
       <Button onClick={reset}>Try Again</Button>
     </div>

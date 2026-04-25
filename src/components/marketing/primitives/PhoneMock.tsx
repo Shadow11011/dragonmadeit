@@ -33,7 +33,7 @@ export const STORIES = [
   {
     kind: "MOTIVATION",
     hook: "Broke at 23. CEO at 30. The one decision that flipped it.",
-    handle: "@mindforge",
+    handle: "@mindlift",
     tag: "#mindset",
     views: "1.2M",
     bg: "linear-gradient(165deg, #0a1a2f 0%, #1a3a5a 60%, #ff8c00 130%)",
@@ -279,7 +279,7 @@ export function PhoneMock({
                 fontSize: 8,
                 letterSpacing: "0.25em",
                 padding: "3px 7px",
-                background: "rgba(255,69,0,0.25)",
+                background: "rgba(59,130,246,0.25)",
                 border: "1px solid rgba(255,255,255,0.2)",
                 borderRadius: 3,
               }}
@@ -289,8 +289,8 @@ export function PhoneMock({
                   width: 4,
                   height: 4,
                   borderRadius: "50%",
-                  background: "var(--fire)",
-                  boxShadow: "0 0 6px var(--fire)",
+                  background: "var(--accent)",
+                  boxShadow: "0 0 6px var(--accent)",
                 }}
               />
               {story.kind}
@@ -329,15 +329,18 @@ export function PhoneMock({
                 width: 26,
                 height: 26,
                 borderRadius: "50%",
-                background: "linear-gradient(135deg,var(--fire),var(--ember))",
+                background: "var(--accent)",
                 border: "1.5px solid #fff",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 11,
+                color: "#fff",
+                fontFamily: "var(--font-mono)",
+                fontWeight: 700,
               }}
             >
-              🜂
+              D
             </div>
             {[["♥", "124K"], ["💬", "8.2K"], ["↻", "3.1K"], ["↗", "Share"]].map(([ic, ct]) => (
               <div key={ic} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>

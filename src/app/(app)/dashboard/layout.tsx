@@ -1,5 +1,4 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
-import { EmberBackground } from "@/components/dashboard/EmberBackground";
 
 export default function DashboardLayout({
   children,
@@ -10,7 +9,6 @@ export default function DashboardLayout({
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <main className="flex-1 p-6 md:p-6 pt-14 md:pt-6 overflow-y-auto">
-        <EmberBackground />
         <div className="relative z-10">{children}</div>
       </main>
     </div>

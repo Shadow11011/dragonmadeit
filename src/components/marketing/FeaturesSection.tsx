@@ -64,9 +64,7 @@ export function FeaturesSection() {
             <h2 className="h1">
               Pick your path.
               <br />
-              <span style={{ color: "var(--ember)", fontStyle: "italic" }}>
-                Set it and leave.
-              </span>
+              Set it and leave.
             </h2>
           </Reveal>
           <Reveal delay={100}>
@@ -86,7 +84,7 @@ export function FeaturesSection() {
               >
                 <div
                   className="mono"
-                  style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                  style={{ fontSize: 11, color: "var(--accent)", letterSpacing: "0.3em" }}
                 >
                   {p.n}
                 </div>
@@ -137,7 +135,7 @@ export function FeaturesSection() {
                         position: "absolute",
                         left: 0,
                         top: 0,
-                        color: "var(--fire)",
+                        color: "var(--accent)",
                       }}
                     >
                       ◆

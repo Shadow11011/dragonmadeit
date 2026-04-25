@@ -299,7 +299,7 @@ export default function DashboardPage() {
                 One step left &mdash; connect your TikTok
               </h2>
               <p className="text-sm text-text-secondary mt-1">
-                Your dragon is set up, but it can&rsquo;t start posting until you
+                Your account is set up, but posting can&rsquo;t start until you
                 link your TikTok account. Takes 30 seconds.
               </p>
             </div>
@@ -312,13 +312,13 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Phase D — dragon status hero: next post + recent posts at a glance */}
+      {/* Phase D — status hero: next post + recent posts at a glance */}
       {hasAccounts && !pendingAccount && (
         <div className="rounded-xl bg-bg-secondary border border-border p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-6">
             <div className="flex-1 min-w-0">
               <p className="text-xs uppercase tracking-wider text-text-secondary mb-1">
-                Your dragon
+                Status
               </p>
               {nextPost ? (
                 <>
@@ -348,7 +348,7 @@ export default function DashboardPage() {
               ) : (
                 <>
                   <h2 className="font-heading text-2xl text-text-primary">
-                    Your dragon is resting
+                    No posts queued
                   </h2>
                   <p className="text-sm text-text-secondary mt-1">
                     No upcoming posts scheduled. Open your account to set a

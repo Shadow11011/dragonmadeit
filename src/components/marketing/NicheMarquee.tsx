@@ -38,7 +38,7 @@ export function NicheMarquee() {
                 whiteSpace: "nowrap",
               }}
             >
-              <span style={{ color: "var(--fire)", marginRight: 12 }}>◆</span>
+              <span style={{ color: "var(--accent)", marginRight: 12 }}>◆</span>
               {n.toUpperCase()}
             </span>
           ))}

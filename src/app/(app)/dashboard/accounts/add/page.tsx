@@ -397,7 +397,7 @@ function ScheduleStep({
         </h2>
         <p className="text-text-secondary text-sm mt-1">
           {isFree
-            ? "Your dragon will post once a week. Pick the one day and time below — this is locked until you upgrade, so choose a moment you can trust."
+            ? "We post once a week on free. Pick the one day and time below — this is locked until you upgrade, so choose a moment you can trust."
             : `Choose when your ${videosPerWeek} videos per week will be posted.`}
         </p>
       </div>

@@ -31,7 +31,7 @@ export function StatRibbon() {
         >
           {stats.map((s) => (
             <div key={s.label}>
-              <div className="counter" style={{ color: s.fire ? "var(--fire)" : "var(--text-1)" }}>
+              <div className="counter" style={{ color: s.fire ? "var(--accent)" : "var(--text-1)" }}>
                 <Counter to={s.to} />
                 {s.suffix}
               </div>

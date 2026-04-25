@@ -72,13 +72,10 @@ const localizer = dateFnsLocalizer({
 /*  Color palette                                                      */
 /* ------------------------------------------------------------------ */
 
-// Brand-rooted palette: fire/ember/gold + palette-safe complements.
+// Per-account palette — cool, distinguishable, no warm fire bias.
 // Cycled deterministically per account index.
 const ACCOUNT_PALETTE = [
-  "#ff4500", // accent-fire
-  "#ff8c00", // accent-ember
-  "#ffd700", // accent-gold
-  "#60a5fa", // blue-400
+  "#3b82f6", // blue-500 (brand accent)
   "#a78bfa", // violet-400
   "#34d399", // emerald-400
   "#f472b6", // pink-400
@@ -87,6 +84,9 @@ const ACCOUNT_PALETTE = [
   "#facc15", // yellow-400
   "#4ade80", // green-400
   "#c084fc", // purple-400
+  "#60a5fa", // blue-400
+  "#fbbf24", // amber-400
+  "#94a3b8", // slate-400
 ];
 
 function hashToIndex(id: string, modulus: number): number {
@@ -302,7 +302,7 @@ export function ContentCalendar({
       style: {
         backgroundColor: color,
         borderColor: color,
-        color: "#0f0d0b",
+        color: "#0a0a0a",
         fontWeight: 600,
         borderRadius: "6px",
         paddingLeft: "6px",
@@ -425,7 +425,7 @@ function DarkThemeStyles() {
   return (
     <style>{`
       .rbc-dragon .rbc-toolbar {
-        color: #ece9e5;
+        color: #fafafa;
         font-family: var(--font-body, system-ui, sans-serif);
         gap: 0.5rem;
         flex-wrap: wrap;
@@ -437,35 +437,35 @@ function DarkThemeStyles() {
       }
       .rbc-dragon .rbc-toolbar button {
         background: transparent;
-        color: #807a73;
-        border: 1px solid #302c27;
+        color: #a1a1aa;
+        border: 1px solid #27272a;
         border-radius: 8px;
         padding: 4px 10px;
         transition: color 0.15s, background 0.15s, border-color 0.15s;
       }
       .rbc-dragon .rbc-toolbar button:hover {
-        color: #ece9e5;
-        background: #201c18;
+        color: #fafafa;
+        background: #1f1f23;
       }
       .rbc-dragon .rbc-toolbar button.rbc-active,
       .rbc-dragon .rbc-toolbar button.rbc-active:hover,
       .rbc-dragon .rbc-toolbar button.rbc-active:focus {
-        background: rgba(255, 69, 0, 0.12);
-        color: #ff8c00;
-        border-color: rgba(255, 69, 0, 0.4);
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border-color: rgba(59, 130, 246, 0.4);
         box-shadow: none;
       }
       .rbc-dragon .rbc-month-view,
       .rbc-dragon .rbc-time-view {
-        border: 1px solid #302c27;
+        border: 1px solid #27272a;
         border-radius: 10px;
         overflow: hidden;
-        background: #0f0d0b;
+        background: #0a0a0a;
       }
       .rbc-dragon .rbc-header {
-        background: #171412;
-        color: #807a73;
-        border-bottom: 1px solid #302c27;
+        background: #18181b;
+        color: #a1a1aa;
+        border-bottom: 1px solid #27272a;
         padding: 6px 4px;
         font-weight: 600;
         font-size: 0.75rem;
@@ -479,24 +479,24 @@ function DarkThemeStyles() {
       .rbc-dragon .rbc-time-content,
       .rbc-dragon .rbc-time-content > * + * > *,
       .rbc-dragon .rbc-timeslot-group {
-        border-color: #27231f;
+        border-color: #27272a;
       }
       .rbc-dragon .rbc-off-range-bg {
-        background: rgba(15, 13, 11, 0.6);
+        background: rgba(10, 10, 10, 0.6);
       }
       .rbc-dragon .rbc-off-range {
-        color: #4a4540;
+        color: #52525b;
       }
       .rbc-dragon .rbc-date-cell {
         padding: 4px 6px;
-        color: #ece9e5;
+        color: #fafafa;
         font-size: 0.8rem;
       }
       .rbc-dragon .rbc-today {
-        background: rgba(255, 69, 0, 0.06);
+        background: rgba(59, 130, 246, 0.06);
       }
       .rbc-dragon .rbc-now .rbc-button-link {
-        color: #ff4500;
+        color: #3b82f6;
         font-weight: 700;
       }
       .rbc-dragon .rbc-button-link {
@@ -504,7 +504,7 @@ function DarkThemeStyles() {
       }
       .rbc-dragon .rbc-show-more {
         background: transparent;
-        color: #ff8c00;
+        color: #60a5fa;
         font-weight: 600;
         font-size: 0.7rem;
       }
@@ -517,31 +517,31 @@ function DarkThemeStyles() {
         outline-offset: 1px;
       }
       .rbc-dragon .rbc-current-time-indicator {
-        background: #ff4500;
+        background: #3b82f6;
         height: 2px;
       }
       .rbc-dragon .rbc-time-gutter,
       .rbc-dragon .rbc-label {
-        color: #807a73;
+        color: #a1a1aa;
         font-size: 0.7rem;
       }
       .rbc-dragon .rbc-allday-cell,
       .rbc-dragon .rbc-time-header-gutter {
-        background: #0f0d0b;
+        background: #0a0a0a;
       }
       .rbc-dragon .rbc-overlay {
-        background: #171412;
-        border: 1px solid #302c27;
-        color: #ece9e5;
+        background: #18181b;
+        border: 1px solid #27272a;
+        color: #fafafa;
         box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       }
       .rbc-dragon .rbc-overlay-header {
-        border-bottom: 1px solid #302c27;
-        color: #ece9e5;
+        border-bottom: 1px solid #27272a;
+        color: #fafafa;
       }
       .rbc-dragon .rbc-addons-dnd .rbc-addons-dnd-drag-row,
       .rbc-dragon .rbc-addons-dnd-over {
-        background: rgba(255, 140, 0, 0.08);
+        background: rgba(59, 130, 246, 0.08);
       }
     `}</style>
   );

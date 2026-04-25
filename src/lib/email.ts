@@ -33,8 +33,8 @@ function wrapInTemplate(content: string): string {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
           <!-- Header -->
           <tr>
-            <td align="center" style="padding-bottom: 32px; border-bottom: 2px solid #ff4500;">
-              <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ff4500; letter-spacing: 1px;">
+            <td align="center" style="padding-bottom: 32px; border-bottom: 2px solid #3b82f6;">
+              <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #fafafa; letter-spacing: 0.5px;">
                 DragonMadeIt
               </h1>
             </td>
@@ -76,15 +76,15 @@ export async function sendWelcomeEmail({
     const html = wrapInTemplate(`
               <p style="margin: 0 0 16px; color: #e4e4e7;">${greeting}</p>
               <p style="margin: 0 0 16px; color: #e4e4e7;">
-                Welcome to <strong style="color: #ff4500;">DragonMadeIt</strong>! You're one step away from
-                putting your TikTok content on autopilot. Set it and forget it &mdash; your dragon handles the rest.
+                Welcome to <strong style="color: #3b82f6;">DragonMadeIt</strong>! You're one step away from
+                putting your TikTok content on autopilot. Set it and leave &mdash; we handle the rest.
               </p>
               <p style="margin: 0 0 24px; color: #e4e4e7;">
                 Head to your dashboard to pick a plan and start automating.
               </p>
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td align="center" style="background-color: #ff4500; border-radius: 6px;">
+                  <td align="center" style="background-color: #3b82f6; border-radius: 6px;">
                     <a href="${DASHBOARD_URL}/dashboard" target="_blank"
                        style="display: inline-block; padding: 12px 28px; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none;">
                       Go to Dashboard
@@ -124,14 +124,14 @@ export async function sendPaymentConfirmedEmail({
               <p style="margin: 0 0 16px; color: #e4e4e7;">${greeting}</p>
               <p style="margin: 0 0 16px; color: #e4e4e7;">
                 Your payment has been confirmed! You're now on the
-                <strong style="color: #ff4500;">${tierDisplay}</strong> plan.
+                <strong style="color: #3b82f6;">${tierDisplay}</strong> plan.
               </p>
               <p style="margin: 0 0 24px; color: #e4e4e7;">
-                Next step: link your TikTok account so your dragon can start posting for you.
+                Next step: link your TikTok account so we can start posting for you.
               </p>
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td align="center" style="background-color: #ff4500; border-radius: 6px;">
+                  <td align="center" style="background-color: #3b82f6; border-radius: 6px;">
                     <a href="${DASHBOARD_URL}/dashboard/accounts" target="_blank"
                        style="display: inline-block; padding: 12px 28px; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none;">
                       Link TikTok Account
@@ -144,7 +144,7 @@ export async function sendPaymentConfirmedEmail({
     await client.emails.send({
       from: FROM_EMAIL,
       to,
-      subject: "Payment Confirmed - Your Dragon is Ready",
+      subject: "Payment Confirmed - You're All Set",
       html,
     });
   } catch (error) {
@@ -171,11 +171,11 @@ export async function sendPaymentFailedEmail({
                 until this is resolved.
               </p>
               <p style="margin: 0 0 24px; color: #e4e4e7;">
-                Please update your payment method to keep your dragon flying.
+                Please update your payment method to keep your automation running.
               </p>
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td align="center" style="background-color: #ff4500; border-radius: 6px;">
+                  <td align="center" style="background-color: #3b82f6; border-radius: 6px;">
                     <a href="${DASHBOARD_URL}/dashboard/settings" target="_blank"
                        style="display: inline-block; padding: 12px 28px; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none;">
                       Update Payment Method
@@ -296,7 +296,7 @@ export async function sendPostFailedEmail({
               </p>
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td align="center" style="background-color: #ff4500; border-radius: 6px;">
+                  <td align="center" style="background-color: #3b82f6; border-radius: 6px;">
                     <a href="${DASHBOARD_URL}/dashboard" target="_blank"
                        style="display: inline-block; padding: 12px 28px; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none;">
                       Check Dashboard

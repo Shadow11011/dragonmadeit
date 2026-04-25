@@ -31,7 +31,7 @@ export function Testimonials() {
     <section className="sec-pad" style={{ position: "relative", zIndex: 2 }}>
       <div className="wrap">
         <Reveal>
-          <div className="chapter-label">CH.04 · THE SCRIBES SPEAK</div>
+          <div className="chapter-label">WHAT OPERATORS SAY</div>
         </Reveal>
         <div className="stack gap-12 mt-12">
           {TESTIMONIALS.map((t, i) => (
@@ -48,9 +48,9 @@ export function Testimonials() {
                   style={{ fontSize: 13, color: "var(--text-2)", flexWrap: "wrap" }}
                 >
                   <span>{t.n}</span>
-                  <span style={{ color: "var(--fire)" }}>{t.h}</span>
+                  <span style={{ color: "var(--accent)" }}>{t.h}</span>
                   <span>· {t.niche}</span>
-                  <span className="mono" style={{ color: "var(--gold)" }}>
+                  <span className="mono" style={{ color: "var(--text-1)" }}>
                     ▶ {t.views}
                   </span>
                 </footer>

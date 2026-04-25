@@ -183,7 +183,7 @@ export default function AccountsPage() {
             exit={{ opacity: 0, y: -8 }}
             className="rounded-lg bg-success/10 border border-success/20 px-4 py-3 text-sm text-success"
           >
-            TikTok connected! Your dragon is now posting on autopilot.
+            TikTok connected! We&rsquo;re now posting on autopilot.
           </motion.div>
         )}
       </AnimatePresence>

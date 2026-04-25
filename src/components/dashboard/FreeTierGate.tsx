@@ -53,14 +53,14 @@ export function FreeTierGate({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
       <div className="flex justify-center mb-4">
-        <DragonMascot size={64} color="#ff4500" />
+        <DragonMascot size={64} />
       </div>
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-text-primary mb-2">
           Ready to start posting?
         </h2>
         <p className="text-text-secondary max-w-md mx-auto">
-          Pick a plan, choose your content style, and let your dragon handle the rest.
+          Pick a plan, choose your content style, and we handle the rest.
         </p>
       </div>
 

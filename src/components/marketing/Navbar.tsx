@@ -40,11 +40,11 @@ export function Navbar() {
               style={{
                 fontFamily: "var(--font-heading)",
                 fontSize: 18,
-                letterSpacing: "0.04em",
+                letterSpacing: "0.01em",
                 fontWeight: 600,
               }}
             >
-              Dragon<span style={{ color: "var(--fire)" }}>Made</span>It
+              DragonMadeIt
             </span>
           </Link>
 
@@ -57,7 +57,7 @@ export function Navbar() {
                   href={link.href}
                   style={{
                     fontSize: 14,
-                    color: active ? "var(--fire)" : "var(--text-2)",
+                    color: active ? "var(--text-1)" : "var(--text-2)",
                     fontWeight: active ? 600 : 400,
                     letterSpacing: "0.02em",
                   }}
@@ -78,7 +78,7 @@ export function Navbar() {
             </Link>
             <ThemeToggle />
             <Link href="/pricing" className="btn btn-primary btn-sm">
-              Summon the dragon
+              Get started
             </Link>
             <button
               className="mobile-only"
@@ -142,7 +142,7 @@ export function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   style={{
                     fontSize: 15,
-                    color: pathname === link.href ? "var(--fire)" : "var(--text-2)",
+                    color: pathname === link.href ? "var(--text-1)" : "var(--text-2)",
                   }}
                 >
                   {link.label}
