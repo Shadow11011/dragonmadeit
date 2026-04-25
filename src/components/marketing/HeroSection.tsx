@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { GlitchHeadline } from "@/components/marketing/primitives/GlitchHeadline";
 import { PhoneMock } from "@/components/marketing/primitives/PhoneMock";
 
 export function HeroSection() {
@@ -9,12 +8,12 @@ export function HeroSection() {
     <section className="hero" style={{ textAlign: "center", paddingBottom: 0 }}>
       <div className="wrap-narrow">
         <div className="badge" style={{ marginTop: 16 }}>
-          ⌁ SET IT AND LEAVE
+          Set it and leave
         </div>
-        <div style={{ marginTop: 32 }}>
-          <GlitchHeadline text="A content engine that runs itself." />
-        </div>
-        <p className="text-2" style={{ fontSize: 20, maxWidth: 640, margin: "32px auto 0" }}>
+        <h1 className="h-mega" style={{ marginTop: 32 }}>
+          A content engine that runs itself.
+        </h1>
+        <p className="text-2" style={{ fontSize: 19, lineHeight: 1.6, maxWidth: 620, margin: "32px auto 0" }}>
           Generate faceless videos from scratch, repurpose your long-form content, or schedule
           what you already make. Posts to TikTok, Instagram Reels, and YouTube Shorts on the
           cadence you set. Configure once, then focus on everything else.
@@ -24,10 +23,21 @@ export function HeroSection() {
             Start free, no card
           </Link>
         </div>
-        <div className="row gap-6 mt-8" style={{ justifyContent: "center", fontSize: 12, color: "var(--text-3)", flexWrap: "wrap" }}>
-          <span>◆ 4 videos free, forever</span>
-          <span>◆ No camera needed</span>
-          <span>◆ Cancel anytime</span>
+        <div
+          className="row mt-8"
+          style={{
+            justifyContent: "center",
+            fontSize: 12,
+            color: "var(--text-3)",
+            flexWrap: "wrap",
+            gap: "8px 18px",
+          }}
+        >
+          <span>Free forever</span>
+          <span aria-hidden>·</span>
+          <span>No card needed</span>
+          <span aria-hidden>·</span>
+          <span>Cancel anytime</span>
         </div>
       </div>
       <div className="phones-stage mt-16">
