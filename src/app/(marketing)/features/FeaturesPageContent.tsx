@@ -1,11 +1,19 @@
 "use client";
 
+import { Fragment } from "react";
 import { Reveal } from "@/components/marketing/primitives/Reveal";
 import { PILLARS } from "@/components/marketing/FeaturesSection";
 
 const FEATURES = PILLARS.map((p) => ({ n: p.n, t: p.t, d: p.outcome }));
 
-const DEEP_FEATURES = [
+type DeepFeature = {
+  t: string;
+  d: string;
+  sub: string[];
+  pipeline: string[];
+};
+
+const DEEP_FEATURES: DeepFeature[] = [
   {
     t: "Generate",
     d: "Faceless AI videos, built from a niche and a cadence. Scripts, voice, visuals, and cuts happen without you touching a timeline.",
@@ -16,6 +24,7 @@ const DEEP_FEATURES = [
       "FFmpeg assembly at render time",
       "Auto-posts across TikTok, Instagram Reels, and YouTube Shorts",
     ],
+    pipeline: ["NICHE", "SCRIPT", "VOICE", "ASSEMBLE", "POST"],
   },
   {
     t: "Repurpose",
@@ -27,6 +36,7 @@ const DEEP_FEATURES = [
       "Parallel FFmpeg cuts, usually in under five minutes",
       "Coming soon",
     ],
+    pipeline: ["URL", "TRANSCRIBE", "PICK CLIPS", "RENDER", "POST"],
   },
   {
     t: "Schedule",
@@ -38,8 +48,72 @@ const DEEP_FEATURES = [
       "Timezone-aware posting windows",
       "One upload, posts to any combination of the three platforms",
     ],
+    pipeline: ["UPLOAD", "QUEUE", "CALENDAR", "POST"],
   },
 ];
+
+function PipelineDiagram({ steps }: { steps: string[] }) {
+  return (
+    <div
+      className="pipeline-diagram"
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${steps.length * 2 - 1}, auto)`,
+        gap: 0,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 32,
+      }}
+    >
+      {steps.map((s, i) => (
+        <Fragment key={s}>
+          <div
+            style={{
+              border: "1px solid var(--border)",
+              background: "var(--bg-0)",
+              borderRadius: "var(--radius-base)",
+              padding: "14px 16px",
+              minWidth: 88,
+              textAlign: "center",
+            }}
+          >
+            <div
+              className="mono"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.2em",
+                color: "var(--text-3)",
+              }}
+            >
+              {String(i + 1).padStart(2, "0")}
+            </div>
+            <div
+              className="mono mt-2"
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                color: "var(--text-1)",
+              }}
+            >
+              {s}
+            </div>
+          </div>
+          {i < steps.length - 1 && (
+            <div
+              aria-hidden
+              style={{
+                width: 18,
+                height: 1,
+                background: "var(--border)",
+              }}
+            />
+          )}
+        </Fragment>
+      ))}
+    </div>
+  );
+}
 
 export function FeaturesPageContent() {
   return (
@@ -102,8 +176,26 @@ export function FeaturesPageContent() {
                 </p>
                 <ul className="stack gap-3 mt-8">
                   {f.sub.map((s) => (
-                    <li key={s} className="row gap-3" style={{ fontSize: 14 }}>
-                      <span style={{ color: "var(--accent)" }}>◆</span>
+                    <li
+                      key={s}
+                      style={{
+                        fontSize: 14,
+                        lineHeight: 1.6,
+                        paddingLeft: 16,
+                        position: "relative",
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: "0.55em",
+                          width: 8,
+                          height: 1,
+                          background: "var(--text-3)",
+                        }}
+                      />
                       {s}
                     </li>
                   ))}
@@ -111,38 +203,18 @@ export function FeaturesPageContent() {
               </div>
               <div
                 style={{
-                  aspectRatio: "4/3",
                   border: "1px solid var(--border)",
                   borderRadius: "calc(var(--radius-base) * 2)",
                   background: "var(--bg-1)",
                   overflow: "hidden",
                   position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 220,
                 }}
               >
-                <svg width="100%" height="100%" style={{ position: "absolute", inset: 0 }}>
-                  <defs>
-                    <pattern id={`p${i}`} width="20" height="20" patternUnits="userSpaceOnUse">
-                      <path d="M0 20 L20 0" stroke="var(--border)" strokeWidth="1" opacity="0.4" />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill={`url(#p${i})`} />
-                </svg>
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <div
-                    className="mono"
-                    style={{ color: "var(--text-3)", fontSize: 12, letterSpacing: "0.2em" }}
-                  >
-                    [ {f.t.toUpperCase()} VISUAL ]
-                  </div>
-                </div>
+                <PipelineDiagram steps={f.pipeline} />
               </div>
             </div>
           </div>
@@ -154,6 +226,16 @@ export function FeaturesPageContent() {
           .deep-grid {
             grid-template-columns: 1fr !important;
             gap: 32px !important;
+          }
+        }
+        @media (max-width: 540px) {
+          .pipeline-diagram {
+            grid-template-columns: 1fr !important;
+          }
+          .pipeline-diagram > div[aria-hidden] {
+            width: 1px !important;
+            height: 16px !important;
+            justify-self: center;
           }
         }
       `}</style>
