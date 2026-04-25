@@ -1,0 +1,195 @@
+{
+  "name": "DragonMadeIt — Orchestrator v2",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "minutes", "minutesInterval": 30 }
+          ]
+        }
+      },
+      "id": "trigger-30m",
+      "name": "Every 30 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Reaper: unstick any v2 account stuck in GENERATING for >20 minutes.\nWITH reaped AS (\n  UPDATE \"TikTokAccount\"\n  SET \"videoGenStatus\" = 'IDLE',\n      \"videoGenStartedAt\" = NULL,\n      \"nextPostAt\" = NOW() + INTERVAL '15 minutes',\n      \"updatedAt\" = NOW()\n  WHERE \"pipelineVersion\" = 'v2'\n    AND \"videoGenStatus\" = 'GENERATING'\n    AND \"videoGenStartedAt\" IS NOT NULL\n    AND \"videoGenStartedAt\" < NOW() - INTERVAL '20 minutes'\n  RETURNING id\n),\norphans AS (\n  UPDATE \"ContentItem\"\n  SET status = 'FAILED',\n      \"errorMessage\" = 'reaped: pipeline did not finish within 20 minutes',\n      \"updatedAt\" = NOW()\n  WHERE status = 'PROCESSING'\n    AND \"createdAt\" < NOW() - INTERVAL '20 minutes'\n    AND \"tiktokAccountId\" IN (SELECT id FROM \"TikTokAccount\" WHERE \"pipelineVersion\" = 'v2')\n  RETURNING id\n)\nSELECT (SELECT COUNT(*) FROM reaped) AS accounts_reaped, (SELECT COUNT(*) FROM orphans) AS items_marked_failed;"
+      },
+      "id": "node-reaper",
+      "name": "Reaper",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [400, 300],
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_POSTGRES_CRED_ID",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Atomic claim: select + update in one statement using SKIP LOCKED so\n-- concurrent orchestrator runs cannot double-claim. Joined to the quota\n-- function + view so accounts over their monthly cap are skipped.\nWITH eligible AS (\n  SELECT a.id\n  FROM \"TikTokAccount\" a\n  LEFT JOIN account_monthly_usage u ON u.\"tiktokAccountId\" = a.id\n  WHERE a.\"pipelineVersion\" = 'v2'\n    AND a.\"nextPostAt\" <= NOW()\n    AND a.\"videoGenStatus\" = 'IDLE'\n    AND a.\"videosPerWeek\" > 0\n    AND a.\"lateProfileId\" IS NOT NULL AND a.\"lateProfileId\" <> ''\n    AND a.\"lateAccountId\" IS NOT NULL AND a.\"lateAccountId\" <> ''\n    AND COALESCE(u.posted_this_month, 0) < dragonmadeit_tier_monthly_quota(a.tier::TEXT)\n  ORDER BY a.\"nextPostAt\" ASC\n  LIMIT 50\n  FOR UPDATE SKIP LOCKED\n)\nUPDATE \"TikTokAccount\" a\nSET \"videoGenStatus\" = 'GENERATING',\n    \"videoGenStartedAt\" = NOW(),\n    \"updatedAt\" = NOW()\nFROM eligible e\nWHERE a.id = e.id\nRETURNING a.*;"
+      },
+      "id": "node-claim",
+      "name": "Atomic Claim",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [600, 300],
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_POSTGRES_CRED_ID",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ]
+        }
+      },
+      "id": "node-any-claimed",
+      "name": "Any Accounts Claimed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [820, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.videoType }}",
+                    "rightValue": "GAMEPLAY",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "outputKey": "gameplay"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.videoType }}",
+                    "rightValue": "AI_IMAGES",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "outputKey": "ai_images"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-route",
+      "name": "Route by Video Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1040, 300]
+    },
+    {
+      "parameters": {
+        "workflowId": { "__rl": true, "value": "REPLACE_WITH_GAMEPLAY_V2_WORKFLOW_ID", "mode": "id" },
+        "workflowInputs": { "value": "={{ $json }}", "schema": [], "mappingMode": "passThrough" },
+        "options": {}
+      },
+      "id": "node-run-gameplay-v2",
+      "name": "Run Gameplay v2",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [1260, 220]
+    },
+    {
+      "parameters": {
+        "workflowId": { "__rl": true, "value": "REPLACE_WITH_AI_IMAGES_V2_WORKFLOW_ID", "mode": "id" },
+        "workflowInputs": { "value": "={{ $json }}", "schema": [], "mappingMode": "passThrough" },
+        "options": {}
+      },
+      "id": "node-run-ai-images-v2",
+      "name": "Run AI Images v2",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [1260, 380]
+    },
+    {
+      "parameters": {},
+      "id": "node-noop",
+      "name": "No Accounts Due",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1040, 500]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Sub-pipeline error catcher. Runs only if executeWorkflow throws.\nUPDATE \"TikTokAccount\"\nSET \"videoGenStatus\" = 'IDLE',\n    \"videoGenStartedAt\" = NULL,\n    \"nextPostAt\" = NOW() + INTERVAL '1 hour',\n    \"updatedAt\" = NOW()\nWHERE id = '{{ $json.id }}'\n  AND \"pipelineVersion\" = 'v2'\n  AND \"videoGenStatus\" = 'GENERATING'\nRETURNING id;"
+      },
+      "id": "node-reset-on-error",
+      "name": "Reset Account On Sub-Pipeline Error",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1480, 300],
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_POSTGRES_CRED_ID",
+          "name": "Supabase Postgres"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Every 30 Minutes": { "main": [[{ "node": "Reaper", "type": "main", "index": 0 }]] },
+    "Reaper": { "main": [[{ "node": "Atomic Claim", "type": "main", "index": 0 }]] },
+    "Atomic Claim": { "main": [[{ "node": "Any Accounts Claimed?", "type": "main", "index": 0 }]] },
+    "Any Accounts Claimed?": {
+      "main": [
+        [{ "node": "Route by Video Type", "type": "main", "index": 0 }],
+        [{ "node": "No Accounts Due", "type": "main", "index": 0 }]
+      ]
+    },
+    "Route by Video Type": {
+      "main": [
+        [{ "node": "Run Gameplay v2", "type": "main", "index": 0 }],
+        [{ "node": "Run AI Images v2", "type": "main", "index": 0 }]
+      ]
+    },
+    "Run Gameplay v2": { "main": [[{ "node": "Reset Account On Sub-Pipeline Error", "type": "main", "index": 0 }]] },
+    "Run AI Images v2": { "main": [[{ "node": "Reset Account On Sub-Pipeline Error", "type": "main", "index": 0 }]] }
+  },
+  "tags": [{ "name": "v2" }, { "name": "generate-pipeline" }]
+}
