@@ -182,8 +182,7 @@ After this, the schema is back to its pre-migration shape and v1 continues to fu
 These are tracked but deferred — they don't block canary or backfill:
 
 - **n8n execution-history retention.** With `saveDataErrorExecution: "all"` (kept for debugging), error executions retain full payloads. The Atomic Claim's `RETURNING` list is column-scoped to exclude `accessToken`/`refreshToken`, so no secrets are persisted, but consider tightening n8n's prune-after window if execution-table size becomes an issue.
-- **Dead `nca-toolkit` substring in v1 cleanup nodes.** Both v1 sub-pipelines have legacy URL-prefix splits referencing the old NCA toolkit path. Functionally a no-op (cleanup just skips), but storage leaks accumulate over time. Fix when revisiting v1 nodes for any reason.
-- **Repeat-firing `Update ContentItem Title` in ai-images-v2.** With N scenes (typically 6-10), the title-update node runs N times against the same row. Idempotent (same title, same row), so harmless. Could be aggregated to a single fire by inserting a `Set` node ahead of it with `executeOnce: true`, but not worth the complexity.
+- **MinIO bucket prefix coupling.** Cleanup nodes used to hardcode `/nca-toolkit/` as a substring in the URL splitter. v2 cleanup nodes were updated to a bucket-agnostic `URL().pathname.split('/').slice(2).join('/')` form so renaming the MinIO bucket (e.g. on a future Contabo migration) won't silently leak storage. The legacy v1 cleanup nodes still use the hardcoded substring — fix when revisiting v1 for any reason.
 
 ## Updating the snapshot
 

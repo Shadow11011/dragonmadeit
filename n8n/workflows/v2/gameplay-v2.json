@@ -326,7 +326,7 @@
         "url": "http://172.19.0.1:8766/cleanup",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  objects: [\n    ...(($('Collect TTS URLs').first()?.json.audioUrls || $('Collect Scenes').first()?.json.audioUrls || [])\n      .map(u => (typeof u === 'string' ? u : (u.audio_url || u.url || '')).split('/nca-toolkit/')[1] || '')\n      .filter(Boolean)),\n    (($('Set Merged Audio').first()?.json.ttsUrl || '').split('/nca-toolkit/')[1] || '')\n  ].filter(Boolean)\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  objects: [\n    ...(($('Collect TTS URLs').first()?.json.audioUrls || $('Collect Scenes').first()?.json.audioUrls || [])\n      .map(u => (typeof u === 'string' ? u : (u.audio_url || u.url || '')).split('/').slice(3).join('/') || '')\n      .filter(Boolean)),\n    (($('Set Merged Audio').first()?.json.ttsUrl || '').split('/').slice(3).join('/') || '')\n  ].filter(Boolean)\n}) }}",
         "options": {
           "timeout": 30000
         }
@@ -441,7 +441,7 @@
         "url": "http://172.19.0.1:8766/cleanup",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  objects: [\n    ...(($('Collect TTS URLs')?.first()?.json?.audioUrls || $('Collect Scenes')?.first()?.json?.audioUrls || [])\n      .map(u => (typeof u === 'string' ? u : (u.audio_url || u.url || '')).split('/nca-toolkit/')[1] || '')\n      .filter(Boolean)),\n    (($('Set Merged Audio')?.first()?.json?.ttsUrl || '').split('/nca-toolkit/')[1] || ''),\n    ($('Caption & Finalize')?.first()?.json?.object_name || '')\n  ].filter(Boolean)\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  objects: [\n    ...(($('Collect TTS URLs')?.first()?.json?.audioUrls || $('Collect Scenes')?.first()?.json?.audioUrls || [])\n      .map(u => (typeof u === 'string' ? u : (u.audio_url || u.url || '')).split('/').slice(3).join('/') || '')\n      .filter(Boolean)),\n    (($('Set Merged Audio')?.first()?.json?.ttsUrl || '').split('/').slice(3).join('/') || ''),\n    ($('Caption & Finalize')?.first()?.json?.object_name || '')\n  ].filter(Boolean)\n}) }}",
         "options": {
           "timeout": 30000
         }
@@ -529,7 +529,8 @@
           "name": "Supabase Postgres"
         }
       },
-      "onError": "continueErrorOutput"
+      "onError": "continueErrorOutput",
+      "executeOnce": true
     }
   ],
   "connections": {
