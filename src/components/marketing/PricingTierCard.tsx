@@ -172,9 +172,11 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
     <div
       className="card"
       style={{
-        borderTop: `3px solid ${tier.color}`,
+        borderTop: `2px solid ${tier.color}`,
         transform: tier.popular ? "translateY(-8px)" : "none",
-        boxShadow: tier.popular ? `0 30px 80px -30px ${tier.color}55` : "none",
+        boxShadow: tier.popular
+          ? "0 24px 60px -28px oklch(0 0 0 / 0.55)"
+          : "none",
         display: "flex",
         flexDirection: "column",
       }}
@@ -187,7 +189,7 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
             left: "50%",
             transform: "translateX(-50%)",
             background: tier.color,
-            color: "#0a0a0f",
+            color: "oklch(0.14 0.01 240)",
             padding: "4px 14px",
             borderRadius: 999,
             fontSize: 10,
@@ -251,7 +253,7 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
       <Link
         href={href}
         className="btn btn-lg mt-8"
-        style={{ background: tier.color, color: "#0a0a0f", fontWeight: 700 }}
+        style={{ background: tier.color, color: "oklch(0.14 0.01 240)", fontWeight: 700 }}
       >
         {CTA_COPY[tier.key]}
       </Link>

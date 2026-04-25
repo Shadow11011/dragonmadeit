@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Source_Sans_3, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Source_Sans_3, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-// Inter for headings — clean SaaS sans, replaces the previous MedievalSharp
-// fantasy display face that anchored the old fire/dragon aesthetic.
-const heading = Inter({
+// Bricolage Grotesque for headings: humanist grotesque with personality at
+// large sizes. Avoids the Inter/DM Sans default monoculture without going twee.
+const heading = Bricolage_Grotesque({
   subsets: ["latin"],
   display: "swap",
   weight: ["500", "600", "700"],
