@@ -1,23 +1,21 @@
 # DragonMadeIt
 
-TikTok automation SaaS. "Set it and forget it" content automation with a dark dragon aesthetic. The marketing site uses Framer Motion animations. The app dashboard is clean, fast, and functional with subtle dragon-themed accents.
+Three-path short-form content engine for TikTok, Instagram Reels, and YouTube Shorts: Generate (faceless AI videos from a niche), Repurpose (long-form to clips), Schedule (your-own uploads). Anchor promise is **set and leave**. Brand identity is mature SaaS, single blue accent, monochrome dragon mark. See `.impeccable.md` for the full design context.
 
 ## Stack
 
 - **Framework:** Next.js 14 (App Router)
 - **Language:** TypeScript (strict mode)
-- **Styling:** Tailwind CSS + Framer Motion (page transitions and micro-interactions)
-- **Database:** PostgreSQL + Prisma ORM
-- **Auth:** NextAuth.js
-- **Payments:** Paystack (subscriptions + webhooks)
-- **TikTok Integration:** Late API
-- **Video Pipeline:** Flux images -> Edge TTS / KokoroTTS -> FFmpeg -> MinIO storage
-- **Workflow Engine:** n8n (self-hosted, manages automation pipelines)
-- **Process Manager:** PM2 (production)
-- **Reverse Proxy:** Nginx + Certbot SSL (production)
+- **Styling:** Tailwind CSS + Framer Motion (used sparingly)
+- **Database:** PostgreSQL on Supabase + Prisma ORM
+- **Auth:** NextAuth.js with email verification (Resend)
+- **Payments:** Dodo Payments (test mode currently; live mode pending). Paystack integration was removed.
+- **Posting API:** Late API (current). Migration to Post for Me planned post-launch.
+- **Object storage:** MinIO today; migrating to Contabo S3-compatible Object Storage.
+- **Video Pipeline:** Flux images → Edge TTS / KokoroTTS → FFmpeg → object storage
+- **Workflow Engine:** n8n (self-hosted, version-controlled in `n8n/workflows/`)
+- **Hosting:** Vercel (`shadow11011s-projects` scope). Staging: `dragonmadeit-redesign.vercel.app`. Production: `dragonmadeit.app`.
 - **Dev Environment:** localhost on Linux
-- **Domain:** https://dragonmadeit.app
-- **Vercel URL:** https://dragonmadeit.vercel.app
 
 ## Two Zones: Marketing vs App
 
@@ -121,55 +119,46 @@ dragonmadeit/
 └── package.json
 ```
 
-## Dashboard Design System
+## Design System
 
-### Color Palette
-```
---bg-primary: #0a0a0f          (near-black, blue undertone)
---bg-secondary: #12121a        (dark card backgrounds)
---bg-tertiary: #1a1a2e         (hover states, active items)
---accent-fire: #ff4500          (primary action, dragon fire orange-red)
---accent-ember: #ff8c00         (secondary accent, warm amber)
---accent-gold: #ffd700          (premium highlights, Studio Pro tier)
---text-primary: #e4e4e7         (main text, off-white)
---text-secondary: #71717a       (muted text)
---border: #27272a               (subtle borders)
---success: #22c55e
---error: #ef4444
---warning: #f59e0b
-```
+Source of truth: `src/app/globals.css`. Tokens are oklch-based and tinted toward the brand hue (240°, ~0.005 chroma).
 
-### Dashboard Components
-- Cards: `bg-secondary` with subtle `border`, faint `accent-fire` border glow on hover
-- Buttons: primary = `accent-fire` gradient, secondary = outline
-- Progress bars: fire gradient (ember -> fire -> gold)
-- Charts: dark theme with fire palette
-- Dragon mascot: small animated SVG/Lottie in sidebar header, subtle idle animation
+- **Accent:** `--accent` (blue 500, `#3b82f6`). Used sparingly per the 60-30-10 rule.
+- **Surfaces:** `--bg-0` through `--bg-3` (oklch ladder, dark default; light mode via `[data-theme="light"]`).
+- **Text:** `--text-1`, `--text-2`, `--text-3` (most → least prominent).
+- **Borders:** `--border`, `--border-soft`.
+- **Legacy aliases:** `--fire`, `--ember`, `--gold`, `--accent-fire`, `--accent-ember`, `--accent-gold`, `fire-text`, `fire-gradient` all alias to `--accent`. Auth and dashboard surfaces still reference these by name; do not strip them without migrating callers.
+- **Fonts:** Bricolage Grotesque (heading), Source Sans 3 (body), JetBrains Mono (mono). Loaded via `next/font/google` in `src/app/layout.tsx`.
+- **Dragon mark:** monochrome PNG in `public/images/brand/dragonmark-{dark,light,slate}-{32,64,256}.png`. Rendered through `<DragonMark />` and `<Sigil />`.
+
+### Component conventions
+- Cards: `.card` class — `bg-1` surface, 1px border, no decorative drop-shadow.
+- Buttons: `.btn` + `.btn-primary` (filled accent) or `.btn-ghost` (outline).
+- No CRT scanlines, no fantasy glyphs, no fire-gradient artwork. Marketing avoids em-dashes (Don's hard rule).
 
 ## Database Schema Conventions
 
 - Prisma with PostgreSQL
 - All models: `id` (cuid), `createdAt`, `updatedAt`
-- User -> Paystack: `paystackCustomerCode`, TikTokAccount -> `paystackSubscriptionCode`, `paystackEmailToken`
+- User → Dodo: `dodoCustomerId`. TikTokAccount → `dodoSubscriptionId` (unique). Referral fields on User: `referralCode`, `referredByUserId`, `referralCredits`, `referralCreditAppliedAt`.
 - Tier enum: `FREE`, `SCHEDULER`, `CREATOR`, `CLIPPER`, `STUDIO`, `STUDIO_PRO`, `AGENCY`
 - TikTok accounts linked to users with Late API credentials
 - Content queue: video metadata, posting schedule, status
 
-## Paystack Integration Rules
+## Dodo Payments Integration Rules
 
-- Webhook endpoint: `/api/webhooks/paystack`
-- Events: `charge.success`, `subscription.create`, `subscription.disable`, `invoice.payment_failed`
-- Webhook verification: HMAC-SHA512 of raw body using `PAYSTACK_SECRET_KEY`, compared against `x-paystack-signature` header
-- **CRITICAL BUG FIX:** After payment confirmation, ALWAYS refresh the user's session/JWT to reflect new tier. Previous build had JWT staleness bug -- customers showed free tier UI despite active subscription.
-- **paystackEmailToken:** Must be stored from `subscription.create` webhook -- required to cancel subscriptions via API. If missing, subscription cannot be cancelled programmatically.
-- No billing portal -- Paystack has no equivalent to Stripe's Customer Portal. Cancel is per-account via the dashboard.
+- Webhook endpoint: `/api/webhooks/dodo` — verifies via Standard Webhooks spec (`webhook-id`, `webhook-timestamp`, `webhook-signature` headers) using `client.webhooks.unwrap()`.
+- Events handled: `subscription.active`, `subscription.renewed`, `subscription.on_hold`, `subscription.cancelled`, `subscription.expired`, `subscription.failed`, `payment.failed`, `payment.succeeded`.
+- Idempotency: query by `dodoSubscriptionId` and `@unique` constraint, plus transactional `updateMany` with status predicate to avoid races.
+- Checkout: `POST /api/dodo/checkout` initializes a hosted checkout session per tier + interval; product IDs live in `DODO_PRODUCT_IDS` (15 products: 5 paid tiers × 3 intervals).
+- After checkout completes, the JWT must refresh on next request — webhook updates the DB; client picks up new tier via session refetch.
 
 ## Known Pitfalls
 
 1. **DATABASE_URL encoding:** Special chars in PostgreSQL password must be URL-encoded or Prisma silently fails.
-2. **JWT session staleness:** Invalidate/refresh JWT after Paystack subscription changes.
-3. **Nginx reverse proxy:** Include WebSocket upgrade headers for HMR. Set proper `proxy_pass` with `Host` forwarding.
-4. **Prisma .env:** Reads from project root by default. Non-standard locations break `DATABASE_URL`.
+2. **JWT session staleness:** Refresh session after Dodo subscription changes; webhook updates the DB but the client must refetch.
+3. **Prisma .env:** Reads from project root by default. Non-standard locations break `DATABASE_URL`.
+4. **Marketing copy:** No em-dashes; no "industry-leading"/"revolutionize"/"unleash" buzzwords; every feature claim must map to shipped code (no fiction).
 
 ## Commands
 
@@ -226,26 +215,11 @@ When a task touches 3+ files or requires parallel workstreams, delegate to subag
 
 ## Environment Variables
 
-```
-DATABASE_URL=postgresql://user:password@localhost:5432/dragonmadeit
-NEXTAUTH_SECRET=
-NEXTAUTH_URL=http://localhost:3000
-PAYSTACK_SECRET_KEY=
-NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=
-PAYSTACK_SCHEDULER_MONTHLY_PLAN_CODE=
-PAYSTACK_SCHEDULER_QUARTERLY_PLAN_CODE=
-PAYSTACK_SCHEDULER_ANNUAL_PLAN_CODE=
-PAYSTACK_CREATOR_MONTHLY_PLAN_CODE=
-PAYSTACK_CREATOR_QUARTERLY_PLAN_CODE=
-PAYSTACK_CREATOR_ANNUAL_PLAN_CODE=
-PAYSTACK_CLIPPER_MONTHLY_PLAN_CODE=
-PAYSTACK_CLIPPER_QUARTERLY_PLAN_CODE=
-PAYSTACK_CLIPPER_ANNUAL_PLAN_CODE=
-PAYSTACK_STUDIO_MONTHLY_PLAN_CODE=
-PAYSTACK_STUDIO_QUARTERLY_PLAN_CODE=
-PAYSTACK_STUDIO_ANNUAL_PLAN_CODE=
-PAYSTACK_STUDIO_PRO_MONTHLY_PLAN_CODE=
-PAYSTACK_STUDIO_PRO_QUARTERLY_PLAN_CODE=
-PAYSTACK_STUDIO_PRO_ANNUAL_PLAN_CODE=
-LATE_API_KEY=
-```
+See `.env` for the canonical list. Required at minimum:
+
+- `DATABASE_URL` (Supabase PostgreSQL, password URL-encoded)
+- `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
+- `RESEND_API_KEY` (signup verification emails)
+- `DODO_API_KEY`, `DODO_WEBHOOK_SECRET`, `DODO_ENV` (`test_mode` | `live_mode`)
+- 15 `DODO_*_PRODUCT_ID` codes (5 paid tiers × 3 intervals)
+- `LATE_API_KEY` (posting), with `POSTFORME_API_KEY` slated to replace it post-launch
