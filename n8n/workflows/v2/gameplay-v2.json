@@ -373,7 +373,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "WITH item AS (\n  UPDATE \"ContentItem\"\n  SET status = 'FAILED',\n      \"errorMessage\" = 'gameplay-v2: pipeline error before post',\n      \"updatedAt\" = NOW()\n  WHERE id = '{{ $('Create ContentItem').first().json.id }}'\n  RETURNING id\n)\nUPDATE \"TikTokAccount\"\nSET \"videoGenStatus\" = 'IDLE',\n    \"videoGenStartedAt\" = NULL,\n    \"nextPostAt\" = NOW() + INTERVAL '1 hour',\n    \"updatedAt\" = NOW()\nWHERE id = '{{ $('Prepare Job').first().json.id }}'\n  AND \"videoGenStatus\" = 'GENERATING'\nRETURNING id",
+        "query": "WITH item AS (\n  UPDATE \"ContentItem\"\n  SET status = 'FAILED',\n      \"errorMessage\" = 'gameplay-v2: pipeline error before post',\n      \"updatedAt\" = NOW()\n  WHERE id = '{{ $('Create ContentItem').first()?.json?.id ?? '00000000-0000-0000-0000-000000000000' }}'\n  RETURNING id\n)\nUPDATE \"TikTokAccount\"\nSET \"videoGenStatus\" = 'IDLE',\n    \"videoGenStartedAt\" = NULL,\n    \"nextPostAt\" = NOW() + INTERVAL '1 hour',\n    \"updatedAt\" = NOW()\nWHERE id = '{{ $('Prepare Job').first().json.id }}'\n  AND \"videoGenStatus\" = 'GENERATING'\nRETURNING id",
         "options": {}
       },
       "credentials": {
@@ -403,7 +403,7 @@
           "name": "Supabase Postgres"
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "continueErrorOutput"
     },
     {
       "id": "ac12247c-af0f-4502-8dca-fbea71521595",
@@ -506,6 +506,28 @@
       ],
       "parameters": {
         "jsCode": "const raw = ($input.first().json.text || '').trim();\nlet caption = '', hashtags = [];\ntry {\n  // Strip code fences if present\n  const cleaned = raw.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '').trim();\n  const parsed = JSON.parse(cleaned);\n  caption = String(parsed.caption || '').trim();\n  hashtags = Array.isArray(parsed.hashtags) ? parsed.hashtags.filter(Boolean) : [];\n} catch (e) {\n  // Fallback: try loose extraction\n  const capM = raw.match(/\\\"caption\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"/);\n  const tagsM = raw.match(/\\\"hashtags\\\"\\s*:\\s*\\[([^\\]]+)\\]/);\n  if (capM) caption = capM[1];\n  if (tagsM) hashtags = tagsM[1].split(',').map(s => s.replace(/[\"\\s]/g, '')).filter(Boolean);\n}\n// Sanitize hashtags\nhashtags = hashtags.map(h => {\n  const tag = String(h).trim().toLowerCase().replace(/\\s+/g, '');\n  return tag.startsWith('#') ? tag : '#' + tag.replace(/[^a-z0-9_]/g, '');\n}).filter(h => h.length > 1);\nif (!caption) caption = 'Watch till the end';\nif (hashtags.length === 0) hashtags = ['#fyp', '#foryou', '#storytime'];\nreturn [{ json: { caption, hashtags } }];"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "f7c0dcf6-a047-497b-9a0d-a76525d1640c",
+      "name": "Update ContentItem Title",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        560,
+        400
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE \"ContentItem\"\nSET title = LEFT(COALESCE(NULLIF(TRIM('{{ ($('Extract Script Text').first().json.fullScript || 'Generated TikTok video').replace(/'/g, \"''\") }}'), ''), 'Generated TikTok video'), 180),\n    \"updatedAt\" = NOW()\nWHERE id = '{{ $('Create ContentItem').first().json.id }}'\nRETURNING id",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "QTJrzerlWihCIhk5",
+          "name": "Supabase Postgres"
+        }
       },
       "onError": "continueErrorOutput"
     }
@@ -636,7 +658,7 @@
       "main": [
         [
           {
-            "node": "Generate TTS Audio",
+            "node": "Update ContentItem Title",
             "type": "main",
             "index": 0
           }
@@ -788,6 +810,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Reset Account On Error",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -847,6 +876,24 @@
         [
           {
             "node": "Post to TikTok",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reset Account On Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update ContentItem Title": {
+      "main": [
+        [
+          {
+            "node": "Generate TTS Audio",
             "type": "main",
             "index": 0
           }
