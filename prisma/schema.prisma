@@ -37,6 +37,11 @@ enum VoiceType {
   RANDOM
 }
 
+enum VideoSource {
+  GENERATED
+  UPLOADED
+}
+
 enum BillingInterval {
   MONTHLY
   QUARTERLY
@@ -44,17 +49,17 @@ enum BillingInterval {
 }
 
 model User {
-  id                 String          @id @default(cuid())
-  email              String          @unique
-  name               String?
-  image              String?
-  hashedPassword     String?
-  emailVerified      DateTime?
+  id                      String          @id @default(cuid())
+  email                   String          @unique
+  name                    String?
+  image                   String?
+  hashedPassword          String?
+  emailVerified           DateTime?
   // Dodo Payments customer ID. Dodo's checkout lazily creates a customer on
   // first payment; we persist the returned ID on `subscription.active` so
   // subsequent checkouts can reuse the same Dodo customer record.
-  dodoCustomerId         String?
-  onboardingComplete Boolean         @default(false)
+  dodoCustomerId          String?
+  onboardingComplete      Boolean         @default(false)
   // Referral program (Task 1.10)
   // `referralCode` is an 8-char opaque slug every user owns; backfilled for
   // all existing users in migration `add_referral_program`. New users get one
@@ -64,16 +69,16 @@ model User {
   // on the referrer's next charge.
   // `referralCreditAppliedAt` is an idempotency flag on the REFERRED user so
   // the Dodo webhook never double-credits on retried deliveries.
-  referralCode           String    @unique
-  referredByUserId       String?
-  referralCredits        Int       @default(0)
+  referralCode            String          @unique
+  referredByUserId        String?
+  referralCredits         Int             @default(0)
   referralCreditAppliedAt DateTime?
-  tiktokAccounts     TikTokAccount[]
-  contentItems       ContentItem[]
-  accounts           Account[]
-  sessions           Session[]
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  tiktokAccounts          TikTokAccount[]
+  contentItems            ContentItem[]
+  accounts                Account[]
+  sessions                Session[]
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
 
   @@index([referredByUserId])
 }
@@ -116,14 +121,14 @@ model VerificationToken {
 // One row per free-account activation. We index clientHash so duplicate-device
 // checks are O(1). ipHash/uaHash are soft signals, logged but not unique.
 model DeviceFingerprint {
-  id          String   @id @default(cuid())
-  clientHash  String   // SHA-256 from browser signals (canvas/webgl/screen/etc.)
-  ipHash      String   // SHA-256 of the request IP (salted)
-  uaHash      String   // SHA-256 of UA + accept-language + sec-ch-ua
-  tier        Tier
-  userId      String
-  accountId   String?  // optional: TikTokAccount.id this fingerprint activated
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  clientHash String // SHA-256 from browser signals (canvas/webgl/screen/etc.)
+  ipHash     String // SHA-256 of the request IP (salted)
+  uaHash     String // SHA-256 of UA + accept-language + sec-ch-ua
+  tier       Tier
+  userId     String
+  accountId  String? // optional: TikTokAccount.id this fingerprint activated
+  createdAt  DateTime @default(now())
 
   @@index([clientHash])
   @@index([ipHash])
@@ -131,43 +136,52 @@ model DeviceFingerprint {
 }
 
 model TikTokAccount {
-  id                   String        @id @default(cuid())
-  username             String
-  displayName          String?
-  accessToken          String?
-  refreshToken         String?
-  tier                 Tier            @default(FREE)
-  billingInterval      BillingInterval @default(MONTHLY)
+  id                 String          @id @default(cuid())
+  username           String
+  displayName        String?
+  accessToken        String?
+  refreshToken       String?
+  tier               Tier            @default(FREE)
+  billingInterval    BillingInterval @default(MONTHLY)
   // Dodo Payments subscription ID. Populated by the `subscription.active`
   // webhook; cleared on `subscription.cancelled`. Unique so the webhook
   // handler can dedupe by ID cheaply.
-  dodoSubscriptionId         String?     @unique
-  videosPerWeek        Int           @default(0)
-  schedule             Json?
-  scheduleLocked       Boolean       @default(false)
-  videoType            VideoType     @default(GAMEPLAY)
-  voiceType            VoiceType     @default(RANDOM)
-  storyTypes           Json          @default("[]")
-  randomizeStories     Boolean       @default(true)
-  lateProfileId        String?
-  lateAccountId        String?
+  dodoSubscriptionId String?         @unique
+  videosPerWeek      Int             @default(0)
+  schedule           Json?
+  scheduleLocked     Boolean         @default(false)
+  videoType          VideoType       @default(GAMEPLAY)
+  voiceType          VoiceType       @default(RANDOM)
+  storyTypes         Json            @default("[]")
+  randomizeStories   Boolean         @default(true)
+  lateProfileId      String?
+  lateAccountId      String?
   // n8n pipeline coordination
-  nextPostAt           DateTime?
-  videoGenStatus       String?   @default("IDLE")
-  pendingVideoUrl      String?
-  lastPostedAt         DateTime?
-  userId               String
-  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contentItems         ContentItem[]
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  nextPostAt         DateTime?
+  videoGenStatus     String?         @default("IDLE")
+  // Routing flag: 'v1' = legacy orchestrator (mt5BR1Jn3F4oFpON), 'v2' = hardened
+  // pipeline (n8n/workflows/v2/orchestrator-v2.json). Default is v1; rows are
+  // flipped to v2 one-by-one as the new pipeline proves out per-account.
+  pipelineVersion    String          @default("v1")
+  // Timestamp of last GENERATING transition. Used by the v2 reaper to detect
+  // jobs stuck >20min and reset them back to IDLE.
+  videoGenStartedAt  DateTime?
+  pendingVideoUrl    String?
+  lastPostedAt       DateTime?
+  userId             String
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentItems       ContentItem[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([pipelineVersion, videoGenStatus, nextPostAt])
 }
 
 model EmailVerificationCode {
   id                  String    @id @default(cuid())
   email               String
   codeHash            String
-  type                String    // "SIGNUP" | "PASSWORD_RESET"
+  type                String // "SIGNUP" | "PASSWORD_RESET"
   attempts            Int       @default(0)
   expiresAt           DateTime
   usedAt              DateTime?
@@ -179,19 +193,21 @@ model EmailVerificationCode {
 }
 
 model ContentItem {
-  id              String        @id @default(cuid())
+  id              String         @id @default(cuid())
   title           String
   description     String?
   videoUrl        String?
   thumbnailUrl    String?
-  status          ContentStatus @default(DRAFT)
+  status          ContentStatus  @default(DRAFT)
+  source          VideoSource    @default(GENERATED)
   scheduledAt     DateTime?
   postedAt        DateTime?
-  tiktokPostId    String?       @unique
+  tiktokPostId    String?        @unique
   userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   tiktokAccountId String?
   tiktokAccount   TikTokAccount? @relation(fields: [tiktokAccountId], references: [id])
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  errorMessage    String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
