@@ -9,7 +9,7 @@ export const STORIES = [
     handle: "@redditvault",
     tag: "#redditstories",
     views: "2.4M",
-    bg: "linear-gradient(165deg, #1a0f2e 0%, #3d1a4a 60%, #ff4500 130%)",
+    bg: "linear-gradient(165deg, #1a0f2e 0%, #3d1a4a 60%, #3b82f6 130%)",
     pattern: "dots" as const,
   },
   {
@@ -27,7 +27,7 @@ export const STORIES = [
     handle: "@darkfilesdaily",
     tag: "#truecrime",
     views: "4.1M",
-    bg: "linear-gradient(165deg, #141420 0%, #1a2540 60%, #d4a017 130%)",
+    bg: "linear-gradient(165deg, #141420 0%, #1a2540 60%, #475569 130%)",
     pattern: "grid" as const,
   },
   {
@@ -36,7 +36,7 @@ export const STORIES = [
     handle: "@mindlift",
     tag: "#mindset",
     views: "1.2M",
-    bg: "linear-gradient(165deg, #0a1a2f 0%, #1a3a5a 60%, #ff8c00 130%)",
+    bg: "linear-gradient(165deg, #0a1a2f 0%, #1a3a5a 60%, #60a5fa 130%)",
     pattern: "rays" as const,
   },
   {
@@ -45,7 +45,7 @@ export const STORIES = [
     handle: "@oldgods",
     tag: "#mythology",
     views: "672K",
-    bg: "linear-gradient(165deg, #1a1410 0%, #3a2818 60%, #ffd700 130%)",
+    bg: "linear-gradient(165deg, #1a1410 0%, #3a2818 60%, #93c5fd 130%)",
     pattern: "rune" as const,
   },
   {

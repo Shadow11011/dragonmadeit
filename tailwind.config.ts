@@ -9,25 +9,35 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        heading: ["var(--font-heading)", "Georgia", "serif"],
+        heading: ["var(--font-heading)", "system-ui", "sans-serif"],
         body: ["var(--font-body)", "system-ui", "sans-serif"],
       },
       colors: {
-        "bg-primary": "#0f0d0b",
-        "bg-secondary": "#171412",
-        "bg-tertiary": "#201c18",
-        "accent-fire": "#ff4500",
-        "accent-ember": "#ff8c00",
-        "accent-gold": "#ffd700",
-        "text-primary": "#ece9e5",
-        "text-secondary": "#807a73",
-        border: "#302c27",
+        // Cool-neutral dark palette. Names retained for backwards
+        // compatibility — accent-fire/-ember/-gold now point at the
+        // single blue accent ramp.
+        "bg-primary": "#0a0a0a",
+        "bg-secondary": "#18181b",
+        "bg-tertiary": "#27272a",
+        "accent-fire": "#3b82f6",
+        "accent-ember": "#60a5fa",
+        "accent-gold": "#93c5fd",
+        accent: "#3b82f6",
+        "accent-hover": "#60a5fa",
+        "text-primary": "#fafafa",
+        "text-secondary": "#a1a1aa",
+        border: "#27272a",
         success: "#22c55e",
         error: "#ef4444",
         warning: "#f59e0b",
       },
       backgroundImage: {
-        "fire-gradient": "linear-gradient(to right, #ff8c00, #ff4500, #ffd700)",
+        // Legacy name retained — flat single-color now (no fire blend).
+        "fire-gradient": "linear-gradient(to right, #3b82f6, #3b82f6, #60a5fa)",
+      },
+      boxShadow: {
+        // glow-fire utility legacy name; now a soft blue ring.
+        "glow-fire": "0 0 0 0 transparent",
       },
     },
   },

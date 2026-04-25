@@ -23,13 +23,13 @@ function formatCountdownMs(ms: number): string {
   return "any second now";
 }
 
+// Renamed from FlameIcon — bar-chart glyph is the right semantic for "Total Posts".
 function FlameIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M10 2C10 2 6 6 6 10C6 12.2 7.8 14 10 14C12.2 14 14 12.2 14 10C14 6 10 2 10 2ZM10 12C8.9 12 8 11.1 8 10C8 8.5 10 5.5 10 5.5C10 5.5 12 8.5 12 10C12 11.1 11.1 12 10 12Z"
-        fill="currentColor"
-      />
+      <rect x="3" y="11" width="3" height="6" rx="1" fill="currentColor" />
+      <rect x="8.5" y="7" width="3" height="10" rx="1" fill="currentColor" />
+      <rect x="14" y="3" width="3" height="14" rx="1" fill="currentColor" />
     </svg>
   );
 }
@@ -429,19 +429,19 @@ export default function DashboardPage() {
           label="TikTok Accounts"
           value={formatNumber(summary.count)}
           icon={<UserIcon />}
-          accentColor="#ffd700"
+          accentColor="#3b82f6"
         />
         <StatsCard
           label="Total Posts"
           value={formatNumber(summary.totalPosts)}
           icon={<FlameIcon />}
-          accentColor="#ff4500"
+          accentColor="#3b82f6"
         />
         <StatsCard
           label="Scheduled"
           value={formatNumber(summary.scheduledPosts)}
           icon={<CalendarIcon />}
-          accentColor="#ff8c00"
+          accentColor="#60a5fa"
         />
         <StatsCard
           label="Processing"

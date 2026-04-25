@@ -212,7 +212,7 @@ export async function sendVerificationCodeEmail({
                 Enter this code to verify your email address:
               </p>
               <div style="margin: 0 0 24px; text-align: center;">
-                <span style="display: inline-block; font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #ff4500; font-family: monospace; background-color: #1a1a2e; padding: 16px 24px; border-radius: 8px; border: 1px solid #27272a;">
+                <span style="display: inline-block; font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #3b82f6; font-family: monospace; background-color: #18181b; padding: 16px 24px; border-radius: 8px; border: 1px solid #27272a;">
                   ${code}
                 </span>
               </div>
@@ -248,7 +248,7 @@ export async function sendPasswordResetCodeEmail({
                 Enter this code to reset your password:
               </p>
               <div style="margin: 0 0 24px; text-align: center;">
-                <span style="display: inline-block; font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #ff4500; font-family: monospace; background-color: #1a1a2e; padding: 16px 24px; border-radius: 8px; border: 1px solid #27272a;">
+                <span style="display: inline-block; font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #3b82f6; font-family: monospace; background-color: #18181b; padding: 16px 24px; border-radius: 8px; border: 1px solid #27272a;">
                   ${code}
                 </span>
               </div>
