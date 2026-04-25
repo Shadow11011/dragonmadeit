@@ -125,21 +125,22 @@ export function FeaturesSection() {
                     className="text-2"
                     style={{
                       fontSize: 13,
-                      lineHeight: 1.6,
-                      paddingLeft: 18,
+                      lineHeight: 1.65,
+                      paddingLeft: 16,
                       position: "relative",
                     }}
                   >
                     <span
+                      aria-hidden
                       style={{
                         position: "absolute",
                         left: 0,
-                        top: 0,
-                        color: "var(--accent)",
+                        top: "0.55em",
+                        width: 8,
+                        height: 1,
+                        background: "var(--text-3)",
                       }}
-                    >
-                      ◆
-                    </span>
+                    />
                     {b}
                   </li>
                 ))}

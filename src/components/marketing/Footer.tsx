@@ -15,11 +15,17 @@ export function Footer() {
               A content engine that runs itself. Generate, repurpose, or schedule short-form across TikTok, Reels, and Shorts.
             </p>
             <div
-              className="row gap-3 mt-6"
-              style={{ fontSize: 12, color: "var(--text-3)", flexWrap: "wrap" }}
+              className="row mt-6"
+              style={{
+                fontSize: 12,
+                color: "var(--text-3)",
+                flexWrap: "wrap",
+                gap: "6px 14px",
+              }}
             >
-              <span>◆ Official TikTok API</span>
-              <span>◆ Secured by Dodo Payments</span>
+              <span>Official TikTok API</span>
+              <span aria-hidden>·</span>
+              <span>Secured by Dodo Payments</span>
             </div>
           </div>
           <div>

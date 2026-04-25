@@ -21,7 +21,7 @@ export function Navbar() {
     <>
       {announceOpen && (
         <div className="announce" style={{ position: "relative", zIndex: 60 }}>
-          <span>◈ LAUNCH PRICING · LOCK IN CURRENT RATES BEFORE THEY INCREASE</span>
+          <span>Currently in early access. Start free with the FREE tier.</span>
           <button
             onClick={() => setAnnounceOpen(false)}
             style={{ marginLeft: 12, opacity: 0.7 }}

@@ -252,7 +252,7 @@ export function PhoneMock({
           <span>{times[storyIdx % 6]}</span>
           <span style={{ display: "flex", gap: 3, alignItems: "center" }}>
             <span>5G</span>
-            <span>◼◼◼◻</span>
+            <span style={{ letterSpacing: "0.5px" }}>•••</span>
           </span>
         </div>
         {/* Content (fabricated chrome — only when no real thumbnail) */}

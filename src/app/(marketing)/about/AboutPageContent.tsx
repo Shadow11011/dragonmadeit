@@ -67,10 +67,9 @@ export function AboutPageContent() {
               {STACK.map((s) => (
                 <div
                   key={s}
-                  className="row gap-3 card"
+                  className="card"
                   style={{ padding: "14px 18px", fontSize: 13 }}
                 >
-                  <span style={{ color: "var(--accent)" }}>◆</span>
                   {s}
                 </div>
               ))}

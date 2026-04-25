@@ -91,18 +91,22 @@ export function FoundersCaseStudy() {
 
         <Reveal delay={300}>
           <div
-            className="row gap-6 mt-8 mono"
+            className="row mt-8 mono"
             style={{
               fontSize: 12,
               letterSpacing: "0.12em",
               color: "var(--text-3)",
               flexWrap: "wrap",
+              gap: "8px 20px",
             }}
           >
-            <span>◆ {likes} LIKES</span>
-            <span>◆ {profileViews} PROFILE VIEWS</span>
-            <span>◆ {shares} SHARE</span>
-            <span style={{ color: "var(--accent)" }}>◆ STILL RUNNING</span>
+            <span>{likes} LIKES</span>
+            <span aria-hidden>·</span>
+            <span>{profileViews} PROFILE VIEWS</span>
+            <span aria-hidden>·</span>
+            <span>{shares} SHARE</span>
+            <span aria-hidden>·</span>
+            <span style={{ color: "var(--accent)" }}>STILL RUNNING</span>
           </div>
         </Reveal>
 
@@ -121,8 +125,8 @@ export function FoundersCaseStudy() {
             className="text-2 mt-4"
             style={{ fontSize: 16, maxWidth: 560, textWrap: "pretty" }}
           >
-            Two of them, exactly as the pipeline spit them out &mdash; script, voiceover,
-            visuals, edit. No camera was involved. Tap to watch.
+            Two of them, exactly as the pipeline spit them out. Script, voiceover, visuals, edit.
+            No camera was involved. Tap to watch.
           </p>
           <div
             className="clips-grid mt-8"
@@ -198,10 +202,10 @@ export function FoundersCaseStudy() {
               textWrap: "pretty",
             }}
           >
-            Day {days} of my own stress test. Real numbers from my real account &mdash; not
-            industry averages, not a paid creator&rsquo;s highlight reel. TikTok&rsquo;s algorithm
-            usually calibrates over 2&ndash;3 weeks; I&rsquo;ll keep this counter updated as it
-            does. Your mileage will depend on niche, hook quality, and timing.
+            Day {days} of my own stress test. Real numbers from my real account. Not industry
+            averages, not a paid creator&rsquo;s highlight reel. TikTok&rsquo;s algorithm usually
+            calibrates over 2 to 3 weeks. I&rsquo;ll keep this counter updated as it does. Your
+            mileage will depend on niche, hook quality, and timing.
           </p>
         </Reveal>
       </div>
