@@ -16,20 +16,20 @@ const INTERVALS: { value: Interval; label: string }[] = [
 
 const FAQS: [string, string][] = [
   [
-    "What are the three pillars?",
+    "What are the three modes?",
     "Generate creates AI videos from scratch (gameplay or AI-image). Clipper turns your long-form content into short clips. Scheduler publishes your own pre-made content on a set cadence. Each paid tier picks one or bundles all three.",
   ],
   [
     "What's in the free tier?",
-    "A sample of every pillar so you can see the output before you pay: 2 AI-generated videos, 1 clip, and 3 scheduled uploads per month. Videos include a small \"dragonmadeit.app\" watermark on the generated output. No credit card required.",
+    "A sample of every mode so you can see the output before you pay: 4 AI-generated videos, 4 clips, and 4 scheduled uploads per month. Videos include a small \"dragonmadeit.app\" watermark on the generated output. No credit card required.",
   ],
   [
     "How do Creator, Clipper, and Scheduler compare?",
-    "Creator is generate-only: 20 AI videos per month at $19. Clipper is clip-only: 20 clips per month at $19. Scheduler is the schedule-only tier for teams that already have content: 100 uploads per month at $12. Pick the pillar that matches the work you actually want to offload.",
+    "Creator is generate-only: 20 AI videos per month at $19. Clipper is clip-only: 20 clips per month at $19. Scheduler is the schedule-only tier for teams that already have content: 100 uploads per month at $12. Pick the mode that matches the work you actually want to offload.",
   ],
   [
-    "When should I pick Studio over a single-pillar tier?",
-    "Studio at $45 bundles all three pillars (40 generate, 40 clips, 250 scheduled uploads) and 5 linked accounts. If you'd otherwise buy two of the $19 tiers, Studio is the better deal and gives you the third pillar for free. Studio Pro ($79) bumps the volume for business use.",
+    "When should I pick Studio over a single-mode tier?",
+    "Studio at $45 bundles all three modes (40 generate, 40 clips, 250 scheduled uploads) and 5 linked accounts. If you'd otherwise buy two of the $19 tiers, Studio is the better deal and gives you the third mode for free. Studio Pro ($79) bumps the volume for business use.",
   ],
   [
     "Can I switch plans later?",
@@ -61,14 +61,14 @@ export function PricingPageContent() {
     <>
       <section className="sec-pad" style={{ textAlign: "center", paddingBottom: 40 }}>
         <div className="wrap">
-          <div className="eyebrow">CH · PRICING</div>
+          <div className="eyebrow">PRICING</div>
           <h1 className="h-display mt-6">
-            One <span style={{ color: "var(--fire)", fontStyle: "italic" }}>pillar</span> or all three.
+            One mode or all three.
             <br />
             Your call.
           </h1>
           <p className="text-2 mt-6" style={{ fontSize: 18 }}>
-            Generate, Clip, or Schedule. Pick the pillar that matches the work you want to offload.
+            Generate, Clip, or Schedule. Pick the mode that matches the work you want to offload.
           </p>
           <div
             className="mt-12"
@@ -89,7 +89,7 @@ export function PricingPageContent() {
                 style={{
                   padding: "10px 18px",
                   borderRadius: "var(--radius-base)",
-                  background: interval === i.value ? "var(--fire)" : "transparent",
+                  background: interval === i.value ? "var(--accent)" : "transparent",
                   color: interval === i.value ? "#fff" : "var(--text-2)",
                   fontSize: 12,
                   letterSpacing: "0.1em",
@@ -116,8 +116,8 @@ export function PricingPageContent() {
 
       <section className="sec-pad" style={{ background: "var(--bg-1)" }}>
         <div className="wrap-narrow">
-          <div className="chapter-label">THE RIDDLES</div>
-          <h2 className="h1 mt-4">Questions the ancients ask.</h2>
+          <div className="chapter-label">FAQ</div>
+          <h2 className="h1 mt-4">Frequently asked questions</h2>
           <div className="mt-12">
             {FAQS.map(([q, a], i) => (
               <div key={q} className={"faq-item" + (openFaq === i ? " open" : "")}>
@@ -136,10 +136,8 @@ export function PricingPageContent() {
 
       <section className="sec-pad" style={{ textAlign: "center" }}>
         <div className="wrap-narrow">
-          <h2 className="h1">
-            Ready to <span style={{ color: "var(--fire)", fontStyle: "italic" }}>get started?</span>
-          </h2>
-          <p className="text-2 mt-4">Sample every pillar for free. No card needed.</p>
+          <h2 className="h1">Ready to get started?</h2>
+          <p className="text-2 mt-4">Sample every mode for free. No card needed.</p>
           <div className="row gap-4 mt-8" style={{ justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/signup?tier=free" className="btn btn-primary btn-lg">
               Start free, no card

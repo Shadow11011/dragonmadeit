@@ -46,9 +46,9 @@ export function FeaturesPageContent() {
     <>
       <section className="sec-pad" style={{ textAlign: "center" }}>
         <div className="wrap">
-          <div className="eyebrow">CH · FEATURES</div>
+          <div className="eyebrow">FEATURES</div>
           <h1 className="h-display mt-6">
-            One engine. <span style={{ fontStyle: "italic", color: "var(--fire)" }}>Three paths.</span>
+            One engine. Three paths.
           </h1>
           <p className="text-2 mt-6" style={{ fontSize: 18, maxWidth: 620, margin: "24px auto 0" }}>
             Generate faceless videos, repurpose long-form content, or schedule what you already make. Posts to TikTok, Instagram Reels, and YouTube Shorts.
@@ -63,7 +63,7 @@ export function FeaturesPageContent() {
               <Reveal key={f.t} delay={i * 60}>
                 <div
                   className="mono"
-                  style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                  style={{ fontSize: 11, color: "var(--accent)", letterSpacing: "0.3em" }}
                 >
                   {f.n}
                 </div>
@@ -92,9 +92,9 @@ export function FeaturesPageContent() {
               <div style={{ order: i % 2 === 1 ? 2 : 0 }}>
                 <div
                   className="mono"
-                  style={{ fontSize: 11, color: "var(--fire)", letterSpacing: "0.3em" }}
+                  style={{ fontSize: 11, color: "var(--accent)", letterSpacing: "0.3em" }}
                 >
-                  {String(i + 1).padStart(2, "0")} · DEEP DIVE
+                  {String(i + 1).padStart(2, "0")}
                 </div>
                 <h2 className="h1 mt-4">{f.t}</h2>
                 <p className="text-2 mt-6" style={{ fontSize: 16 }}>
@@ -103,7 +103,7 @@ export function FeaturesPageContent() {
                 <ul className="stack gap-3 mt-8">
                   {f.sub.map((s) => (
                     <li key={s} className="row gap-3" style={{ fontSize: 14 }}>
-                      <span style={{ color: "var(--fire)" }}>◆</span>
+                      <span style={{ color: "var(--accent)" }}>◆</span>
                       {s}
                     </li>
                   ))}

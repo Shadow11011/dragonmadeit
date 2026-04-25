@@ -14,13 +14,11 @@ export function AboutPageContent() {
     <>
       <section className="sec-pad" style={{ textAlign: "center" }}>
         <div className="wrap">
-          <div className="eyebrow">CH · ABOUT</div>
+          <div className="eyebrow">ABOUT</div>
           <h1 className="h-display mt-6">
             A content engine
             <br />
-            <span style={{ fontStyle: "italic", color: "var(--fire)" }}>
-              that runs itself.
-            </span>
+            that runs itself.
           </h1>
           <p className="text-2 mt-6" style={{ fontSize: 18, maxWidth: 620, margin: "24px auto 0" }}>
             Set it and leave. Generate, repurpose, or schedule short-form content across
@@ -72,7 +70,7 @@ export function AboutPageContent() {
                   className="row gap-3 card"
                   style={{ padding: "14px 18px", fontSize: 13 }}
                 >
-                  <span style={{ color: "var(--fire)" }}>◆</span>
+                  <span style={{ color: "var(--accent)" }}>◆</span>
                   {s}
                 </div>
               ))}
