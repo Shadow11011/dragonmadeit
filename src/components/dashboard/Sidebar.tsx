@@ -148,7 +148,7 @@ export function Sidebar() {
         >
           <MenuIcon />
         </button>
-        <span className="font-heading text-lg fire-text">DragonMadeIt</span>
+        <span className="font-heading text-lg text-text-primary font-semibold">DragonMadeIt</span>
         <div className="w-10" />
       </div>
 
@@ -176,7 +176,7 @@ export function Sidebar() {
             onClick={() => setMobileOpen(false)}
           >
             <DragonMascot size={28} />
-            <span className="font-heading text-lg fire-text">DragonMadeIt</span>
+            <span className="font-heading text-lg text-text-primary font-semibold">DragonMadeIt</span>
           </Link>
           {/* Mobile close button */}
           <button

@@ -200,13 +200,8 @@ export function PricingTierCard({ tier, interval }: { tier: TierSpec; interval: 
         </div>
       )}
       <div className="row gap-3">
-        <Sigil
-          size="sm"
-          style={{
-            background: `radial-gradient(circle at 30% 30%, ${tier.color}, ${tier.color}aa 50%, ${tier.color}44 100%)`,
-          }}
-        />
-        <h3 className="h3" style={{ color: tier.color, fontStyle: "italic" }}>
+        <Sigil size="sm" />
+        <h3 className="h3" style={{ color: tier.color }}>
           {tier.name}
         </h3>
       </div>

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { MedievalSharp, Source_Sans_3, JetBrains_Mono } from "next/font/google";
+import { Inter, Source_Sans_3, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const heading = MedievalSharp({
+// Inter for headings — clean SaaS sans, replaces the previous MedievalSharp
+// fantasy display face that anchored the old fire/dragon aesthetic.
+const heading = Inter({
   subsets: ["latin"],
   display: "swap",
-  weight: "400",
+  weight: ["500", "600", "700"],
   variable: "--font-heading-base",
 });
 
@@ -24,31 +26,34 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DragonMadeIt — Faceless TikTok, Forged by Fire",
-  description: "AI writes your scripts, renders your videos, posts to TikTok on autopilot. 66 content styles. Zero filming.",
+  title: "DragonMadeIt — A content engine that runs itself",
+  description:
+    "Generate, repurpose, or schedule short-form content across TikTok, Instagram Reels, and YouTube Shorts. Configure once, then focus on everything else.",
   metadataBase: new URL("https://dragonmadeit.app"),
   alternates: { canonical: "/" },
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "32x32" },
-      { url: "/images/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/images/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/images/brand/dragonmark-dark-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/brand/dragonmark-dark-64.png", sizes: "64x64", type: "image/png" },
+      { url: "/images/brand/dragonmark-dark-256.png", sizes: "256x256", type: "image/png" },
     ],
-    apple: "/images/apple-touch-icon.png",
+    apple: "/images/brand/dragonmark-dark-256.png",
   },
   openGraph: {
-    title: "DragonMadeIt — Faceless TikTok, Forged by Fire",
-    description: "AI writes, renders, and posts your TikToks on autopilot.",
+    title: "DragonMadeIt — A content engine that runs itself",
+    description:
+      "Generate, repurpose, or schedule short-form content across TikTok, Instagram Reels, and YouTube Shorts.",
     url: "https://dragonmadeit.app",
     siteName: "DragonMadeIt",
-    images: [{ url: "/images/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "/images/brand/dragonmark-light-256.png", width: 256, height: 256 }],
     type: "website",
   },
   twitter: {
-    card: "summary_large_image",
-    title: "DragonMadeIt — Faceless TikTok, Forged by Fire",
-    description: "AI writes, renders, and posts your TikToks on autopilot.",
-    images: ["/images/og-image.png"],
+    card: "summary",
+    title: "DragonMadeIt — A content engine that runs itself",
+    description:
+      "Generate, repurpose, or schedule short-form content across TikTok, Instagram Reels, and YouTube Shorts.",
+    images: ["/images/brand/dragonmark-light-256.png"],
   },
 };
 
