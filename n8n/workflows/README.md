@@ -25,6 +25,10 @@ review trail. This directory is the minimum viable fix: a snapshot of the
 current workflows, committed to the repo, so future changes can be diffed
 and reviewed alongside the Next.js code they coordinate with.
 
+## v2 (parallel hardened pipeline)
+
+The `v2/` subdirectory contains a hardened rewrite that runs alongside these v1 workflows under a `pipelineVersion` flag on `TikTokAccount`. See `v2/README.md` for the gap-vs-fix matrix and cutover playbook. Until accounts are explicitly flipped to `'v2'`, every row continues to run on the v1 workflows in this directory.
+
 ## Re-importing (disaster recovery or environment bootstrap)
 
 To restore any of these workflows into an n8n instance:
